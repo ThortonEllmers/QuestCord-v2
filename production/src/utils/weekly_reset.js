@@ -77,7 +77,7 @@ async function performWeeklyReset() {
         const weatherResult = db.prepare('DELETE FROM weather_events WHERE endTime < ?').run(resetTimestamp);
         logger.info(`[weekly-reset] Removed ${weatherResult.changes} expired weather events`);
 
-        // Reset any weekly statistics or achievements
+        // Reset any weekly statistics
         logger.info('[weekly-reset] Resetting weekly player statistics...');
 
         // Create a weekly reset log entry
