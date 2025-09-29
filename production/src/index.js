@@ -176,13 +176,6 @@ client.once(Events.ClientReady, async () => {
   setInterval(applyRegenToAll, 60000); // Run every 60 seconds continuously
   logger.info('[regen] Batch regeneration system started - travel completion and stats recording active');
   
-  // Initialize weather system
-  // Creates dynamic weather that affects travel times and routes
-  const { initializeWeatherSystem, generateWeatherEvents } = require('./utils/weather'); // Import weather functions
-  initializeWeatherSystem(); // Setup database tables for weather data
-  generateWeatherEvents(client); // Generate initial weather events
-  setInterval(() => generateWeatherEvents(client), 5 * 60 * 1000); // Generate new weather every 5 minutes
-  logger.info('[weather] Dynamic weather system initialized - storms, cyclones, and weather effects active');
 
   // Initialize weekly reset system
   // Resets leaderboards and statistics every Monday at 12:00 AM
