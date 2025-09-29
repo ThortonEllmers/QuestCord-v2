@@ -226,6 +226,10 @@
       background: #E74C3C;
     }
 
+    .update-category.removal {
+      background: #E67E22;
+    }
+
     .update-category.ui {
       background: #9B59B6;
     }
@@ -353,15 +357,56 @@
       </div>
     </div>
 
-    <!-- Version 2.1.2 -->
+    <!-- Version 2.1.3 -->
     <div class="version-section current">
+      <div class="version-header">
+        <div>
+          <div class="version-number">Version 2.1.3</div>
+          <div class="version-date">September 29, 2025</div>
+        </div>
+        <div class="version-badges">
+          <span class="version-badge current">Current</span>
+        </div>
+      </div>
+
+      <div class="update-category removal">MAJOR SYSTEM REMOVALS</div>
+      <ul class="feature-list fixes">
+        <li><strong>Weather System Removed</strong> - Completely deleted weather commands, API endpoints, and travel integration</li>
+        <li><strong>Achievements System Removed</strong> - Deleted achievement tracking, commands, and progress checking</li>
+        <li><strong>Database Schema Cleanup</strong> - Removed weather_events, weather_encounters, and achievements tables</li>
+        <li><strong>Travel System Simplified</strong> - Removed weather effects, focusing purely on distance and stamina</li>
+      </ul>
+
+      <div class="update-category new">NEW FEATURES</div>
+      <ul class="feature-list">
+        <li><strong>Live Boss Activity Tracker</strong> - Replaced weather widget with real-time boss battle tracking</li>
+        <li><strong>Boss Battle Outcomes</strong> - Shows recent boss history with "Defeated" or "Expired" status</li>
+        <li><strong>Smart Boss Emojis</strong> - Auto-assigns emojis based on boss names (🐉 dragons, 🐺 wolves)</li>
+        <li><strong>New API Endpoint</strong> - Added /api/bosses/recent for boss activity data</li>
+      </ul>
+
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <ul class="feature-list improvements">
+        <li><strong>Reduced Complexity</strong> - Removed thousands of lines of weather and achievement logic</li>
+        <li><strong>Improved Performance</strong> - Eliminated weather calculations and achievement checking overhead</li>
+        <li><strong>Focused Experience</strong> - Boss tracking provides more relevant real-time server activity</li>
+        <li><strong>Easier Maintenance</strong> - Fewer systems to maintain and debug</li>
+      </ul>
+
+      <div class="technical-note">
+        <p><strong>🔧 Technical Note:</strong> Major release removing Weather and Achievements systems to reduce complexity and improve performance. New boss tracker provides actionable real-time information without overhead.</p>
+      </div>
+    </div>
+
+    <!-- Version 2.1.2 -->
+    <div class="version-section">
       <div class="version-header">
         <div>
           <div class="version-number">Version 2.1.2</div>
           <div class="version-date">September 29, 2025</div>
         </div>
         <div class="version-badges">
-          <span class="version-badge current">Current</span>
+
         </div>
       </div>
 
