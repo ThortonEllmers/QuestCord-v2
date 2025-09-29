@@ -724,3 +724,11 @@ function logCommand(userId, command, guildId) {
   }
 }
 
+// Initialize weather system database tables
+try {
+  const { initializeWeatherSystem } = require('./weather');
+  initializeWeatherSystem();
+} catch (error) {
+  console.warn('[db] Weather system initialization failed:', error.message);
+}
+
