@@ -1,0 +1,337 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Version 2.1.3 Updates - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+
+    .version-header {
+      background: var(--gradient);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .version-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .release-date {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .update-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .update-category {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .update-category.improvement {
+      background: #2ECC71;
+    }
+
+    .update-category.new {
+      background: #3498DB;
+    }
+
+    .update-category.fix {
+      background: #E74C3C;
+    }
+
+    .update-category.removal {
+      background: #E67E22;
+    }
+
+    .update-category.ui {
+      background: #9B59B6;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .feature-list.improvements li::before {
+      content: '🔧';
+    }
+
+    .feature-list.fixes li::before {
+      content: '🐛';
+    }
+
+    .feature-list.removals li::before {
+      content: '🗑️';
+    }
+
+    .feature-list.ui li::before {
+      content: '🎨';
+    }
+
+    .technical-note {
+      background: rgba(124, 58, 237, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .technical-note p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    .current-badge {
+      background: #27AE60;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="version-header">
+      <div class="version-number">Version 2.1.3 <span class="current-badge">Current</span></div>
+      <div class="release-date">Released: September 29, 2025</div>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category removal">MAJOR SYSTEM REMOVALS</div>
+      <h3>🗑️ Weather System Complete Removal</h3>
+      <ul class="feature-list removals">
+        <li><strong>Weather Commands Removed</strong> - Deleted /weather command and all weather-related functionality</li>
+        <li><strong>Weather Files Deleted</strong> - Removed src/utils/weather.js, src/commands/weather.js, and scripts/migrate-weather.js</li>
+        <li><strong>Travel Integration Cleanup</strong> - Removed weather effects from travel system (route calculation, time multipliers, encounter tracking)</li>
+        <li><strong>API Endpoints Removed</strong> - Deleted /api/weather, /api/weather/route, and all admin weather endpoints</li>
+        <li><strong>Database Schema Cleanup</strong> - Removed weather_events and weather_encounters table creation from database schema</li>
+        <li><strong>Status System Cleanup</strong> - Removed weather system health checks from status page</li>
+      </ul>
+
+      <h3>🗑️ Achievements System Complete Removal</h3>
+      <ul class="feature-list removals">
+        <li><strong>Achievement Commands Removed</strong> - Deleted /achievements command and all achievement functionality</li>
+        <li><strong>Achievement Files Deleted</strong> - Removed src/utils/achievements.js and src/commands/achievements.js</li>
+        <li><strong>Database Integration Cleanup</strong> - Removed achievements table creation and all achievement checking logic</li>
+        <li><strong>API Endpoints Removed</strong> - Deleted /api/achievements endpoint and achievement progress functions</li>
+        <li><strong>Boss System Cleanup</strong> - Removed achievement checking from boss battles and travel events</li>
+        <li><strong>Admin Features Cleanup</strong> - Removed achievements from user reset functionality and analytics</li>
+        <li><strong>Help System Update</strong> - Removed achievement references from /help command documentation</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category new">NEW FEATURES</div>
+      <h3>⚔️ Live Boss Activity Tracker</h3>
+      <ul class="feature-list">
+        <li><strong>Real-time Boss Tracking</strong> - Replaced weather widget with live boss activity tracker on homepage</li>
+        <li><strong>Recent Boss History</strong> - Shows last 24 hours of boss battles across all servers</li>
+        <li><strong>Boss Battle Outcomes</strong> - Displays whether bosses were "Defeated" or "Expired" with timestamps</li>
+        <li><strong>Smart Boss Emojis</strong> - Automatically assigns emojis based on boss names (🐉 dragons, 🐺 wolves, 🕷️ spiders)</li>
+        <li><strong>Server Context</strong> - Shows which server each boss battle occurred in</li>
+        <li><strong>Auto-Refresh Updates</strong> - Boss tracker updates every 30 seconds automatically</li>
+        <li><strong>New API Endpoint</strong> - Added /api/bosses/recent endpoint for boss activity data</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <h3>🔧 System Streamlining</h3>
+      <ul class="feature-list improvements">
+        <li><strong>Reduced Code Complexity</strong> - Removed thousands of lines of weather and achievement logic</li>
+        <li><strong>Improved Performance</strong> - Eliminated weather calculations on travel and achievement checking overhead</li>
+        <li><strong>Cleaner Travel System</strong> - Travel now focuses purely on distance and stamina without weather complications</li>
+        <li><strong>Simplified Database Schema</strong> - Removed complex weather and achievement table relationships</li>
+        <li><strong>Focused User Experience</strong> - Boss tracking provides more relevant real-time server activity information</li>
+        <li><strong>Easier Maintenance</strong> - Fewer systems to maintain, debug, and keep synchronized</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category fix">CRITICAL FIXES</div>
+      <h3>🐛 Syntax and Integration Repairs</h3>
+      <ul class="feature-list fixes">
+        <li><strong>Travel Command Syntax Error</strong> - Fixed orphaned travelEmbed statement and extra closing brace</li>
+        <li><strong>Missing Import Cleanup</strong> - Removed broken imports for deleted weather and achievement utilities</li>
+        <li><strong>Database Query Cleanup</strong> - Removed references to non-existent weather and achievement tables</li>
+        <li><strong>API Consistency</strong> - Ensured all removed endpoints are properly cleaned from route handlers</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category ui">USER INTERFACE</div>
+      <h3>🎨 Homepage Widget Redesign</h3>
+      <ul class="feature-list ui">
+        <li><strong>Boss Tracker Widget</strong> - Completely redesigned weather panel as boss activity tracker</li>
+        <li><strong>Status Indicators</strong> - Color-coded status badges (green for defeated, red for expired)</li>
+        <li><strong>Time Display</strong> - Human-readable timestamps (45m ago, 2h ago) for boss events</li>
+        <li><strong>Responsive Design</strong> - Boss tracker adapts to different screen sizes and devices</li>
+        <li><strong>Loading States</strong> - Proper loading indicators while fetching boss data</li>
+      </ul>
+    </div>
+
+    <div class="technical-note">
+      <p><strong>🔧 Technical Note:</strong> This major release removes two complex systems (Weather and Achievements) that were adding significant overhead to the codebase. The new boss tracker focuses on providing actionable, real-time information about server activity without the complexity of weather calculations or achievement progress tracking. This results in improved performance, easier maintenance, and a more focused user experience.</p>
+    </div>
+
+    <div class="technical-note">
+      <p><strong>⚠️ Breaking Changes:</strong> The /weather and /achievements commands have been completely removed. Any external integrations or scripts that relied on weather or achievement API endpoints will need to be updated. Database tables weather_events, weather_encounters, and achievements will no longer be created in fresh installations.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/updates" class="back-button">Back to Updates</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="../shared/footer.js"></script>
+
+</body>
+</html>
