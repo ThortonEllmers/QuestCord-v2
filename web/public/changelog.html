@@ -1,0 +1,488 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Complete Changelog - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+
+    .changelog-header {
+      background: var(--gradient);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .changelog-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .changelog-subtitle {
+      opacity: 0.9;
+      font-size: 1.2rem;
+    }
+
+    .version-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .version-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .version-section.current::before {
+      background: #27AE60;
+    }
+
+    .version-section.legacy::before {
+      background: #95A5A6;
+    }
+
+    .version-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .version-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .version-date {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .version-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .version-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .version-badge.current {
+      background: #27AE60;
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    .version-badge.legacy {
+      background: #95A5A6;
+      color: white;
+    }
+
+    .update-category {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      margin-right: 12px;
+    }
+
+    .update-category.improvement {
+      background: #2ECC71;
+    }
+
+    .update-category.new {
+      background: #3498DB;
+    }
+
+    .update-category.fix {
+      background: #E74C3C;
+    }
+
+    .update-category.ui {
+      background: #9B59B6;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 24px;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .feature-list.improvements li::before {
+      content: '🔧';
+    }
+
+    .feature-list.fixes li::before {
+      content: '🐛';
+    }
+
+    .feature-list.ui li::before {
+      content: '🎨';
+    }
+
+    .technical-note {
+      background: rgba(124, 58, 237, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .technical-note p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+
+      .version-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .stats-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="changelog-header">
+      <div class="changelog-title">📖 Complete Changelog</div>
+      <div class="changelog-subtitle">Every update, improvement, and fix</div>
+    </div>
+
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Total Versions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">45+</div>
+        <div class="stat-label">Features Added</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">20+</div>
+        <div class="stat-label">Bugs Fixed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">15+</div>
+        <div class="stat-label">Improvements</div>
+      </div>
+    </div>
+
+    <!-- Version 2.1.2 -->
+    <div class="version-section current">
+      <div class="version-header">
+        <div>
+          <div class="version-number">Version 2.1.2</div>
+          <div class="version-date">September 29, 2025</div>
+        </div>
+        <div class="version-badges">
+          <span class="version-badge current">Current</span>
+        </div>
+      </div>
+
+      <div class="update-category fix">CRITICAL FIXES</div>
+      <ul class="feature-list fixes">
+        <li><strong>Weather Command Fixed</strong> - Resolved SQLite3 binding error that prevented /weather command from working</li>
+        <li><strong>Duplicate Server Removal</strong> - Fixed travel autocomplete showing servers multiple times with different distances</li>
+        <li><strong>Database Column Consistency</strong> - Standardized weather_events table column names (endTime vs expiresAt)</li>
+        <li><strong>Travel Query Optimization</strong> - Added GROUP BY clauses to prevent duplicate server results</li>
+      </ul>
+
+      <div class="update-category new">NEW FEATURES</div>
+      <ul class="feature-list">
+        <li><strong>Live Activity Widget</strong> - Server Activity now shows real-time command usage with timestamps</li>
+        <li><strong>Severity 1 Weather Events</strong> - Added Marine Layer Fog, Mountain Wave, Aurora Substorm, and Sprite Lightning events</li>
+        <li><strong>Discord Weather Alerts</strong> - Severe weather (severity 4+) now posts automatic notifications with role mentions</li>
+        <li><strong>Command Logging System</strong> - New database infrastructure tracks all command executions for live display</li>
+      </ul>
+
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <ul class="feature-list improvements">
+        <li><strong>Widget Cleanup</strong> - Removed Live Leaderboard, Market Trends, and Popular Routes widgets for better focus</li>
+        <li><strong>Weather Notification Targeting</strong> - Changed from severity 3+ to severity 4+ for less noise</li>
+        <li><strong>Server Deduplication</strong> - Travel system now shows each server only once with accurate distance</li>
+        <li><strong>Query Performance</strong> - All server queries now use LIMIT 1 and ORDER BY for consistency</li>
+        <li><strong>Database Consistency</strong> - Ensured all weather-related queries use correct column names</li>
+      </ul>
+
+      <div class="technical-note">
+        <p><strong>🔧 Technical Note:</strong> This patch release addresses critical database inconsistencies that were causing command failures. The weather system now uses consistent column naming (endTime) throughout the codebase, and the travel system properly deduplicates server results using GROUP BY clauses.</p>
+      </div>
+    </div>
+
+    <!-- Version 2.1.1 -->
+    <div class="version-section legacy">
+      <div class="version-header">
+        <div>
+          <div class="version-number">Version 2.1.1</div>
+          <div class="version-date">September 26, 2025</div>
+        </div>
+        <div class="version-badges">
+          <span class="version-badge legacy">Legacy</span>
+        </div>
+      </div>
+
+      <div class="update-category new">NEW FEATURES</div>
+      <ul class="feature-list">
+        <li><strong>6 Real-time Widgets</strong> - Added Travel Routes, Market Trends, Server Activity, and Live Leaderboard</li>
+        <li><strong>Dynamic World Boss Status</strong> - Now shows current active boss and location instead of just next spawn</li>
+        <li><strong>Live Weather System</strong> - Real-time weather events display with server integration</li>
+        <li><strong>Professional Status Page</strong> - Comprehensive system health monitoring with live metrics</li>
+      </ul>
+
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <ul class="feature-list improvements">
+        <li><strong>Professional Command Interface</strong> - Complete redesign of all Discord commands with rich embeds</li>
+        <li><strong>Enhanced Bot Invite System</strong> - Updated with proper permissions and integration settings</li>
+        <li><strong>API Performance</strong> - New endpoints for live data with proper caching and rate limiting</li>
+        <li><strong>Database Optimization</strong> - Improved queries for real-time data aggregation</li>
+        <li><strong>Mobile Responsive Design</strong> - All pages now perfectly adapted for mobile devices</li>
+      </ul>
+
+      <div class="update-category fix">BUG FIXES</div>
+      <ul class="feature-list fixes">
+        <li><strong>Duplicate Boss Notifications</strong> - Fixed duplicate boss alerts from multiple notification systems</li>
+        <li><strong>Active Weather Widget</strong> - Resolved data loading issues on VPS deployment</li>
+        <li><strong>Boss Timer Display</strong> - Fixed countdown not showing current boss information</li>
+        <li><strong>Map Link Removal</strong> - Replaced all "View on Map" references with website links</li>
+        <li><strong>Animation Timing</strong> - Synchronized loading screens across all pages</li>
+      </ul>
+    </div>
+
+    <!-- Version 2.1.0 -->
+    <div class="version-section legacy">
+      <div class="version-header">
+        <div>
+          <div class="version-number">Version 2.1.0</div>
+          <div class="version-date">September 20, 2025</div>
+        </div>
+        <div class="version-badges">
+          <span class="version-badge legacy">Legacy</span>
+        </div>
+      </div>
+
+      <div class="update-category new">NEW FEATURES</div>
+      <ul class="feature-list">
+        <li><strong>Advanced Inventory System</strong> - Complete overhaul with sorting and filtering</li>
+        <li><strong>Boss Battle Mechanics</strong> - New world boss system with server-wide events</li>
+        <li><strong>Premium Integration</strong> - Enhanced gem-based premium features</li>
+        <li><strong>Real-time Status Tracking</strong> - Live system health monitoring</li>
+      </ul>
+
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <ul class="feature-list improvements">
+        <li><strong>Database Performance</strong> - Optimized queries for faster response times</li>
+        <li><strong>Memory Management</strong> - Reduced RAM usage by 40%</li>
+        <li><strong>Error Handling</strong> - Comprehensive error logging and recovery</li>
+        <li><strong>Security Updates</strong> - Enhanced authentication and rate limiting</li>
+      </ul>
+
+      <div class="update-category fix">BUG FIXES</div>
+      <ul class="feature-list fixes">
+        <li><strong>Travel System</strong> - Fixed location synchronization issues</li>
+        <li><strong>Inventory Duplication</strong> - Resolved item duplication exploits</li>
+        <li><strong>Memory Leaks</strong> - Fixed various memory management issues</li>
+        <li><strong>Command Timeouts</strong> - Improved response time for all commands</li>
+      </ul>
+
+      <div class="technical-note">
+        <p><strong>🔧 Technical Note:</strong> Version 2.1.0 introduced the foundation for our real-time systems architecture. This release focused on stability and performance optimizations that enabled future feature development.</p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/updates" class="back-button">Back to Updates</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="shared/footer.js"></script>
+
+</body>
+</html>
