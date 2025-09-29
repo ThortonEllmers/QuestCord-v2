@@ -10,8 +10,8 @@ const config = require('./config');
 // Boss spawn configuration
 const BOSS_CONFIG = {
   SPAWN_INTERVAL: 2 * 60 * 60 * 1000, // 2 hours in milliseconds (check more frequently for single boss)
-  MAX_GLOBAL_BOSSES: 1, // Only 1 boss at a time globally
-  MAX_BOSSES_PER_CYCLE: 1, // Maximum bosses that can spawn in a single cycle
+  get MAX_GLOBAL_BOSSES() { return config.boss?.maxActiveGlobal || 1; }, // Configurable max active bosses globally
+  get MAX_BOSSES_PER_CYCLE() { return Math.min(this.MAX_GLOBAL_BOSSES, 3); }, // Maximum bosses that can spawn in a single cycle
   SPAWN_CHANCE: 1.0, // 100% chance to spawn when no boss is active
   NOTIFICATION_CHANNEL_ID: '1411045103921004554',
   BOSS_ROLE_ID: '1411051374153826386' // Correct boss notification role
@@ -46,7 +46,7 @@ function initializeBossSpawner() {
   try {
     console.log('[boss_spawner] Automatic boss spawning system initialized');
     console.log(`[boss_spawner] Config: ${BOSS_CONFIG.MAX_GLOBAL_BOSSES} max bosses globally, ${BOSS_CONFIG.MAX_BOSSES_PER_CYCLE} max per cycle, ${(BOSS_CONFIG.SPAWN_CHANCE * 100)}% spawn chance`);
-    console.log(`[boss_spawner] Timing: spawn cycles every 4-6 hours (base ${BOSS_CONFIG.SPAWN_INTERVAL / 1000 / 60 / 60} hours)`);
+    console.log(`[boss_spawner] Timing: Random 5-180 minute delays after defeat/expiry, checks every 30 seconds`);
     return true;
   } catch (error) {
     console.error('[boss_spawner] Failed to initialize boss spawner:', error.message);
@@ -104,6 +104,11 @@ async function cleanupExpiredBosses(client = null) {
       }
       
       console.log(`[boss_spawner] Cleaned up ${expiredBosses.length} expired bosses`);
+
+      // Schedule next boss spawn after expiry
+      if (expiredBosses.length > 0) {
+        scheduleNextBossSpawn();
+      }
     }
     
     // Additional database integrity check - clean up any orphaned participation records
@@ -353,11 +358,61 @@ async function notifyBossSpawn(bossData, client) {
 }
 
 /**
- * Get next spawn interval with randomization (1 hour)
+ * Get next spawn interval with randomization (5-180 minutes after boss defeat/expiry)
  */
 function getNextSpawnInterval() {
-  const hours = 1;
-  return hours * 60 * 60 * 1000; // Convert to milliseconds (1 hour)
+  try {
+    // Check if there's a scheduled next spawn time from a boss defeat/expiry
+    const scheduledSpawn = db.prepare(`
+      SELECT value FROM system_settings WHERE key = 'nextBossSpawn'
+    `).get();
+
+    if (scheduledSpawn) {
+      const nextSpawnTime = parseInt(scheduledSpawn.value);
+      const currentTime = Date.now();
+
+      if (nextSpawnTime > currentTime) {
+        // Return time until the scheduled spawn
+        return nextSpawnTime - currentTime;
+      } else {
+        // Scheduled time has passed, clear it and use default check interval
+        db.prepare(`DELETE FROM system_settings WHERE key = 'nextBossSpawn'`).run();
+      }
+    }
+
+    // Default to check every 30 seconds when no specific spawn is scheduled
+    return 30 * 1000; // 30 seconds
+  } catch (error) {
+    console.warn('[boss_spawner] Error getting next spawn interval:', error.message);
+    return 60 * 1000; // Fallback to 1 minute
+  }
+}
+
+/**
+ * Schedule next boss spawn with random 5-180 minute delay
+ */
+function scheduleNextBossSpawn() {
+  try {
+    // Random delay between 5 and 180 minutes
+    const minMinutes = 5;
+    const maxMinutes = 180;
+    const randomMinutes = Math.floor(Math.random() * (maxMinutes - minMinutes + 1)) + minMinutes;
+
+    const nextSpawnTime = Date.now() + (randomMinutes * 60 * 1000);
+
+    // Store the next spawn time in database
+    db.prepare(`
+      REPLACE INTO system_settings (key, value, updatedAt)
+      VALUES (?, ?, ?)
+    `).run('nextBossSpawn', nextSpawnTime.toString(), Date.now());
+
+    console.log(`[boss_spawner] Next boss spawn scheduled in ${randomMinutes} minutes (${new Date(nextSpawnTime).toLocaleTimeString()})`);
+
+    return nextSpawnTime;
+  } catch (error) {
+    console.error('[boss_spawner] Error scheduling next boss spawn:', error.message);
+    return null;
+  }
 }
 
 /**
@@ -615,5 +670,6 @@ module.exports = {
   getEligibleServersForBoss,
   recordBossDefeat,
   cleanupOrphanedBossFighterRoles,
-  getNextSpawnInterval
+  getNextSpawnInterval,
+  scheduleNextBossSpawn
 };
