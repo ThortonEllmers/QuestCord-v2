@@ -1,0 +1,497 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Privacy Policy - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+    
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+    
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 30px;
+      font-weight: 600;
+    }
+    
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 15px;
+    }
+
+    h3 {
+      color: var(--text-light);
+      font-weight: 500;
+      margin-top: 20px;
+    }
+    
+    ul {
+      padding-left: 20px;
+    }
+    
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+    
+    .last-updated {
+      font-style: italic;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 30px;
+    }
+    
+    .highlight {
+      background-color: rgba(88, 101, 242, 0.1);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      margin: 24px 0;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .crown-loader {
+      font-size: 4rem;
+      color: var(--primary);
+      animation: crownSpin 2s ease-in-out infinite;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 4px 16px rgba(88, 101, 242, 0.4));
+    }
+
+    .loading-text {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      animation: loadingPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes crownSpin {
+      0%, 100% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.1); }
+    }
+
+    @keyframes loadingPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Animated Title Styling */
+    .brand-title {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+      font-family: 'Inter', sans-serif;
+      gap: 12px;
+      overflow: visible;
+    }
+
+    .title-text {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -2px;
+      position: relative;
+      background: linear-gradient(135deg,
+          var(--primary) 0%,
+          var(--secondary) 25%,
+          #ffffff 50%,
+          var(--secondary) 75%,
+          var(--primary) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textWave 4s ease-in-out infinite;
+      filter: drop-shadow(0 4px 12px rgba(88, 101, 242, 0.2));
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .title-line-2 {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .title-text::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient);
+      border-radius: 1px;
+      transform: scaleX(1);
+      animation: underlineGrow 1.5s ease-out 0.5s forwards;
+    }
+
+    .title-badge {
+      position: absolute;
+      top: -12px;
+      right: -24px;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+      opacity: 0;
+      transform: scale(0.8) rotate(-10deg);
+      animation: badgeAppear 0.8s ease-out 1.2s forwards;
+    }
+
+    @keyframes textWave {
+      0%, 100% { background-position: 0% 50%; transform: translateY(0); }
+      25% { background-position: 50% 25%; transform: translateY(-2px); }
+      50% { background-position: 100% 50%; transform: translateY(0); }
+      75% { background-position: 50% 75%; transform: translateY(1px); }
+    }
+
+    @keyframes underlineGrow {
+      0% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+
+    @keyframes badgeAppear {
+      0% { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+      100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+    }
+
+    .title-text:hover {
+      transform: scale(1.02);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .title-text {
+        font-size: clamp(2rem, 8vw, 3rem);
+      }
+
+      .title-badge {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+        top: -8px;
+        right: -16px;
+      }
+    }
+
+    /* Professional Scroll Animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .scroll-animate.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section animations */
+    .brand-title {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .brand-title.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section headers */
+    h2 {
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    h2.animate-in {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Content paragraphs */
+    p, ul {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    p.animate-in, ul.animate-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="crown-loader">👑</div>
+    <div class="loading-text">Loading Privacy Policy...</div>
+  </div>
+
+  
+  <div class="container">
+    <div class="brand-title scroll-animate">
+      <div class="title-text">
+        <div>QuestCord</div>
+        <div class="title-line-2">Privacy Policy</div>
+      </div>
+      <div class="title-badge">Secure</div>
+    </div>
+    <p class="last-updated scroll-animate">Last updated: September 25, 2025</p>
+
+    <div class="highlight scroll-animate">
+      <p><strong>Quick Summary:</strong> We collect minimal information needed to provide our gaming service, primarily through Discord authentication. We don't sell your data and only use it to enhance your gaming experience.</p>
+    </div>
+    
+    <h2>1. Information We Collect</h2>
+    <p>When you use QuestCord, we may collect the following information:</p>
+    
+    <h3>Information from Discord</h3>
+    <ul>
+      <li>Discord user ID, username, and avatar</li>
+      <li>Server (guild) memberships where the bot is present</li>
+      <li>Basic profile information as provided by Discord's API</li>
+    </ul>
+    
+    <h3>Game Data</h3>
+    <ul>
+      <li>Player statistics (health, stamina, etc.)</li>
+      <li>Inventory items and game progress</li>
+      <li>Location and travel information within the game world</li>
+      <li>Game interactions and command usage</li>
+    </ul>
+    
+    <h3>Technical Information</h3>
+    <ul>
+      <li>IP addresses for security and analytical purposes</li>
+      <li>Browser information and device type</li>
+      <li>Usage patterns and interaction logs</li>
+    </ul>
+    
+    <h2>2. How We Use Your Information</h2>
+    <p>We use the collected information to:</p>
+    <ul>
+      <li>Provide and maintain the gaming service</li>
+      <li>Track your game progress and statistics</li>
+      <li>Enable multiplayer features and interactions</li>
+      <li>Improve the service and develop new features</li>
+      <li>Ensure security and prevent abuse</li>
+      <li>Communicate important updates about the service</li>
+    </ul>
+    
+    <h2>3. Information Sharing and Disclosure</h2>
+    <p>We do not sell, trade, or rent your personal information to third parties. We may share information only in the following circumstances:</p>
+    <ul>
+      <li><strong>With other players:</strong> Your username, avatar, and certain game statistics may be visible to other players as part of the gaming experience</li>
+      <li><strong>Legal compliance:</strong> If required by law, regulation, or legal process</li>
+      <li><strong>Service providers:</strong> With trusted third-party services that help us operate the platform (such as hosting services)</li>
+      <li><strong>Safety and security:</strong> To protect the rights, property, or safety of our users and service</li>
+    </ul>
+    
+    <h2>4. Data Storage and Security</h2>
+    <p>We implement appropriate security measures to protect your information against unauthorized access, alteration, disclosure, or destruction. However, no internet transmission is completely secure, and we cannot guarantee absolute security.</p>
+    
+    <h2>5. Data Retention</h2>
+    <p>We retain your information for as long as your account remains active or as needed to provide services. You may request deletion of your data by contacting us, though some information may be retained for legal or security purposes.</p>
+    
+    <h2>6. Discord Integration</h2>
+    <p>QuestCord integrates with Discord's services. Please review Discord's Privacy Policy to understand how Discord handles your information. Our access to your Discord data is limited to what you authorize through Discord's OAuth system.</p>
+    
+    <h2>7. Children's Privacy</h2>
+    <p>Our service is not directed to children under 13. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.</p>
+    
+    <h2>8. Your Rights and Choices</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access the personal information we have about you</li>
+      <li>Request correction of inaccurate information</li>
+      <li>Request deletion of your information (subject to legal limitations)</li>
+      <li>Withdraw consent for data processing where applicable</li>
+      <li>Revoke Discord authentication to stop new data collection</li>
+    </ul>
+    
+    <h2>9. International Data Transfers</h2>
+    <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information during such transfers.</p>
+    
+    <h2>10. Changes to This Privacy Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify users of significant changes through the service or other appropriate channels. Your continued use of the service constitutes acceptance of the updated policy.</p>
+    
+    <h2>11. Contact Us</h2>
+    <p>If you have questions about this Privacy Policy or how we handle your information, please contact us through:</p>
+    <ul>
+      <li>Our Discord server support channels</li>
+      <li>The feedback mechanisms provided in the application</li>
+    </ul>
+    
+    <div class="highlight">
+      <p><strong>Questions?</strong> We're committed to transparency about our data practices. Don't hesitate to reach out if you need clarification about how we handle your information.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/" class="back-button">Back to Home</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="shared/footer.js"></script>
+
+  <script>
+    // Loading screen controller
+    function hideLoadingScreen() {
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 500);
+      }
+    }
+
+    // Hide loading screen after content loads (match status page timing)
+    setTimeout(hideLoadingScreen, 1500);
+
+    // Professional scroll animations
+    function initAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      // Automatically add scroll-animate class to all relevant elements
+      document.querySelectorAll('h2, h3, p, ul, .highlight').forEach(element => {
+        element.classList.add('scroll-animate');
+        observer.observe(element);
+      });
+
+      // Also observe manually added elements
+      document.querySelectorAll('.scroll-animate').forEach(element => {
+        observer.observe(element);
+      });
+
+      // Add staggered delays for better animation flow
+      document.querySelectorAll('h2').forEach((heading, index) => {
+        heading.style.transitionDelay = `${index * 0.1}s`;
+      });
+
+      document.querySelectorAll('h3').forEach((heading, index) => {
+        heading.style.transitionDelay = `${index * 0.08}s`;
+      });
+
+      document.querySelectorAll('p, ul').forEach((element, index) => {
+        element.style.transitionDelay = `${index * 0.05}s`;
+      });
+    }
+
+    // Initialize animations when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      initAnimations();
+    });
+  </script>
+</body>
+</html>
