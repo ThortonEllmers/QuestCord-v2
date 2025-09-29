@@ -1,0 +1,44 @@
+{
+  "deployment": {
+    "source": {
+      "database": "data.sqlite",
+      "config": "config.json",
+      "env": ".env"
+    },
+    "target": {
+      "database": "data.sqlite",
+      "config": "config.json",
+      "env": ".env"
+    },
+    "backup": {
+      "enabled": true,
+      "directory": "backups",
+      "includeDatabase": true,
+      "includeConfig": true,
+      "keepBackups": 5
+    },
+    "validation": {
+      "checkDependencies": true,
+      "checkPorts": false
+    },
+    "migration": {
+      "migrateDatabase": false,
+      "preserveUserData": true,
+      "mergeConfigs": false
+    },
+    "rollback": {
+      "enabled": true,
+      "autoRollbackOnError": true
+    }
+  },
+  "production": {
+    "pm2": {
+      "enabled": false,
+      "appName": "questcord-production"
+    },
+    "restart": {
+      "enabled": true,
+      "gracefulTimeout": 30000
+    }
+  }
+}
