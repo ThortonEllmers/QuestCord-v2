@@ -553,8 +553,6 @@ module.exports = {
       });
     }
 
-    }
-
     travelEmbed
       .setFooter({
         text: `QuestCord • Safe travels and new discoveries await!`,
