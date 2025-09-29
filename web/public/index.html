@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestCord - Discord Quest Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #5865f2;
+            --primary-dark: #4752c4;
+            --secondary: #7c3aed;
+            --bg-dark: #0f0f23;
+            --bg-light: #1a1a2e;
+            --text-light: #ffffff;
+            --text-muted: #b9bbbe;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px 0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 120px 0 140px;
+            position: relative;
+        }
+
+        .brand-title {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 48px;
+            font-family: 'Inter', sans-serif;
+            gap: 12px;
+            overflow: visible;
+        }
+
+        .title-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: iconFloat 3s ease-in-out infinite, iconGlow 2s ease-in-out infinite alternate;
+            box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+        }
+
+        .title-icon::before {
+            content: '⚔';
+            font-size: 28px;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .title-text {
+            font-size: clamp(3.5rem, 7vw, 6rem);
+            font-weight: 700;
+            letter-spacing: -2px;
+            position: relative;
+            background: linear-gradient(135deg,
+                var(--primary) 0%,
+                var(--secondary) 25%,
+                #ffffff 50%,
+                var(--secondary) 75%,
+                var(--primary) 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textWave 4s ease-in-out infinite;
+            filter: drop-shadow(0 4px 12px rgba(88, 101, 242, 0.2));
+            line-height: 1.1;
+            text-align: center;
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            transition: font-size 0.3s ease;
+            min-height: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            padding: 20px 40px;
+            margin: -20px -40px;
+        }
+
+
+        .title-text::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient);
+            border-radius: 1px;
+            transform: scaleX(0);
+            animation: underlineGrow 1.5s ease-out 0.5s forwards;
+        }
+
+        .title-badge {
+            position: absolute;
+            top: -12px;
+            right: -24px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
+            opacity: 0;
+            transform: scale(0.8) rotate(-10deg);
+            animation: badgeAppear 0.8s ease-out 1.2s forwards;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-4px) rotate(-2deg); }
+            66% { transform: translateY(2px) rotate(2deg); }
+        }
+
+        @keyframes iconGlow {
+            0% { box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3); }
+            100% { box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5); }
+        }
+
+        @keyframes textWave {
+            0%, 100% { background-position: 0% 50%; transform: translateY(0); }
+            25% { background-position: 50% 25%; transform: translateY(-2px); }
+            50% { background-position: 100% 50%; transform: translateY(0); }
+            75% { background-position: 50% 75%; transform: translateY(1px); }
+        }
+
+        @keyframes underlineGrow {
+            0% { transform: scaleX(0); }
+            100% { transform: scaleX(1); }
+        }
+
+        @keyframes badgeAppear {
+            0% { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+        }
+
+        /* Hover effects */
+        .title-text {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .title-text:hover {
+            transform: scale(1.02);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .crown-loader {
+            font-size: 4rem;
+            color: var(--primary);
+            animation: crownSpin 2s ease-in-out infinite, crownGlow 1.5s ease-in-out infinite alternate;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 4px 16px rgba(88, 101, 242, 0.4));
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            animation: loadingPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes crownSpin {
+            0%, 100% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+
+        @keyframes crownGlow {
+            0% { filter: drop-shadow(0 4px 16px rgba(88, 101, 242, 0.4)); }
+            100% { filter: drop-shadow(0 8px 24px rgba(124, 58, 237, 0.6)); }
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Extra small mobile devices */
+        @media (max-width: 375px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .title-text {
+                font-size: clamp(2rem, 9vw, 2.8rem);
+            }
+        }
+
+        /* Mobile and Tablet Responsiveness */
+        @media (max-width: 768px) {
+            .title-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .title-icon::before {
+                font-size: 20px;
+            }
+
+            .title-text {
+                font-size: clamp(2.5rem, 8vw, 4rem);
+                letter-spacing: -1px;
+            }
+
+            .title-badge {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+                top: -8px;
+                right: -16px;
+            }
+
+            .hero {
+                padding: 80px 0 100px;
+            }
+
+            .brand-title {
+                margin-bottom: 32px;
+                gap: 8px;
+            }
+
+            .crown-loader {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title-text {
+                font-size: clamp(2rem, 10vw, 3rem);
+                letter-spacing: 0;
+            }
+
+            .title-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .title-icon::before {
+                font-size: 18px;
+            }
+
+            .hero {
+                padding: 60px 0 80px;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .crown-loader {
+                font-size: 2.5rem;
+            }
+
+            .loading-text {
+                font-size: 1rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .title-text {
+                font-size: clamp(4rem, 6vw, 5rem);
+            }
+
+            .title-icon {
+                width: 56px;
+                height: 56px;
+            }
+
+            .title-icon::before {
+                font-size: 24px;
+            }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 72px);
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 80px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-light);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 48px;
+            text-align: center;
+        }
+
+        .stat h3 {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat p {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(88, 101, 242, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* FAQ */
+        .faq {
+            padding: 120px 0;
+            background: var(--bg-light);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 24px;
+            background: var(--bg-dark);
+            cursor: pointer;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .faq-toggle {
+            margin-left: auto;
+            transition: transform 0.2s ease;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease;
+            background: var(--bg-light);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+            padding: 24px;
+        }
+
+        .faq-answer p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .faq-answer code {
+            background: var(--bg-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 60px 0 80px;
+            }
+
+            .cta-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            .stats {
+                gap: 32px;
+            }
+
+            .features {
+                padding: 80px 0;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .section-header h2 {
+                font-size: 36px;
+            }
+
+            .faq {
+                padding: 80px 0;
+            }
+        }
+
+        /* Live Events Section */
+        .live-events {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .event-widget {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        .event-widget[data-animate="right"] {
+            transform: translateX(50px);
+        }
+
+        .event-widget.animate-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .event-widget:hover {
+            border-color: rgba(88, 101, 242, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .widget-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .widget-header h3 {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Center all widget content */
+        .widget-content {
+            text-align: center;
+        }
+
+        /* Individual widget centering adjustments */
+        .weather-events,
+        .command-activity {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Boss Timer Styles */
+        .countdown-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .countdown-time {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .countdown-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .boss-info {
+            text-align: center;
+        }
+
+        .boss-name {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .boss-location {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Weather Widget Styles */
+        .weather-events {
+            space-y: 15px;
+        }
+
+        .weather-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .weather-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .weather-emoji {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .weather-name {
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .weather-server {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+
+        /* Command Activity Widget */
+        .command-activity {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-user {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .activity-details {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .activity-time {
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .server-count {
+            background: var(--gradient);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+
+        /* Professional Scroll Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes staggeredFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Base animation classes for all elements */
+        .scroll-animate {
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .scroll-animate.animate-in {
+            opacity: 1;
+        }
+
+        /* Section animations */
+        .section-header {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section-header.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Feature cards staggered animation */
+        .feature-card {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Event widgets professional staggered animation */
+        .event-widget {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .event-widget.animate-in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Staggered delays for professional loading */
+        .event-widget:nth-child(1).animate-in { transition-delay: 0s; }
+        .event-widget:nth-child(2).animate-in { transition-delay: 0.1s; }
+        .event-widget:nth-child(3).animate-in { transition-delay: 0.2s; }
+        .event-widget:nth-child(4).animate-in { transition-delay: 0.3s; }
+        .event-widget:nth-child(5).animate-in { transition-delay: 0.4s; }
+        .event-widget:nth-child(6).animate-in { transition-delay: 0.5s; }
+
+        /* Stats cards animation */
+        .stat-card {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* FAQ items animation */
+        .faq-item {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-item.animate-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Loading optimizations */
+        .hero, .features, .faq {
+            will-change: transform;
+        }
+
+        img {
+            loading: lazy;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="crown-loader">👑</div>
+        <div class="loading-text">Loading QuestCord...</div>
+    </div>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="brand-title">
+                    <div class="title-text">QuestCord</div>
+                    <div class="title-badge">Beta</div>
+                </div>
+                <h1>Your Discord Adventure Awaits</h1>
+                <p>Transform your Discord server into an epic quest destination where members can travel, trade, and battle their way to glory.</p>
+
+                <div class="cta-group">
+                    <a href="https://discord.com/oauth2/authorize?client_id=1403949996868374558&permissions=2147863552&integration_type=0&scope=bot+applications.commands" class="btn btn-primary">
+                        <span class="btn-icon">🤖</span>
+                        Add to Discord
+                    </a>
+                    <a href="https://discord.gg/ACGKvKkZ5Z" class="btn btn-secondary">
+                        <span class="btn-icon">👥</span>
+                        Join Community
+                    </a>
+                </div>
+
+                <div class="stats">
+                    <div class="stat scroll-animate">
+                        <h3 id="home-servers">...</h3>
+                        <p>Active Servers</p>
+                    </div>
+                    <div class="stat scroll-animate">
+                        <h3 id="home-users">...</h3>
+                        <p>Happy Users</p>
+                    </div>
+                    <div class="stat scroll-animate">
+                        <h3 id="home-travels">...</h3>
+                        <p>Total Adventures</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-header scroll-animate">
+                    <h2>Everything you need for epic adventures</h2>
+                    <p>QuestCord brings RPG mechanics to Discord with travel, combat, and trading systems that keep your community engaged.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card scroll-animate">
+                        <div class="feature-icon">
+                            🌍
+                        </div>
+                        <h3>World Travel</h3>
+                        <p>Explore a vast world by traveling between Discord servers. Each destination offers unique biomes, resources, and challenges to discover.</p>
+                    </div>
+
+                    <div class="feature-card scroll-animate">
+                        <div class="feature-icon">
+                            💰
+                        </div>
+                        <h3>Dynamic Economy</h3>
+                        <p>Trade items with other players through our global marketplace. Buy, sell, and collect rare items to build your wealth and power.</p>
+                    </div>
+
+                    <div class="feature-card scroll-animate">
+                        <div class="feature-icon">
+                            🐉
+                        </div>
+                        <h3>Epic Boss Battles</h3>
+                        <p>Team up with your server to take down massive world bosses. Coordinate attacks and earn exclusive rewards for victory.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="live-events">
+            <div class="container">
+                <div class="section-header scroll-animate">
+                    <h2>Live game events</h2>
+                    <p>Stay updated with real-time boss spawns and weather events happening across all servers right now.</p>
+                </div>
+
+                <div class="events-grid">
+                    <div class="event-widget boss-timer scroll-animate">
+                        <div class="widget-header">
+                            <div class="widget-icon">🐉</div>
+                            <h3>World Boss Status</h3>
+                        </div>
+                        <div class="widget-content">
+                            <div class="countdown-display">
+                                <div class="countdown-time" id="boss-countdown">Loading...</div>
+                                <div class="countdown-label">Until next spawn</div>
+                            </div>
+                            <div class="boss-info">
+                                <div class="boss-name" id="next-boss">Ancient Dragon</div>
+                                <div class="boss-location" id="boss-location">Mystic Realms</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="event-widget weather-widget scroll-animate">
+                        <div class="widget-header">
+                            <div class="widget-icon">🌩️</div>
+                            <h3>Active Weather</h3>
+                        </div>
+                        <div class="widget-content">
+                            <div class="weather-events" id="weather-events">
+                                <div class="weather-item">
+                                    <span class="weather-emoji">⛈️</span>
+                                    <div class="weather-info">
+                                        <div class="weather-name">Thunderstorm</div>
+                                        <div class="weather-server">Storm Valley</div>
+                                    </div>
+                                </div>
+                                <div class="weather-item">
+                                    <span class="weather-emoji">❄️</span>
+                                    <div class="weather-info">
+                                        <div class="weather-name">Blizzard</div>
+                                        <div class="weather-server">Frozen Peaks</div>
+                                    </div>
+                                </div>
+                                <div class="weather-item">
+                                    <span class="weather-emoji">🔥</span>
+                                    <div class="weather-info">
+                                        <div class="weather-name">Heat Wave</div>
+                                        <div class="weather-server">Desert Sands</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="event-widget activity-widget scroll-animate">
+                        <div class="widget-header">
+                            <div class="widget-icon">⚡</div>
+                            <h3>Live Activity</h3>
+                        </div>
+                        <div class="widget-content">
+                            <div class="command-activity" id="command-activity">
+                                <div class="activity-item">
+                                    <div class="activity-info">
+                                        <div class="activity-user">Loading...</div>
+                                        <div class="activity-details">...</div>
+                                    </div>
+                                    <div class="activity-time">...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="faq" id="faq">
+            <div class="container">
+                <div class="section-header scroll-animate">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Everything you need to know about getting started with QuestCord</p>
+                </div>
+
+                <div class="faq-container">
+                    <div class="faq-item scroll-animate">
+                        <div class="faq-question">
+                            <span>How do I get started with QuestCord?</span>
+                            <span class="faq-toggle">▼</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Simply click "Add to Discord" above to invite QuestCord to your server, then use <code>/help</code> to see all available commands. The bot will guide you through your first adventure!</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-animate">
+                        <div class="faq-question">
+                            <span>What commands does QuestCord have?</span>
+                            <span class="faq-toggle">▼</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Key commands include:</p>
+                            <ul>
+                                <li><code>/travel</code> - Explore and move between Discord servers</li>
+                                <li><code>/inventory</code> - Manage your items and equipment</li>
+                                <li><code>/market</code> - Trade items with other players</li>
+                                <li><code>/boss</code> - Engage in epic boss battles</li>
+                                <li><code>/stats</code> - Check your health, stamina, and progress</li>
+                                <li><code>/help</code> - View all available commands by category</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-animate">
+                        <div class="faq-question">
+                            <span>Is QuestCord free to use?</span>
+                            <span class="faq-toggle">▼</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes! QuestCord is completely free with all core features available. We also offer optional premium features for enhanced customization and exclusive content.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-animate">
+                        <div class="faq-question">
+                            <span>How do I get support or report bugs?</span>
+                            <span class="faq-toggle">▼</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Join our support Discord using the "Join Community" button above and create a ticket. Our team responds quickly to help resolve any issues.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- QuestCord Standalone Footer -->
+    <div id="footer-container"></div>
+    <script src="shared/footer.js"></script>
+
+    <script>
+        // Real-time stats loading - real data only
+        async function loadStats() {
+            try {
+                // Only load stats when on a proper server
+                if (location.protocol === 'file:') {
+                    // Don't show fake data for local viewing
+                    document.getElementById('home-servers').textContent = '...';
+                    document.getElementById('home-users').textContent = '...';
+                    document.getElementById('home-travels').textContent = '...';
+                    return;
+                }
+
+                const response = await fetch('/api/realtime/bot-stats');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+
+                // Only show real data - no fake numbers
+                document.getElementById('home-servers').textContent =
+                    data.statistics.servers?.toLocaleString() || '...';
+                document.getElementById('home-users').textContent =
+                    data.statistics.users >= 1000 ?
+                        Math.round(data.statistics.users / 1000) + 'K+' :
+                        data.statistics.users?.toLocaleString() + '+' || '...';
+                document.getElementById('home-travels').textContent =
+                    data.statistics.totalTravels >= 1000 ?
+                        Math.round(data.statistics.totalTravels / 1000) + 'K+' :
+                        data.statistics.totalTravels?.toLocaleString() + '+' || '...';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                // Show loading indicators instead of fake data
+                document.getElementById('home-servers').textContent = '...';
+                document.getElementById('home-users').textContent = '...';
+                document.getElementById('home-travels').textContent = '...';
+            }
+        }
+
+        // FAQ functionality
+        function initFAQ() {
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+
+                    // Close all items
+                    document.querySelectorAll('.faq-item').forEach(faq =>
+                        faq.classList.remove('active'));
+
+                    // Open clicked item if it wasn't active
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Loading screen controller
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+                // Remove from DOM after transition
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }
+        }
+
+        // Hide loading screen immediately when page loads
+        window.addEventListener('load', () => {
+            hideLoadingScreen();
+        });
+
+        // Fallback - hide loading screen after 1.5 seconds to match status page
+        setTimeout(() => {
+            hideLoadingScreen();
+        }, 1500);
+
+        // Real-time boss countdown functionality
+        async function loadBossCountdown() {
+            try {
+                // Skip API calls for local file viewing
+                if (location.protocol === 'file:') {
+                    document.getElementById('boss-countdown').textContent = '...';
+                    document.getElementById('next-boss').textContent = 'Loading...';
+                    document.getElementById('boss-location').textContent = 'Loading...';
+                    return;
+                }
+
+                const response = await fetch('/api/boss-timer');
+                if (!response.ok) throw new Error('Failed to fetch boss data');
+
+                const data = await response.json();
+
+                if (data.status === 'active' && data.boss) {
+                    // Show current active boss
+                    document.getElementById('next-boss').textContent = data.boss.name || 'Unknown Boss';
+                    document.getElementById('boss-location').textContent = data.boss.serverName || 'Unknown Server';
+
+                    // Update countdown label to show active boss time remaining
+                    const countdownLabel = document.querySelector('.countdown-label');
+                    if (countdownLabel) countdownLabel.textContent = 'Time remaining';
+
+                    // Start countdown with active boss expiry time
+                    const expiryTime = Date.now() + data.boss.timeRemaining.total;
+
+                    function updateCountdown() {
+                        const now = Date.now();
+                        const timeLeft = expiryTime - now;
+
+                        if (timeLeft <= 0) {
+                            document.getElementById('boss-countdown').textContent = 'Boss defeated!';
+                            // Refresh boss data when boss expires
+                            setTimeout(() => loadBossCountdown(), 5000);
+                            return;
+                        }
+
+                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                        if (hours > 0) {
+                            document.getElementById('boss-countdown').textContent = `${hours}h ${minutes}m`;
+                        } else if (minutes > 0) {
+                            document.getElementById('boss-countdown').textContent = `${minutes}m ${seconds}s`;
+                        } else {
+                            document.getElementById('boss-countdown').textContent = `${seconds}s`;
+                        }
+                    }
+
+                    updateCountdown();
+                    const countdownInterval = setInterval(updateCountdown, 1000);
+
+                } else if (data.status === 'waiting' && data.nextSpawn) {
+                    // Show next boss spawn info
+                    document.getElementById('next-boss').textContent = 'Next Boss';
+                    document.getElementById('boss-location').textContent = 'Random Server';
+
+                    // Update countdown label to show next spawn
+                    const countdownLabel = document.querySelector('.countdown-label');
+                    if (countdownLabel) countdownLabel.textContent = 'Until next spawn';
+
+                    // Start countdown with next spawn time
+                    const nextSpawnTime = data.nextSpawn.time;
+
+                    function updateCountdown() {
+                        const now = Date.now();
+                        const timeLeft = nextSpawnTime - now;
+
+                        if (timeLeft <= 0) {
+                            document.getElementById('boss-countdown').textContent = 'Spawning now!';
+                            // Refresh boss data when spawn time is reached
+                            setTimeout(() => loadBossCountdown(), 5000);
+                            return;
+                        }
+
+                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                        if (hours > 0) {
+                            document.getElementById('boss-countdown').textContent = `${hours}h ${minutes}m`;
+                        } else if (minutes > 0) {
+                            document.getElementById('boss-countdown').textContent = `${minutes}m ${seconds}s`;
+                        } else {
+                            document.getElementById('boss-countdown').textContent = `${seconds}s`;
+                        }
+                    }
+
+                    updateCountdown();
+                    const countdownInterval = setInterval(updateCountdown, 1000);
+                } else {
+                    // Fallback for unexpected data structure
+                    document.getElementById('boss-countdown').textContent = 'No data';
+                    document.getElementById('next-boss').textContent = 'No Boss';
+                    document.getElementById('boss-location').textContent = 'N/A';
+                }
+
+            } catch (error) {
+                console.error('Failed to load boss data:', error);
+                document.getElementById('boss-countdown').textContent = '...';
+                document.getElementById('next-boss').textContent = '...';
+                document.getElementById('boss-location').textContent = '...';
+            }
+        }
+
+        // Real-time weather data functionality
+        async function loadWeatherData() {
+            try {
+                // Skip API calls for local file viewing
+                if (location.protocol === 'file:') {
+                    document.getElementById('weather-events').innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">Loading weather data...</div></div></div>';
+                    return;
+                }
+
+                const response = await fetch('/api/weather-events');
+                if (!response.ok) throw new Error('Failed to fetch weather data');
+
+                const data = await response.json();
+
+                const weatherContainer = document.getElementById('weather-events');
+
+                if (data.events && data.events.length > 0) {
+                    weatherContainer.innerHTML = data.events.map(weather => `
+                        <div class="weather-item">
+                            <span class="weather-emoji">${weather.icon || '🌤️'}</span>
+                            <div class="weather-info">
+                                <div class="weather-name">${weather.name}</div>
+                                <div class="weather-server">${weather.region} - ${weather.serverName}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    weatherContainer.innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">No active weather events</div></div></div>';
+                }
+
+            } catch (error) {
+                console.error('Failed to load weather data:', error);
+                document.getElementById('weather-events').innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">...</div></div></div>';
+            }
+        }
+
+        // Real-time travel routes data functionality
+        async function loadTravelRoutes() {
+            try {
+                if (location.protocol === 'file:') {
+                    document.getElementById('travel-routes').innerHTML = '<div class="route-item"><div class="route-path"><span class="route-from">Loading...</span></div></div>';
+                    return;
+                }
+
+                const response = await fetch('/api/travel-routes');
+                if (!response.ok) throw new Error('Failed to fetch travel routes');
+
+                const data = await response.json();
+                const routesContainer = document.getElementById('travel-routes');
+
+                if (data.routes && data.routes.length > 0) {
+                    routesContainer.innerHTML = data.routes.map(route => `
+                        <div class="route-item">
+                            <div class="route-path">
+                                <span class="route-from">${route.fromName}</span>
+                                <span class="route-arrow">→</span>
+                                <span class="route-to">${route.toName}</span>
+                            </div>
+                            <div class="route-count">${route.travelCount}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    routesContainer.innerHTML = '<div class="route-item"><div class="route-path"><span class="route-from">No recent travel</span></div></div>';
+                }
+
+            } catch (error) {
+                console.error('Failed to load travel routes:', error);
+                document.getElementById('travel-routes').innerHTML = '<div class="route-item"><div class="route-path"><span class="route-from">...</span></div></div>';
+            }
+        }
+
+        // Real-time market trends data functionality
+        async function loadMarketTrends() {
+            try {
+                if (location.protocol === 'file:') {
+                    document.getElementById('market-trends').innerHTML = '<div class="trend-item"><div class="trend-info"><div class="trend-name">Loading...</div></div></div>';
+                    return;
+                }
+
+                const response = await fetch('/api/market-trends');
+                if (!response.ok) throw new Error('Failed to fetch market trends');
+
+                const data = await response.json();
+                const trendsContainer = document.getElementById('market-trends');
+
+                if (data.trends && data.trends.length > 0) {
+                    trendsContainer.innerHTML = data.trends.map(trend => `
+                        <div class="trend-item">
+                            <div class="trend-info">
+                                <div class="trend-name">${trend.name}</div>
+                                <div class="trend-price">${trend.currentPrice}💰</div>
+                            </div>
+                            <div class="trend-change ${trend.trend}">
+                                ${trend.priceChange > 0 ? '+' : ''}${trend.priceChange}%
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    trendsContainer.innerHTML = '<div class="trend-item"><div class="trend-info"><div class="trend-name">No market data</div></div></div>';
+                }
+
+            } catch (error) {
+                console.error('Failed to load market trends:', error);
+                document.getElementById('market-trends').innerHTML = '<div class="trend-item"><div class="trend-info"><div class="trend-name">...</div></div></div>';
+            }
+        }
+
+        // Real-time command activity data functionality
+        async function loadCommandActivity() {
+            try {
+                if (location.protocol === 'file:') {
+                    document.getElementById('command-activity').innerHTML = '<div class="activity-item"><div class="activity-info"><div class="activity-user">Loading...</div><div class="activity-details">...</div></div><div class="activity-time">...</div></div>';
+                    return;
+                }
+
+                const response = await fetch('/api/command-activity');
+                if (!response.ok) throw new Error('Failed to fetch command activity');
+
+                const data = await response.json();
+                const activityContainer = document.getElementById('command-activity');
+
+                if (data.activities && data.activities.length > 0) {
+                    activityContainer.innerHTML = data.activities.map(activity => `
+                        <div class="activity-item">
+                            <div class="activity-info">
+                                <div class="activity-user">${activity.username}</div>
+                                <div class="activity-details">ran /${activity.command} in ${activity.server}</div>
+                            </div>
+                            <div class="activity-time">${activity.timeAgo}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    activityContainer.innerHTML = '<div class="activity-item"><div class="activity-info"><div class="activity-user">No recent activity</div><div class="activity-details">Commands will appear here</div></div></div>';
+                }
+
+            } catch (error) {
+                console.error('Failed to load command activity:', error);
+                document.getElementById('command-activity').innerHTML = '<div class="activity-item"><div class="activity-info"><div class="activity-user">...</div><div class="activity-details">...</div></div><div class="activity-time">...</div></div>';
+            }
+        }
+
+        // Professional Intersection Observer for all scroll animations
+        function initAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        // Add staggered delay for groups of elements
+                        const delay = index * 50; // 50ms between each element
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-in');
+                        }, delay);
+                    }
+                });
+            }, {
+                threshold: 0.15,
+                rootMargin: '0px 0px -100px 0px'
+            });
+
+            // Observe all elements with scroll-animate class
+            document.querySelectorAll('.scroll-animate').forEach(element => {
+                observer.observe(element);
+            });
+
+            // Add specific staggered delays for feature cards and FAQ items
+            document.querySelectorAll('.feature-card').forEach((card, index) => {
+                card.style.transitionDelay = `${index * 0.1}s`;
+            });
+
+            document.querySelectorAll('.faq-item').forEach((item, index) => {
+                item.style.transitionDelay = `${index * 0.1}s`;
+            });
+
+            document.querySelectorAll('.stat').forEach((stat, index) => {
+                stat.style.transitionDelay = `${index * 0.15}s`;
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                loadStats();
+                initFAQ();
+                loadBossCountdown();
+                loadWeatherData();
+                loadCommandActivity();
+                initAnimations();
+
+                // Only set up auto-refresh when on a server (not local file)
+                if (location.protocol !== 'file:') {
+                    // Auto-refresh stats every 5 minutes
+                    setInterval(loadStats, 300000);
+                    // Refresh boss data every 5 minutes (in case of updates)
+                    setInterval(loadBossCountdown, 300000);
+                    // Refresh weather data every 30 seconds
+                    setInterval(loadWeatherData, 30000);
+                    // Refresh command activity every 15 seconds for live updates
+                    setInterval(loadCommandActivity, 15000);
+                }
+            } catch (error) {
+                console.error('Error initializing:', error);
+                // Still hide loading screen even if there's an error
+                hideLoadingScreen();
+            }
+
+            // Happy messages for title hover
+            const happyMessages = [
+                "You're Amazing!",
+                "Keep Shining!",
+                "You've Got This!",
+                "Spread Joy Today!",
+                "Be Awesome!",
+                "You Matter!",
+                "Stay Wonderful!",
+                "Dream Big!",
+                "You're Incredible!",
+                "Make Magic Happen!",
+                "Believe In Yourself!",
+                "You're Unstoppable!",
+                "Radiate Positivity!",
+                "You're Phenomenal!",
+                "Chase Your Dreams!",
+                "Scarlett Sees Solutions!",
+                "Scarlett Makes Ideas Real!",
+                "Scarlett Does Impossible!",
+                "Scarlett Shapes Tomorrow!",
+                "Scarlett Is Awesome!",
+                "Epic Quest Awaits!",
+                "Level Up Today!",
+                "You're Boss-Tier!",
+                "Adventure Calling!",
+                "Slay The Day!",
+                "Quest Complete!",
+                "Legendary Status!",
+                "Power Level: MAX!",
+                "Achievement Unlocked!",
+                "Critical Hit!",
+                "Victory Royale!",
+                "Infinite Potential!",
+                "Born To Quest!",
+                "Next Level Human!",
+                "Main Character Energy!",
+                "Plot Armor Activated!",
+                "Respawn Point Secured!",
+                "Loot Drop Incoming!",
+                "Double XP Weekend!",
+                "Rare Drop Rate!",
+                "Boss Fight Ready!",
+                "Speedrun Mode ON!",
+                "Combo Multiplier x99!",
+                "Secret Area Found!",
+                "Cheat Codes Enabled!",
+                "God Mode: Active!",
+                "Infinite Lives!",
+                "Perfect Score!",
+                "High Score Beat!",
+                "Final Boss Defeated!",
+                "New Record Set!",
+                "Legendary Weapon!",
+                "Epic Mount Unlocked!",
+                "Hidden Treasure!",
+                "Portal Discovered!",
+                "Time Bonus!",
+                "Skill Tree Maxed!",
+                "Prestige Mode!",
+                "World First!",
+                "Raid Leader!",
+                "Guild Master!",
+                "Pro Gamer Status!",
+                "Streamer Mode!",
+                "Viewers: Infinite!",
+                "Subscriber Milestone!",
+                "Viral Content!",
+                "Trending Topic!",
+                "Internet Famous!",
+                "Meme Lord Status!",
+                "Comedy Gold!",
+                "Laugh Track Ready!",
+                "Standing Ovation!",
+                "Encore Performance!",
+                "Five Star Review!",
+                "Critics' Choice!",
+                "Bestseller List!",
+                "Award Winner!",
+                "Hall of Fame!",
+                "Record Breaker!",
+                "Trendsetter Alert!",
+                "Innovation Champion!",
+                "Problem Solver!",
+                "Creative Genius!",
+                "Master Craftsperson!",
+                "Skill Unlocked!",
+                "Talent Discovered!",
+                "Hidden Ability!",
+                "Super Power!",
+                "Magic Spell Cast!",
+                "Potion Brewed!",
+                "Enchantment Applied!",
+                "Blessing Received!",
+                "Lucky Charm Active!",
+                "Fortune Favors You!",
+                "Destiny Awaits!",
+                "Prophecy Fulfilled!",
+                "Chosen One Status!",
+                "Hero's Journey!",
+                "Quest Giver!",
+                "NPC Respect +100!",
+                "Faction Leader!",
+                "Alliance Formed!",
+                "Peace Treaty Signed!",
+                "Diplomatic Victory!",
+                "Trade Route Opened!",
+                "Economic Boom!",
+                "Resource Abundant!",
+                "Technology Advanced!",
+                "Research Complete!",
+                "Discovery Made!",
+                "Exploration Bonus!",
+                "Uncharted Territory!",
+                "New Continent!",
+                "First Contact!",
+                "Alien Technology!",
+                "Time Travel Unlocked!",
+                "Parallel Universe!",
+                "Dimension Portal!",
+                "Reality Hacker!",
+                "Matrix Glitch!",
+                "Simulation Breaker!",
+                "Code Cracker!",
+                "System Administrator!",
+                "Root Access Granted!",
+                "Firewall Bypassed!",
+                "Data Miner!",
+                "Cloud: Unlimited!",
+                "Bandwidth: Infinite!",
+                "Connection: Quantum!",
+                "Processing Power: MAX!",
+                "Memory: Upgraded!",
+                "AI Intelligence!",
+                "Learning: Machine!",
+                "Pattern Recognition!",
+                "Algorithm Optimized!",
+                "Big Data Mastery!",
+                "Analytics Guru!",
+                "Insights Unlocked!",
+                "Predictions Accurate!",
+                "Future Secured!",
+                "Timeline Stable!",
+                "Paradox Avoided!",
+                "Butterfly Effect!",
+                "Chaos Theory Master!",
+                "Order From Chaos!",
+                "Balance Restored!",
+                "Harmony Achieved!",
+                "Symphony Conducted!",
+                "Masterpiece Created!",
+                "Renaissance Spirit!",
+                "Cultural Icon!",
+                "Zeitgeist Captured!",
+                "Moment Immortalized!",
+                "Legacy Established!",
+                "History Made!",
+                "Legend Born!",
+                "Myth Status!",
+                "Folklore Hero!",
+                "Tale Worth Telling!",
+                "Story Legendary!",
+                "Chapter Closed!",
+                "New Page Turned!",
+                "Plot Twist Master!",
+                "Character Development!",
+                "Arc Complete!",
+                "Season Finale!",
+                "Cliffhanger Resolved!",
+                "Mystery Solved!",
+                "Case Closed!",
+                "Evidence Found!",
+                "Truth Revealed!",
+                "Justice Served!",
+                "Verdict: Awesome!",
+                "Court Adjourned!",
+                "Freedom Declared!",
+                "Rights Protected!",
+                "Constitution Upheld!",
+                "Democracy Wins!",
+                "Voice Heard!",
+                "Message Received!",
+                "Signal Transmitted!",
+                "Comms Established!",
+                "Network Connected!",
+                "Server Online!",
+                "Database Updated!",
+                "Backup Secured!",
+                "Recovery Complete!",
+                "System Restored!",
+                "Performance Optimized!",
+                "Speed Increased!",
+                "Efficiency Maximized!",
+                "Productivity Boosted!",
+                "Goals Achieved!",
+                "Targets Exceeded!",
+                "Expectations Beat!",
+                "Standards Raised!",
+                "Bar Set Higher!",
+                "Limits Transcended!",
+                "Boundaries Crossed!",
+                "Comfort Zone Left!",
+                "Adventure Begun!",
+                "Journey Started!",
+                "Path Chosen!",
+                "Direction Clear!",
+                "Destination Known!",
+                "Route Mapped!",
+                "GPS Updated!",
+                "Navigation Ready!",
+                "Compass Calibrated!",
+                "True North Found!",
+                "Magnetic Personality!",
+                "Attractive Force!",
+                "Gravitational Pull!",
+                "Orbital Mechanics!",
+                "Planetary Alignment!",
+                "Cosmic Significance!",
+                "Universal Constant!",
+                "Quantum Entangled!",
+                "Wave Collapsed!",
+                "Cat: Alive!",
+                "No Limits!",
+                "Progress Over Perfect!",
+                "Stars Shine In Darkness!",
+                "Be Uniquely You!",
+                "You Are Brave!",
+                "Fall Seven Rise Eight!",
+                "Your Potential Is Endless!",
+                "Champions Train Daily!",
+                "Be The Change!",
+                "Every Expert Started!",
+                "Courage Conquers Fear!",
+                "Your Dreams Are Valid!",
+                "Mistakes Prove Progress!",
+                "Growth Beats Comfort!",
+                "You Were Born To Shine!",
+                "Persistence Beats Everything!",
+                "Your Story Continues!"
+            ];
+
+            let originalText = 'QuestCord';
+            let isHovering = false;
+            let currentMessage = originalText;
+
+            // Function to get a new random message
+            function getRandomMessage() {
+                let randomMessage;
+                do {
+                    randomMessage = happyMessages[Math.floor(Math.random() * happyMessages.length)];
+                } while (randomMessage === currentMessage && happyMessages.length > 1);
+                return randomMessage;
+            }
+
+            // Function to adjust font size based on text length for consistency
+            function adjustFontSize(element, text) {
+                // Reset to default
+                element.style.fontSize = '';
+
+                // If text is longer than 25 characters, make it slightly smaller
+                if (text.length > 25) {
+                    const currentSize = window.getComputedStyle(element).fontSize;
+                    const sizeValue = parseFloat(currentSize);
+                    const newSize = sizeValue * 0.9; // 10% smaller
+                    element.style.fontSize = newSize + 'px';
+                }
+            }
+
+            // Simple function to display text instantly
+            function displayText(element, text) {
+                element.textContent = text;
+                adjustFontSize(element, text);
+                isAnimating = false; // No animation, so immediately not animating
+            }
+
+            // Title hover and click functionality with debouncing
+            try {
+                const titleText = document.querySelector('.title-text');
+                let isAnimating = false;
+                let lastQuoteTime = 0;
+                const QUOTE_COOLDOWN = 300; // 300ms minimum between quotes
+
+                if (titleText) {
+                titleText.addEventListener('mouseenter', () => {
+                    const now = Date.now();
+
+                    // Only start if not already hovering AND enough time has passed
+                    if (!isHovering && (now - lastQuoteTime > QUOTE_COOLDOWN || lastQuoteTime === 0)) {
+                        isHovering = true;
+                        lastQuoteTime = now;
+                        currentMessage = getRandomMessage();
+                        displayText(titleText, currentMessage);
+                    }
+                });
+
+                titleText.addEventListener('mouseleave', () => {
+                    // Quick check to ensure mouse really left
+                    setTimeout(() => {
+                        if (!titleText.matches(':hover')) {
+                            isHovering = false;
+                            currentMessage = originalText;
+                            titleText.textContent = originalText;
+                            titleText.style.fontSize = ''; // Reset to default size
+                        }
+                    }, 50); // Much faster response
+                });
+
+                titleText.addEventListener('click', () => {
+                    const now = Date.now();
+
+                    if (isHovering && (now - lastQuoteTime > 200)) {
+                        lastQuoteTime = now;
+                        currentMessage = getRandomMessage();
+                        displayText(titleText, currentMessage);
+                    }
+                });
+                }
+            } catch (error) {
+                console.error('Error setting up title hover:', error);
+            }
+        });
+    </script>
+</body>
+</html>
