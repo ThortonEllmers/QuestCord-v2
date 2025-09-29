@@ -11,12 +11,6 @@ yarn-error.log*
 .env.test
 .env.production
 
-# Database files
-*.sqlite
-*.sqlite-journal
-*.sqlite-wal
-*.sqlite-shm
-data.sqlite.*
 
 # Logs
 logs/
