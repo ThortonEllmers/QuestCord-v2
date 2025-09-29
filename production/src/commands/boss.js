@@ -6,7 +6,6 @@ const { isBanned, regenStamina } = require('./_guard');
 const logger = require('../utils/logger');
 const { itemById, rarityMult, pickLootByTier } = require('../utils/items');
 const { awardBossParticipationGems } = require('../utils/gems');
-const { checkBossAchievements } = require('../utils/achievements');
 
 const BOSS_FIGHTER_ROLE_ID = '1411043105830076497';
 const BOSS_NOTIFICATION_CHANNEL_ID = '1411045103921004554';
@@ -690,12 +689,6 @@ module.exports = {
           // Remove boss fighter role from participants
           await removeBossFighterRole(interaction.client, part.userId, location);
           
-          // Check boss achievements for each participant
-          try {
-            checkBossAchievements(part.userId);
-          } catch (e) {
-            console.warn('[boss] Failed to check achievements for user:', part.userId, e.message);
-          }
         }
         
         // Clean up boss fighter roles for all participants BEFORE deleting participation records
