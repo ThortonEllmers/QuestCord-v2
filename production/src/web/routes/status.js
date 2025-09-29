@@ -80,24 +80,6 @@ const healthChecks = {
     }
   },
 
-  async weatherSystem() {
-    const startTime = Date.now();
-    try {
-      const activeWeather = db.prepare('SELECT COUNT(*) as count FROM weather_events WHERE endTime > ?').get(Date.now());
-      const responseTime = Date.now() - startTime;
-      return {
-        status: 'healthy',
-        responseTime: responseTime,
-        details: `${activeWeather.count} active weather events`
-      };
-    } catch (error) {
-      return {
-        status: 'degraded',
-        responseTime: Date.now() - startTime,
-        details: error.message
-      };
-    }
-  },
 
   async bossSystem() {
     const startTime = Date.now();
@@ -167,7 +149,6 @@ router.get('/health', async (req, res) => {
 router.get('/api/health', async (req, res) => {
   const apiEndpoints = [
     { name: 'CSRF Token', endpoint: '/api/csrf' },
-    { name: 'Weather Data', endpoint: '/api/weather' },
     { name: 'User Data', endpoint: '/api/me' },
     { name: 'Server Map', endpoint: '/api/map/servers' },
     { name: 'Boss Data', endpoint: '/api/bosses' },
@@ -176,7 +157,6 @@ router.get('/api/health', async (req, res) => {
     { name: 'User Profile', endpoint: '/api/whoami' },
     { name: 'Server Data', endpoint: '/api/server/:guildId' },
     { name: 'Map Visitors', endpoint: '/api/map/visitors' },
-    { name: 'Weather Route', endpoint: '/api/weather/route' },
     { name: 'Admin Stats', endpoint: '/api/admin/stats' },
     { name: 'Admin User Lookup', endpoint: '/api/admin/user/lookup/:userId' },
     { name: 'Admin Server Lookup', endpoint: '/api/admin/server/lookup/:guildId' },
@@ -201,9 +181,6 @@ router.get('/api/health', async (req, res) => {
       if (api.endpoint === '/api/analytics') {
         const playerCount = db.prepare('SELECT COUNT(*) as count FROM players').get();
         details = `${playerCount.count} players tracked`;
-      } else if (api.endpoint === '/api/weather') {
-        const weatherCount = db.prepare('SELECT COUNT(*) as count FROM weather_events WHERE endTime > ?').get(Date.now());
-        details = `${weatherCount.count} active weather events`;
       } else if (api.endpoint === '/api/map/servers') {
         const serverCount = db.prepare('SELECT COUNT(*) as count FROM servers WHERE archived = 0').get();
         details = `${serverCount.count} active servers`;
