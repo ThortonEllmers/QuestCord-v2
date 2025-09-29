@@ -9,7 +9,6 @@ const GEM_RATES = {
   MARKET_TRADING_PER_1K: 1, // 1 gem per 1000 drakari traded
   SERVER_VISIT: 2, // gems for visiting new server
   CHALLENGE_COMPLETION: 5,
-  ACHIEVEMENT_UNLOCK: 10
 };
 
 // Gem shop prices
