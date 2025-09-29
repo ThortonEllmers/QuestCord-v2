@@ -1,6 +1,5 @@
 const { db } = require('./store_sqlite');
 const { awardServerVisitGems } = require('./gems');
-const { checkTravelAchievements } = require('./achievements');
 
 /**
  * Record a completed travel in the history
@@ -29,8 +28,6 @@ function recordTravel(userId, fromGuildId, toGuildId, travelTime) {
       awardServerVisitGems(userId, toServerName);
     }
     
-    // Check travel achievements
-    checkTravelAchievements(userId);
     
     // Update challenge progress (avoid circular dependency)
     try {
