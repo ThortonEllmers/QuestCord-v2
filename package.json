@@ -1,0 +1,40 @@
+{
+  "name": "questcord",
+  "version": "2.1.2",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "start:prod": "cross-env NODE_ENV=production node src/index.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon src/index.js",
+    "deploy": "node scripts/deploy-commands.js",
+    "deploy:dev": "cross-env NODE_ENV=development node scripts/deploy-commands.js",
+    "deploy:watch": "nodemon scripts/deploy-commands.js",
+    "init": "node scripts/init-db.js",
+    "init:dev": "cross-env NODE_ENV=development node scripts/init-db.js",
+    "init:watch": "nodemon scripts/init-db.js",
+    "init:pg": "node scripts/init-pg.js",
+    "init:pg:watch": "nodemon scripts/init-pg.js",
+    "worker": "nodemon worker/spawner.js",
+    "worker:dev": "cross-env NODE_ENV=development nodemon worker/spawner.js",
+    "deploy-prod": "node scripts/deploy.js",
+    "rollback": "node scripts/rollback.js",
+    "backup": "node scripts/backup.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "cookie-parser": "^1.4.6",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.17.3",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.12.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0",
+    "nodemon": "^3.1.10"
+  }
+}
