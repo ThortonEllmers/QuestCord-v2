@@ -162,6 +162,10 @@
       background: #9B59B6;
     }
 
+    .update-category.removal {
+      background: #E67E22;
+    }
+
     .feature-list {
       list-style: none;
       padding: 0;
@@ -541,62 +545,60 @@
     </div>
 
     <div class="version-header scroll-animate">
-      <div class="version-number">Version 2.1.2</div>
+      <div class="version-number">Version 2.1.3</div>
       <div class="release-date">Released: September 29, 2025</div>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category fix">CRITICAL FIXES</div>
-      <h3>🐛 Database & Travel System Repairs</h3>
+      <div class="update-category removal">MAJOR SYSTEM REMOVALS</div>
+      <h3>🗑️ Weather & Achievements System Complete Removal</h3>
       <ul class="feature-list fixes">
-        <li><strong>Weather Command Fixed</strong> - Resolved SQLite3 binding error that prevented /weather command from working</li>
-        <li><strong>Duplicate Server Removal</strong> - Fixed travel autocomplete showing servers multiple times with different distances</li>
-        <li><strong>Database Column Consistency</strong> - Standardized weather_events table column names (endTime vs expiresAt)</li>
-        <li><strong>Travel Query Optimization</strong> - Added GROUP BY clauses to prevent duplicate server results</li>
-        <li><strong>Travel History Schema Fixed</strong> - Corrected column name mismatch (user_id vs userId) causing travel recording failures</li>
-        <li><strong>Weather Foreign Key Constraints</strong> - Fixed race conditions causing foreign key constraint failures in weather system</li>
-        <li><strong>Database Corruption Handling</strong> - Added comprehensive SQLITE_CORRUPT error handling with graceful degradation</li>
-        <li><strong>Universal Command Logging</strong> - All 35 Discord commands now properly log to live activity widget with subcommand support</li>
+        <li><strong>Weather System Removed</strong> - Completely deleted weather commands, API endpoints, and travel integration</li>
+        <li><strong>Achievements System Removed</strong> - Deleted achievement tracking, commands, and progress checking</li>
+        <li><strong>Database Schema Cleanup</strong> - Removed weather_events, weather_encounters, and achievements tables</li>
+        <li><strong>Travel System Simplified</strong> - Removed weather effects, focusing purely on distance and stamina</li>
+        <li><strong>Syntax Errors Fixed</strong> - Resolved travel command syntax error from system removal</li>
       </ul>
     </div>
 
     <div class="update-section scroll-animate">
       <div class="update-category new">NEW FEATURES</div>
-      <h3>⚡ Live Activity Widget</h3>
+      <h3>⚔️ Live Boss Activity Tracker</h3>
       <ul class="feature-list">
-        <li><strong>Real-time Command Tracking</strong> - Server Activity widget now shows live command usage as it happens</li>
-        <li><strong>Command Logging System</strong> - New database table tracks all command executions with timestamps</li>
-        <li><strong>Live Updates</strong> - Activity feed updates every 15 seconds showing "{username} ran {command} in {server}"</li>
-        <li><strong>Recent Activity Display</strong> - Shows last 5 command executions with relative timestamps (now, 2m ago, etc.)</li>
-      </ul>
-
-      <h3>🌪️ Enhanced Weather System</h3>
-      <ul class="feature-list">
-        <li><strong>Severity 1 Weather Events</strong> - Added missing mild weather types: Marine Layer Fog, Mountain Wave, Aurora Substorm, and Sprite Lightning</li>
-        <li><strong>Discord Weather Alerts</strong> - Severe weather (severity 4+) now automatically posts notifications to Discord with role mentions</li>
-        <li><strong>Automatic Weather Generation</strong> - Weather events spawn globally every 5 minutes with realistic severity distribution</li>
-        <li><strong>Enhanced Weather Notifications</strong> - Rich embeds show travel warnings, storm details, and affected areas</li>
+        <li><strong>Real-time Boss Tracking</strong> - Replaced weather widget with live boss activity tracker on homepage</li>
+        <li><strong>Recent Boss History</strong> - Shows last 24 hours of boss battles across all servers</li>
+        <li><strong>Boss Battle Outcomes</strong> - Displays whether bosses were "Defeated" or "Expired" with timestamps</li>
+        <li><strong>Smart Boss Emojis</strong> - Automatically assigns emojis based on boss names (🐉 dragons, 🐺 wolves, 🕷️ spiders)</li>
+        <li><strong>Auto-Refresh Updates</strong> - Boss tracker updates every 30 seconds automatically</li>
+        <li><strong>New API Endpoint</strong> - Added /api/bosses/recent endpoint for boss activity data</li>
       </ul>
     </div>
 
     <div class="update-section scroll-animate">
       <div class="update-category improvement">IMPROVEMENTS</div>
-      <h3>🔧 System Enhancements</h3>
+      <h3>🔧 System Streamlining</h3>
       <ul class="feature-list improvements">
-        <li><strong>Widget Cleanup</strong> - Removed Live Leaderboard, Market Trends, and Popular Routes widgets for better focus</li>
-        <li><strong>Server Deduplication</strong> - Travel system now shows each server only once with accurate distance</li>
-        <li><strong>Query Performance</strong> - All server queries now use LIMIT 1 and ORDER BY for consistency</li>
-        <li><strong>Weather System Reliability</strong> - Fixed column name mismatches throughout weather system</li>
-        <li><strong>Database Consistency</strong> - Ensured all weather-related queries use correct column names</li>
-        <li><strong>Transaction Safety</strong> - Weather encounters now use atomic transactions to prevent race conditions</li>
-        <li><strong>Error Classification</strong> - Database errors now properly categorized (CORRUPT, BUSY, CONSTRAINT) with appropriate responses</li>
-        <li><strong>Health Monitoring</strong> - Added database integrity checks on startup with automatic recovery attempts</li>
+        <li><strong>Reduced Code Complexity</strong> - Removed thousands of lines of weather and achievement logic</li>
+        <li><strong>Improved Performance</strong> - Eliminated weather calculations on travel and achievement checking overhead</li>
+        <li><strong>Cleaner Travel System</strong> - Travel now focuses purely on distance and stamina without weather complications</li>
+        <li><strong>Simplified Database Schema</strong> - Removed complex weather and achievement table relationships</li>
+        <li><strong>Focused User Experience</strong> - Boss tracking provides more relevant real-time server activity information</li>
+        <li><strong>Easier Maintenance</strong> - Fewer systems to maintain, debug, and keep synchronized</li>
       </ul>
     </div>
 
     <div class="version-selector scroll-animate">
       <h3>📚 Previous Versions</h3>
       <div class="version-previews">
+        <a href="/updates/v2.1.2" class="version-preview">
+          <div class="version-info">
+            <div class="version-title">Version 2.1.2</div>
+            <div class="version-date">September 29, 2025</div>
+            <div class="version-snippet">Critical database fixes, weather command repairs, enhanced activity tracking, and comprehensive error handling improvements.</div>
+          </div>
+          <div class="version-arrow">→</div>
+        </a>
+
         <a href="/updates/v2.1.1" class="version-preview">
           <div class="version-info">
             <div class="version-title">Version 2.1.1</div>
@@ -631,7 +633,7 @@
     </div>
 
     <div class="technical-note scroll-animate">
-      <p><strong>🔧 Technical Note:</strong> Version 2.1.2 is a critical patch release that resolves multiple database-related issues causing system failures. Key fixes include: travel_history schema alignment (userId vs user_id), weather system foreign key constraint handling with atomic transactions, comprehensive SQLITE_CORRUPT error recovery, and universal command logging coverage for all 35 Discord commands. The bot now gracefully handles database corruption with proper HTTP status codes (503 vs 500) and automatic recovery attempts.</p>
+      <p><strong>🔧 Technical Note:</strong> Version 2.1.3 is a major release that removes two complex systems (Weather and Achievements) to significantly reduce codebase complexity and improve performance. The new boss tracker provides actionable, real-time information about server activity without the overhead of weather calculations or achievement progress tracking. This results in improved performance, easier maintenance, and a more focused user experience.</p>
     </div>
 
     <div style="text-align: center; margin-top: 40px;">
