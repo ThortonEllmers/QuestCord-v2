@@ -150,11 +150,6 @@ module.exports = {
               value: '• Check your current Drakari (currency) balance\n• View recent transaction history\n• See your total earnings and spending\n• **Useful for:** Planning purchases and trades',
               inline: false
             },
-            {
-              name: '🏆 `/achievements`',
-              value: '• Browse all available achievements\n• Track your progress toward unlocking new ones\n• See rare achievements you\'ve earned\n• **Categories:** Combat, Travel, Crafting, Social, and more',
-              inline: false
-            }
           )
           .setFooter({ text: '⚡ Your health and stamina regenerate over time automatically!' });
         break;
