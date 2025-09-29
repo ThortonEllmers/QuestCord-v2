@@ -13651,6 +13651,7 @@
     "baseHp": 2000,
     "cooldownSeconds": 1800,
     "ttlSeconds": 3600,
+    "maxActiveGlobal": 1,
     "maxTier": 5,
     "tierChances": {
       "1": 40,
