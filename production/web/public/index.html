@@ -773,12 +773,12 @@
             font-size: 0.9rem;
         }
 
-        /* Weather Widget Styles */
-        .weather-events {
+        /* Boss Tracker Widget Styles */
+        .boss-tracker {
             space-y: 15px;
         }
 
-        .weather-item {
+        .boss-item {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -792,25 +792,43 @@
             max-width: 280px;
         }
 
-        .weather-item:hover {
+        .boss-item:hover {
             background: rgba(255, 255, 255, 0.08);
             transform: translateX(5px);
         }
 
-        .weather-emoji {
+        .boss-emoji {
             font-size: 1.5rem;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
-        .weather-name {
+        .boss-name {
             color: var(--text-light);
             font-weight: 600;
             margin-bottom: 2px;
         }
 
-        .weather-server {
+        .boss-server {
             color: var(--text-muted);
             font-size: 0.85rem;
+            margin-bottom: 2px;
+        }
+
+        .boss-status {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .boss-status.defeated {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .boss-status.expired {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
         }
 
 
@@ -1079,7 +1097,7 @@
             <div class="container">
                 <div class="section-header scroll-animate">
                     <h2>Live game events</h2>
-                    <p>Stay updated with real-time boss spawns and weather events happening across all servers right now.</p>
+                    <p>Stay updated with real-time boss spawns and recent boss battle outcomes happening across all servers.</p>
                 </div>
 
                 <div class="events-grid">
@@ -1100,32 +1118,35 @@
                         </div>
                     </div>
 
-                    <div class="event-widget weather-widget scroll-animate">
+                    <div class="event-widget boss-tracker-widget scroll-animate">
                         <div class="widget-header">
-                            <div class="widget-icon">🌩️</div>
-                            <h3>Active Weather</h3>
+                            <div class="widget-icon">⚔️</div>
+                            <h3>Recent Boss Activity</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="weather-events" id="weather-events">
-                                <div class="weather-item">
-                                    <span class="weather-emoji">⛈️</span>
-                                    <div class="weather-info">
-                                        <div class="weather-name">Thunderstorm</div>
-                                        <div class="weather-server">Storm Valley</div>
+                            <div class="boss-tracker" id="boss-tracker">
+                                <div class="boss-item">
+                                    <span class="boss-emoji">🐉</span>
+                                    <div class="boss-info">
+                                        <div class="boss-name">Shadow Dragon</div>
+                                        <div class="boss-server">Defeated in Dark Valley</div>
+                                        <div class="boss-status defeated">Defeated 2h ago</div>
                                     </div>
                                 </div>
-                                <div class="weather-item">
-                                    <span class="weather-emoji">❄️</span>
-                                    <div class="weather-info">
-                                        <div class="weather-name">Blizzard</div>
-                                        <div class="weather-server">Frozen Peaks</div>
+                                <div class="boss-item">
+                                    <span class="boss-emoji">🦅</span>
+                                    <div class="boss-info">
+                                        <div class="boss-name">Storm Phoenix</div>
+                                        <div class="boss-server">Expired in Sky Peaks</div>
+                                        <div class="boss-status expired">Expired 1h ago</div>
                                     </div>
                                 </div>
-                                <div class="weather-item">
-                                    <span class="weather-emoji">🔥</span>
-                                    <div class="weather-info">
-                                        <div class="weather-name">Heat Wave</div>
-                                        <div class="weather-server">Desert Sands</div>
+                                <div class="boss-item">
+                                    <span class="boss-emoji">🐺</span>
+                                    <div class="boss-info">
+                                        <div class="boss-name">Frost Wolf</div>
+                                        <div class="boss-server">Defeated in Ice Realm</div>
+                                        <div class="boss-status defeated">Defeated 45m ago</div>
                                     </div>
                                 </div>
                             </div>
@@ -1418,39 +1439,45 @@
             }
         }
 
-        // Real-time weather data functionality
-        async function loadWeatherData() {
+        // Real-time boss tracker functionality
+        async function loadBossTrackerData() {
             try {
                 // Skip API calls for local file viewing
                 if (location.protocol === 'file:') {
-                    document.getElementById('weather-events').innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">Loading weather data...</div></div></div>';
+                    document.getElementById('boss-tracker').innerHTML = '<div class="boss-item"><div class="boss-info"><div class="boss-name">Loading boss data...</div></div></div>';
                     return;
                 }
 
-                const response = await fetch('/api/weather-events');
-                if (!response.ok) throw new Error('Failed to fetch weather data');
+                const response = await fetch('/api/bosses/recent');
+                if (!response.ok) throw new Error('Failed to fetch boss tracker data');
 
                 const data = await response.json();
 
-                const weatherContainer = document.getElementById('weather-events');
+                const bossContainer = document.getElementById('boss-tracker');
 
-                if (data.events && data.events.length > 0) {
-                    weatherContainer.innerHTML = data.events.map(weather => `
-                        <div class="weather-item">
-                            <span class="weather-emoji">${weather.icon || '🌤️'}</span>
-                            <div class="weather-info">
-                                <div class="weather-name">${weather.name}</div>
-                                <div class="weather-server">${weather.region} - ${weather.serverName}</div>
+                if (data.bosses && data.bosses.length > 0) {
+                    bossContainer.innerHTML = data.bosses.map(boss => {
+                        const timeAgo = Math.floor((Date.now() - boss.endTime) / 60000); // minutes ago
+                        const timeDisplay = timeAgo < 60 ? `${timeAgo}m ago` : `${Math.floor(timeAgo / 60)}h ago`;
+
+                        return `
+                        <div class="boss-item">
+                            <span class="boss-emoji">${boss.emoji || '👹'}</span>
+                            <div class="boss-info">
+                                <div class="boss-name">${boss.name}</div>
+                                <div class="boss-server">${boss.status} in ${boss.serverName}</div>
+                                <div class="boss-status ${boss.status.toLowerCase()}">${timeDisplay}</div>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
-                    weatherContainer.innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">No active weather events</div></div></div>';
+                    bossContainer.innerHTML = '<div class="boss-item"><div class="boss-info"><div class="boss-name">No recent boss activity</div></div></div>';
                 }
 
             } catch (error) {
-                console.error('Failed to load weather data:', error);
-                document.getElementById('weather-events').innerHTML = '<div class="weather-item"><div class="weather-info"><div class="weather-name">...</div></div></div>';
+                console.error('Failed to load boss tracker data:', error);
+                document.getElementById('boss-tracker').innerHTML = '<div class="boss-item"><div class="boss-info"><div class="boss-name">...</div></div></div>';
             }
         }
 
@@ -1601,7 +1628,7 @@
                 loadStats();
                 initFAQ();
                 loadBossCountdown();
-                loadWeatherData();
+                loadBossTrackerData();
                 loadCommandActivity();
                 initAnimations();
 
@@ -1611,8 +1638,8 @@
                     setInterval(loadStats, 300000);
                     // Refresh boss data every 5 minutes (in case of updates)
                     setInterval(loadBossCountdown, 300000);
-                    // Refresh weather data every 30 seconds
-                    setInterval(loadWeatherData, 30000);
+                    // Refresh boss tracker data every 30 seconds
+                    setInterval(loadBossTrackerData, 30000);
                     // Refresh command activity every 15 seconds for live updates
                     setInterval(loadCommandActivity, 15000);
                 }
