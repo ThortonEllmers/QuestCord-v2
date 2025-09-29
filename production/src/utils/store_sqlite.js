@@ -162,7 +162,7 @@ try {
       lastLoginAt INTEGER DEFAULT 0,      -- Timestamp of last daily login
       serversVisited INTEGER DEFAULT 0,   -- Total count of unique servers visited
       bossKills INTEGER DEFAULT 0,        -- Total boss fights participated in
-      itemsCrafted INTEGER DEFAULT 0,     -- Total items crafted for achievements
+      itemsCrafted INTEGER DEFAULT 0,     -- Total items crafted
       banned INTEGER DEFAULT 0,           -- Whether player is banned (0/1 boolean)
       banReason TEXT,                     -- Reason for ban if applicable
       bannedAt INTEGER                    -- Timestamp when player was banned
@@ -392,7 +392,7 @@ try {
  * ADVANCED FEATURE TABLES CREATION
  * 
  * Creates tables for advanced game features that were added after initial release.
- * These include waypoints, travel history, achievements, challenges, analytics, and more.
+ * These include waypoints, travel history, challenges, analytics, and more.
  * Each table serves a specific game mechanic or feature set.
  */
 try {
@@ -418,7 +418,7 @@ try {
   /**
    * TRAVEL HISTORY TABLE - Player Movement Tracking
    * 
-   * Records all player travels between servers for statistics and achievements.
+   * Records all player travels between servers for statistics and analytics.
    * Tracks distance, time taken, and server names for analytics.
    */
   db.exec(`
@@ -435,23 +435,6 @@ try {
   `);
   console.log('[db] Ensured travel_history table exists');
 
-  /**
-   * ACHIEVEMENTS TABLE - Player Achievement Progress
-   * 
-   * Tracks which achievements players have unlocked and whether rewards were claimed.
-   * Achievements are unlocked based on various game activities and statistics.
-   */
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS achievements (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique achievement record ID
-      userId TEXT NOT NULL,                  -- Player who unlocked achievement
-      achievementId TEXT NOT NULL,           -- Achievement identifier/type
-      unlockedAt INTEGER NOT NULL,           -- When achievement was unlocked
-      rewardClaimed INTEGER DEFAULT 0,       -- Whether reward was claimed (0/1)
-      UNIQUE(userId, achievementId)          -- One record per user-achievement pair
-    )
-  `);
-  console.log('[db] Ensured achievements table exists');
 
   /**
    * DAILY CHALLENGES TABLE - Daily Quest System
@@ -627,7 +610,7 @@ try {
    * POI VISITS TABLE - Landmark Visit Tracking
    * 
    * Tracks which players have visited which landmarks.
-   * Prevents duplicate rewards and enables visit-based achievements.
+   * Prevents duplicate rewards for POI visits.
    */
   db.exec(`
     CREATE TABLE IF NOT EXISTS poi_visits (
@@ -724,11 +707,4 @@ function logCommand(userId, command, guildId) {
   }
 }
 
-// Initialize weather system database tables
-try {
-  const { initializeWeatherSystem } = require('./weather');
-  initializeWeatherSystem();
-} catch (error) {
-  console.warn('[db] Weather system initialization failed:', error.message);
-}
 
