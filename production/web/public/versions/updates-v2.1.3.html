@@ -316,6 +316,19 @@
       </ul>
     </div>
 
+    <div class="update-section">
+      <div class="update-category improvement">BOSS TIMING ENHANCEMENTS</div>
+      <h3>⏱️ Dynamic Boss Spawning System</h3>
+      <ul class="feature-list improvements">
+        <li><strong>Extended Boss Duration</strong> - Bosses now remain active for 60 minutes (increased from 30 minutes)</li>
+        <li><strong>Random Spawn Delays</strong> - New bosses spawn 5-180 minutes after previous boss defeat or expiry</li>
+        <li><strong>Configurable Boss Limits</strong> - Added maxActiveGlobal config option to control maximum simultaneous active bosses</li>
+        <li><strong>Smart Scheduling System</strong> - Boss spawning now uses database-driven scheduling instead of fixed intervals</li>
+        <li><strong>Improved Spawn Timing</strong> - System checks for scheduled spawns every 30 seconds for more responsive boss appearance</li>
+        <li><strong>Automatic Cleanup Enhancement</strong> - Boss expiry and defeat events now trigger next spawn scheduling automatically</li>
+      </ul>
+    </div>
+
     <div class="technical-note">
       <p><strong>🔧 Technical Note:</strong> This major release removes two complex systems (Weather and Achievements) that were adding significant overhead to the codebase. The new boss tracker focuses on providing actionable, real-time information about server activity without the complexity of weather calculations or achievement progress tracking. This results in improved performance, easier maintenance, and a more focused user experience.</p>
     </div>
