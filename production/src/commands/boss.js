@@ -9,6 +9,7 @@ const { awardBossParticipationGems } = require('../utils/gems');
 
 const BOSS_FIGHTER_ROLE_ID = '1411043105830076497';
 const BOSS_NOTIFICATION_CHANNEL_ID = '1411045103921004554';
+const BOSS_NOTIFICATION_ROLE_ID = '1411051374153826386';
 
 function choose(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -185,10 +186,13 @@ async function sendBossSpawnNotification(client, bossData, serverData, spawnerUs
       })
       .setTimestamp();
     
-    // Note: Boss spawn notifications are now handled by the automatic boss_spawner.js system
-    // to avoid duplicate notifications. Manual boss spawns will rely on the spawner's notification.
+    // Send the spawn notification with role ping
+    await channel.send({
+      content: `<@&${BOSS_NOTIFICATION_ROLE_ID}> 🔥 NEW BOSS ALERT 🔥`,
+      embeds: [spawnEmbed]
+    });
 
-    logger.info('boss_notification: Boss spawned manually for %s (tier %s) in %s - notification handled by boss_spawner.js', bossData.name, bossData.tier, serverData.guildId);
+    logger.info('boss_notification: Sent spawn notification for %s (tier %s) in %s', bossData.name, bossData.tier, serverData.guildId);
   } catch (error) {
     console.warn('[boss] Failed to send boss spawn notification:', error.message);
   }
@@ -665,10 +669,11 @@ module.exports = {
       if (current <= 0) {
         db.prepare('UPDATE bosses SET active=0 WHERE id=?').run(boss.id);
         
-        // Record boss defeat for spawning system cooldown
+        // Record boss defeat and schedule next spawn
         try {
-          const { recordBossDefeat } = require('../utils/boss_spawner');
+          const { recordBossDefeat, scheduleNextBossSpawn } = require('../utils/boss_spawner');
           recordBossDefeat();
+          scheduleNextBossSpawn();
         } catch (error) {
           console.warn('[boss] Failed to record boss defeat for spawning system:', error.message);
         }
