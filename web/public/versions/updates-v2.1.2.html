@@ -1,0 +1,294 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Version 2.1.2 Updates - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+
+    .version-header {
+      background: var(--gradient);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .version-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .release-date {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .update-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .update-category {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .update-category.improvement {
+      background: #2ECC71;
+    }
+
+    .update-category.new {
+      background: #3498DB;
+    }
+
+    .update-category.fix {
+      background: #E74C3C;
+    }
+
+    .update-category.ui {
+      background: #9B59B6;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .feature-list.improvements li::before {
+      content: '🔧';
+    }
+
+    .feature-list.fixes li::before {
+      content: '🐛';
+    }
+
+    .feature-list.ui li::before {
+      content: '🎨';
+    }
+
+    .technical-note {
+      background: rgba(124, 58, 237, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .technical-note p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    .current-badge {
+      background: #27AE60;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="version-header">
+      <div class="version-number">Version 2.1.2 <span class="current-badge">Current</span></div>
+      <div class="release-date">Released: September 29, 2025</div>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category fix">CRITICAL FIXES</div>
+      <h3>🐛 Database & Travel System Repairs</h3>
+      <ul class="feature-list fixes">
+        <li><strong>Weather Command Fixed</strong> - Resolved SQLite3 binding error that prevented /weather command from working</li>
+        <li><strong>Duplicate Server Removal</strong> - Fixed travel autocomplete showing servers multiple times with different distances</li>
+        <li><strong>Database Column Consistency</strong> - Standardized weather_events table column names (endTime vs expiresAt)</li>
+        <li><strong>Travel Query Optimization</strong> - Added GROUP BY clauses to prevent duplicate server results</li>
+        <li><strong>Database Corruption Recovery</strong> - Fixed foreign key constraint violations in weekly reset and added corruption error handling</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category new">NEW FEATURES</div>
+      <h3>⚡ Live Activity Widget</h3>
+      <ul class="feature-list">
+        <li><strong>Real-time Command Tracking</strong> - Server Activity widget now shows live command usage as it happens</li>
+        <li><strong>Command Logging System</strong> - New database table tracks all command executions with timestamps</li>
+        <li><strong>Live Updates</strong> - Activity feed updates every 15 seconds showing "{username} ran {command} in {server}"</li>
+        <li><strong>Recent Activity Display</strong> - Shows last 5 command executions with relative timestamps (now, 2m ago, etc.)</li>
+      </ul>
+
+      <h3>🌪️ Enhanced Weather System</h3>
+      <ul class="feature-list">
+        <li><strong>Severity 1 Weather Events</strong> - Added missing mild weather types: Marine Layer Fog, Mountain Wave, Aurora Substorm, and Sprite Lightning</li>
+        <li><strong>Discord Weather Alerts</strong> - Severe weather (severity 4+) now automatically posts notifications to Discord with role mentions</li>
+        <li><strong>Automatic Weather Generation</strong> - Weather events spawn globally every 5 minutes with realistic severity distribution</li>
+        <li><strong>Enhanced Weather Notifications</strong> - Rich embeds show travel warnings, storm details, and affected areas</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <h3>🔧 System Enhancements</h3>
+      <ul class="feature-list improvements">
+        <li><strong>Widget Cleanup</strong> - Removed Live Leaderboard, Market Trends, and Popular Routes widgets for better focus</li>
+        <li><strong>Server Deduplication</strong> - Travel system now shows each server only once with accurate distance</li>
+        <li><strong>Query Performance</strong> - All server queries now use LIMIT 1 and ORDER BY for consistency</li>
+        <li><strong>Weather System Reliability</strong> - Fixed column name mismatches throughout weather system</li>
+        <li><strong>Database Consistency</strong> - Ensured all weather-related queries use correct column names</li>
+      </ul>
+    </div>
+
+    <div class="technical-note">
+      <p><strong>🔧 Technical Note:</strong> This patch release addresses critical database inconsistencies that were causing command failures. The weather system now uses consistent column naming (endTime) throughout the codebase, and the travel system properly deduplicates server results using GROUP BY clauses.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/updates" class="back-button">Back to Updates</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="../shared/footer.js"></script>
+
+</body>
+</html>
