@@ -1,0 +1,303 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Version 2.1.1 Updates - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+
+    .version-header {
+      background: var(--gradient);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .version-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .release-date {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .update-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .update-category {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .update-category.improvement {
+      background: #2ECC71;
+    }
+
+    .update-category.new {
+      background: #3498DB;
+    }
+
+    .update-category.fix {
+      background: #E74C3C;
+    }
+
+    .update-category.ui {
+      background: #9B59B6;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .feature-list li::before {
+      content: '✨';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .feature-list.improvements li::before {
+      content: '🔧';
+    }
+
+    .feature-list.fixes li::before {
+      content: '🐛';
+    }
+
+    .feature-list.ui li::before {
+      content: '🎨';
+    }
+
+    .technical-note {
+      background: rgba(124, 58, 237, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .technical-note p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    .legacy-badge {
+      background: #95A5A6;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="version-header">
+      <div class="version-number">Version 2.1.1 <span class="legacy-badge">Legacy</span></div>
+      <div class="release-date">Released: September 26, 2025</div>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category new">NEW FEATURES</div>
+      <h3>🎮 Enhanced Live Game Events</h3>
+      <ul class="feature-list">
+        <li><strong>6 Real-time Widgets</strong> - Added Travel Routes, Market Trends, Server Activity, and Live Leaderboard</li>
+        <li><strong>Dynamic World Boss Status</strong> - Now shows current active boss and location instead of just next spawn</li>
+        <li><strong>Live Weather System</strong> - Real-time weather events display with server integration</li>
+        <li><strong>Professional Status Page</strong> - Comprehensive system health monitoring with live metrics</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category improvement">IMPROVEMENTS</div>
+      <h3>🔧 System Enhancements</h3>
+      <ul class="feature-list improvements">
+        <li><strong>Professional Command Interface</strong> - Complete redesign of all Discord commands with rich embeds</li>
+        <li><strong>Enhanced Bot Invite System</strong> - Updated with proper permissions and integration settings</li>
+        <li><strong>API Performance</strong> - New endpoints for live data with proper caching and rate limiting</li>
+        <li><strong>Database Optimization</strong> - Improved queries for real-time data aggregation</li>
+        <li><strong>Mobile Responsive Design</strong> - All pages now perfectly adapted for mobile devices</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category ui">UI/UX UPDATES</div>
+      <h3>🎨 Visual & Experience Improvements</h3>
+      <ul class="feature-list ui">
+        <li><strong>Professional Animations</strong> - Smooth scroll-based animations across all pages</li>
+        <li><strong>Loading Screen Consistency</strong> - Unified 1.5s loading experience with crown animation</li>
+        <li><strong>Widget Auto-refresh</strong> - Live data updates every 30 seconds to 5 minutes based on data type</li>
+        <li><strong>Interactive Elements</strong> - Enhanced hover effects and transitions throughout the interface</li>
+        <li><strong>Content Organization</strong> - Better structured layouts with improved readability</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category fix">BUG FIXES</div>
+      <h3>🐛 Resolved Issues</h3>
+      <ul class="feature-list fixes">
+        <li><strong>Duplicate Boss Notifications</strong> - Fixed duplicate boss alerts from multiple notification systems</li>
+        <li><strong>Active Weather Widget</strong> - Resolved data loading issues on VPS deployment</li>
+        <li><strong>Boss Timer Display</strong> - Fixed countdown not showing current boss information</li>
+        <li><strong>Map Link Removal</strong> - Replaced all "View on Map" references with website links</li>
+        <li><strong>Animation Timing</strong> - Synchronized loading screens across all pages</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category improvement">COMMAND SYSTEM OVERHAUL</div>
+      <h3>⚡ Professional Discord Integration</h3>
+      <ul class="feature-list improvements">
+        <li><strong>Rich Embed Responses</strong> - All commands now use professional Discord embeds with color coding</li>
+        <li><strong>Improved Error Handling</strong> - Clear, helpful error messages with actionable suggestions</li>
+        <li><strong>Staff Command Enhancement</strong> - Administrative tools with detailed logging and confirmation</li>
+        <li><strong>Visual Status Indicators</strong> - Progress bars, icons, and status badges for better user experience</li>
+        <li><strong>Contextual Help</strong> - Each command provides relevant next steps and related commands</li>
+      </ul>
+    </div>
+
+    <div class="technical-note">
+      <p><strong>🔧 Technical Note:</strong> This update includes significant backend improvements to our real-time data processing system. All APIs now feature proper error handling, rate limiting, and graceful degradation for improved reliability.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/updates" class="back-button">Back to Updates</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="../shared/footer.js"></script>
+
+</body>
+</html>
