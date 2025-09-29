@@ -217,270 +217,6 @@ function globalList(limit=500, opts={}){
  */
 router.get('/api/csrf', rateLimit(), setCsrf);
 
-// ===============================================
-// WEATHER SYSTEM ENDPOINTS
-// ===============================================
-
-/**
- * Active Weather Events Endpoint
- * GET /api/weather
- * Returns all currently active weather events for map display
- * Used by the interactive map to show weather overlays and travel restrictions
- * Rate limited: 60 requests per 60 seconds
- * @returns {Object} - Object containing array of active weather events with display data
- */
-router.get('/api/weather', rateLimit(60, 60000), async (req, res) => {
-  try {
-    const { getActiveWeather, WEATHER_TYPES } = require('../../utils/weather');
-    
-    const activeWeather = getActiveWeather();
-    const weatherData = activeWeather.map(weather => ({
-      id: weather.id,
-      type: weather.type,
-      name: WEATHER_TYPES[weather.type]?.name || weather.type,
-      icon: WEATHER_TYPES[weather.type]?.icon || 'WEATHER',
-      color: WEATHER_TYPES[weather.type]?.color || '#808080',
-      centerLat: weather.centerLat,
-      centerLon: weather.centerLon,
-      radius: weather.radius,
-      severity: weather.severity,
-      description: WEATHER_TYPES[weather.type]?.description || 'Weather event',
-      blockTravel: WEATHER_TYPES[weather.type]?.blockTravel || false,
-      timeRemaining: Math.max(0, weather.endTime - Date.now()),
-      startTime: weather.startTime,
-      endTime: weather.endTime
-    }));
-
-    res.json({
-      weather: weatherData,
-      count: weatherData.length,
-      lastUpdate: Date.now()
-    });
-
-  } catch (error) {
-    console.error('GET /api/weather error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Get travel route with weather considerations
-router.post('/api/weather/route', rateLimit(30, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const { fromLat, fromLon, toLat, toLon } = req.body;
-
-    // Validate coordinates are present and numeric
-    if (typeof fromLat !== 'number' || typeof fromLon !== 'number' ||
-        typeof toLat !== 'number' || typeof toLon !== 'number') {
-      return res.status(400).json({ error: 'invalid_input', message: 'All coordinates must be numbers' });
-    }
-
-    // Validate coordinate bounds and finite values
-    if (fromLat < -90 || fromLat > 90 || toLat < -90 || toLat > 90 ||
-        fromLon < -180 || fromLon > 180 || toLon < -180 || toLon > 180 ||
-        !isFinite(fromLat) || !isFinite(fromLon) || !isFinite(toLat) || !isFinite(toLon)) {
-      return res.status(400).json({ error: 'invalid_input', message: 'Coordinates out of valid range' });
-    }
-
-    const { getWeatherEffectsForTravel } = require('../../utils/weather');
-    const routeInfo = getWeatherEffectsForTravel(fromLat, fromLon, toLat, toLon);
-
-    res.json({
-      route: routeInfo,
-      message: routeInfo.detourRequired 
-        ? `Route adjusted to avoid: ${routeInfo.weatherAvoided}`
-        : routeInfo.weatherDescription !== 'Clear skies' 
-          ? `Weather along route: ${routeInfo.weatherDescription}`
-          : 'Clear skies ahead!'
-    });
-
-  } catch (error) {
-    console.error('POST /api/weather/route error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Force generate weather (Staff/Developer only)
-router.post('/api/admin/weather/generate', rateLimit(10, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const roleLevel = await getRoleLevel(req);
-    if (!(roleLevel === 'Developer' || roleLevel === 'Staff')) {
-      return res.status(403).json({ error: 'forbidden', message: 'Staff or Developer role required' });
-    }
-
-    const { generateWeatherEvents } = require('../../utils/weather');
-    generateWeatherEvents();
-
-    res.json({
-      success: true,
-      message: 'Weather generation triggered',
-      timestamp: Date.now()
-    });
-
-  } catch (error) {
-    console.error('POST /api/admin/weather/generate error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Create weather event at specific coordinates (Staff/Developer only)
-router.post('/api/admin/weather/create', rateLimit(10, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const roleLevel = await getRoleLevel(req);
-    if (!(roleLevel === 'Developer' || roleLevel === 'Staff')) {
-      return res.status(403).json({ error: 'forbidden', message: 'Staff or Developer role required' });
-    }
-    
-    const { type, lat, lon, duration, radius } = req.body;
-    
-    if (!type || typeof lat !== 'number' || typeof lon !== 'number' || typeof duration !== 'number') {
-      return res.status(400).json({ error: 'bad_request', message: 'Missing required fields: type, lat, lon, duration' });
-    }
-    
-    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      return res.status(400).json({ error: 'bad_request', message: 'Invalid coordinates' });
-    }
-    
-    if (duration < 10 || duration > 1440) {
-      return res.status(400).json({ error: 'bad_request', message: 'Duration must be between 10 and 1440 minutes' });
-    }
-    
-    const { createWeatherEvent } = require('../../utils/weather');
-    const weatherEvent = createWeatherEvent(type, lat, lon, duration, radius, req.client);
-    
-    if (!weatherEvent) {
-      return res.status(400).json({ error: 'bad_request', message: 'Invalid weather type or failed to create event' });
-    }
-    
-    // Log to webhook
-    await logAdminActionFromReq(req, 'Weather Event Created', weatherEvent.id, weatherEvent.name, {
-      'Event Type': weatherEvent.name,
-      'Location': `${lat}°, ${lon}°`,
-      'Duration': `${duration} minutes`,
-      'Radius': `${radius || 'default'} km`,
-      'Event ID': weatherEvent.id
-    });
-    
-    res.json({
-      success: true,
-      weatherEvent,
-      message: `Created ${weatherEvent.name} at ${lat}°, ${lon}°`
-    });
-  } catch (error) {
-    console.error('POST /api/admin/weather/create error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Create regional weather event (Staff/Developer only)
-router.post('/api/admin/weather/regional', rateLimit(10, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const roleLevel = await getRoleLevel(req);
-    if (!(roleLevel === 'Developer' || roleLevel === 'Staff')) {
-      return res.status(403).json({ error: 'forbidden', message: 'Staff or Developer role required' });
-    }
-    
-    const { type, country } = req.body;
-    
-    if (!type || !country) {
-      return res.status(400).json({ error: 'bad_request', message: 'Missing required fields: type, country' });
-    }
-    
-    const { createWeatherInCountry } = require('../../utils/weather');
-    logger.info(`[API] Creating regional weather: type=${type}, country=${country}`);
-    const result = await createWeatherInCountry(type, country, null);
-    logger.info(`[API] Weather creation result:`, result);
-    
-    if (!result.success) {
-      console.error(`[API] Weather creation failed:`, result.message);
-      return res.status(400).json({ error: 'bad_request', message: result.message });
-    }
-    
-    // Log to webhook
-    await logAdminActionFromReq(req, 'Regional Weather Event Created', result.weatherEvent.id, result.weatherEvent.name, {
-      'Event Type': result.weatherEvent.name,
-      'Country/Region': result.region,
-      'Coordinates': `${result.coordinates.lat}°, ${result.coordinates.lon}°`,
-      'Duration': `${result.weatherEvent.duration} minutes`,
-      'Event ID': result.weatherEvent.id
-    });
-    
-    res.json({
-      success: true,
-      weatherEvent: result.weatherEvent,
-      coordinates: result.coordinates,
-      region: result.region,
-      message: `Created ${result.weatherEvent.name} in ${result.region}`
-    });
-  } catch (error) {
-    console.error('POST /api/admin/weather/regional error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Remove weather event (Staff/Developer only)
-router.post('/api/admin/weather/remove', rateLimit(10, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const roleLevel = await getRoleLevel(req);
-    if (!(roleLevel === 'Developer' || roleLevel === 'Staff')) {
-      return res.status(403).json({ error: 'forbidden', message: 'Staff or Developer role required' });
-    }
-    
-    const { eventId } = req.body;
-    
-    if (!eventId) {
-      return res.status(400).json({ error: 'bad_request', message: 'Missing eventId' });
-    }
-    
-    const { removeWeatherEvent } = require('../../utils/weather');
-    const success = removeWeatherEvent(eventId);
-    
-    if (!success) {
-      return res.status(404).json({ error: 'not_found', message: 'Weather event not found or already expired' });
-    }
-    
-    // Log to webhook
-    await logAdminActionFromReq(req, 'Weather Event Removed', eventId, null, {
-      'Action': 'Weather event manually removed',
-      'Event ID': eventId
-    });
-    
-    res.json({
-      success: true,
-      message: `Removed weather event ${eventId}`
-    });
-  } catch (error) {
-    console.error('POST /api/admin/weather/remove error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
-
-// Clear all weather events (Staff/Developer only)
-router.post('/api/admin/weather/clear', rateLimit(10, 60000), ensureCsrf, async (req, res) => {
-  try {
-    const roleLevel = await getRoleLevel(req);
-    if (!(roleLevel === 'Developer' || roleLevel === 'Staff')) {
-      return res.status(403).json({ error: 'forbidden', message: 'Staff or Developer role required' });
-    }
-    
-    const { clearAllWeatherEvents } = require('../../utils/weather');
-    const count = clearAllWeatherEvents();
-    
-    // Log to webhook
-    await logAdminActionFromReq(req, 'All Weather Events Cleared', null, null, {
-      'Action': 'Cleared all active weather events',
-      'Events Cleared': `${count} events`
-    });
-    
-    res.json({
-      success: true,
-      count,
-      message: `Cleared ${count} weather events`
-    });
-  } catch (error) {
-    console.error('POST /api/admin/weather/clear error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
 
 // Session/me with regen, roles, inventory and map center
 router.get('/api/me', rateLimit(180, 60000), async (req, res) => {
@@ -985,6 +721,56 @@ router.get('/api/landmark/:landmarkId', rateLimit(), async (req, res) => {
 
 router.get('/api/bosses', rateLimit(), (_,res)=> res.json({ bosses: activeBosses() }));
 
+// Get recent boss activity for the tracker widget
+router.get('/api/bosses/recent', rateLimit(60, 60000), async (req, res) => {
+  try {
+    // Get recent bosses from the last 24 hours, ordered by most recent first
+    const recentBosses = db.prepare(`
+      SELECT b.*, s.name as serverName,
+        CASE
+          WHEN b.hp <= 0 THEN 'Defeated'
+          WHEN b.expiresAt <= ? THEN 'Expired'
+          ELSE 'Active'
+        END as status
+      FROM bosses b
+      LEFT JOIN servers s ON b.guildId = s.guildId
+      WHERE b.startedAt > ?
+      ORDER BY b.startedAt DESC
+      LIMIT 10
+    `).all(Date.now(), Date.now() - (24 * 60 * 60 * 1000));
+
+    // Add emojis and format the data
+    const formattedBosses = recentBosses.map(boss => {
+      let emoji = '👹'; // default
+      if (boss.name.toLowerCase().includes('dragon')) emoji = '🐉';
+      else if (boss.name.toLowerCase().includes('phoenix')) emoji = '🦅';
+      else if (boss.name.toLowerCase().includes('wolf')) emoji = '🐺';
+      else if (boss.name.toLowerCase().includes('spider')) emoji = '🕷️';
+      else if (boss.name.toLowerCase().includes('demon')) emoji = '😈';
+
+      return {
+        id: boss.id,
+        name: boss.name,
+        serverName: boss.serverName || 'Unknown Server',
+        status: boss.status,
+        emoji: emoji,
+        endTime: boss.hp <= 0 ? boss.startedAt + (boss.expiresAt - boss.startedAt) : boss.expiresAt,
+        startedAt: boss.startedAt
+      };
+    });
+
+    res.json({
+      bosses: formattedBosses,
+      count: formattedBosses.length,
+      lastUpdate: Date.now()
+    });
+
+  } catch (error) {
+    console.error('GET /api/bosses/recent error:', error);
+    res.status(500).json({ error: 'server_error' });
+  }
+});
+
 // Get detailed server information
 router.get('/api/server/:guildId', rateLimit(), async (req, res) => {
   try {
@@ -1066,19 +852,8 @@ router.get('/api/server/:guildId', rateLimit(), async (req, res) => {
       LIMIT 5
     `).all(guildId, now - (7 * 24 * 60 * 60 * 1000)); // Last 7 days
 
-    // Get active weather affecting this location
-    try {
-      const { getActiveWeather, calculateDistance } = require('../../utils/weather');
-      const activeWeather = getActiveWeather();
-      const nearbyWeather = activeWeather.filter(weather => {
-        if (server.lat == null || server.lon == null) return false;
-        const distance = calculateDistance(server.lat, server.lon, weather.centerLat, weather.centerLon);
-        return distance <= weather.radius + 50; // Include weather within 50km of affect radius
-      });
-      server.nearbyWeather = nearbyWeather;
-    } catch (e) {
-      server.nearbyWeather = []; // Weather system might not be available
-    }
+    // No weather system
+    server.nearbyWeather = [];
 
     // Get server statistics
     const stats = {
@@ -1482,225 +1257,7 @@ router.get('/api/analytics', rateLimit(30, 60000), async (req, res) => {
   }
 });
 
-// Helper function to check if user meets achievement criteria
-function checkAchievementProgress(userId, achievementId) {
-  try {
-    switch (achievementId) {
-      case 'first_travel':
-        // Check if user has completed at least one travel
-        const travelCount = db.prepare('SELECT COUNT(*) as count FROM travel_history WHERE userId = ?').get(userId);
-        return (travelCount?.count || 0) >= 1;
-        
-      case 'explorer':
-        // Check if user has visited 10 different servers
-        const uniqueServers = db.prepare('SELECT COUNT(DISTINCT toGuildId) as count FROM travel_history WHERE userId = ?').get(userId);
-        return (uniqueServers?.count || 0) >= 10;
-        
-      case 'boss_slayer':
-        // Check if user has actually defeated at least one boss (not just attacked)
-        const playerBossKills = db.prepare('SELECT bossKills FROM players WHERE userId = ?').get(userId);
-        return (playerBossKills?.bossKills || 0) >= 1;
-        
-      case 'collector':
-        // Check if user has 50 items total in inventory
-        const totalItems = db.prepare('SELECT SUM(qty) as total FROM inventory WHERE userId = ?').get(userId);
-        return (totalItems?.total || 0) >= 50;
-        
-      case 'wealthy':
-        // Check if user has 1000+ gems
-        const player = db.prepare('SELECT gems FROM players WHERE userId = ?').get(userId);
-        return (player?.gems || 0) >= 1000;
-        
-      case 'veteran':
-        // Check if user has completed 100 journeys
-        const journeys = db.prepare('SELECT COUNT(*) as count FROM travel_history WHERE userId = ?').get(userId);
-        return (journeys?.count || 0) >= 100;
-        
-      case 'storm_chaser':
-        // Check if user has flown through 10 different weather events
-        const stormEncounters = db.prepare('SELECT COUNT(DISTINCT weatherEventId) as count FROM weather_encounters WHERE userId = ? AND encounterType = "flew_through"').get(userId);
-        return (stormEncounters?.count || 0) >= 10;
-        
-      case 'weather_navigator':
-        // Check if user has successfully avoided 5 severe weather systems
-        const avoidedWeather = db.prepare('SELECT COUNT(*) as count FROM weather_encounters WHERE userId = ? AND encounterType = "avoided"').get(userId);
-        return (avoidedWeather?.count || 0) >= 5;
-        
-      case 'eye_of_storm':
-        // Check if user has traveled through a cyclone or hurricane
-        const severeWeather = db.prepare(`
-          SELECT COUNT(*) as count FROM weather_encounters we 
-          JOIN weather_events w ON we.weatherEventId = w.id 
-          WHERE we.userId = ? AND we.encounterType = "flew_through" 
-          AND w.type IN ('cyclone', 'hurricane')
-        `).get(userId);
-        return (severeWeather?.count || 0) >= 1;
-        
-      case 'aurora_witness':
-        // Check if user has experienced an Aurora Storm
-        const auroraEncounter = db.prepare(`
-          SELECT COUNT(*) as count FROM weather_encounters we 
-          JOIN weather_events w ON we.weatherEventId = w.id 
-          WHERE we.userId = ? AND w.type = 'aurora_storm'
-        `).get(userId);
-        return (auroraEncounter?.count || 0) >= 1;
-        
-      case 'weather_survivor':
-        // Check if user has encountered 25 different weather events
-        const totalWeatherEncounters = db.prepare('SELECT COUNT(DISTINCT weatherEventId) as count FROM weather_encounters WHERE userId = ?').get(userId);
-        return (totalWeatherEncounters?.count || 0) >= 25;
-        
-      default:
-        return false;
-    }
-  } catch (e) {
-    console.warn(`Failed to check progress for achievement ${achievementId}:`, e.message);
-    return false;
-  }
-}
 
-// Achievements endpoint
-router.get('/api/achievements', rateLimit(30, 60000), async (req, res) => {
-  try {
-    if (!req.session?.user) {
-      return res.status(401).json({ error: 'not_authenticated' });
-    }
-    
-    const userId = req.session.user.id;
-    
-    // Get user achievements from database
-    let userAchievements = [];
-    try {
-      userAchievements = db.prepare(`
-        SELECT achievementId, unlockedAt 
-        FROM achievements 
-        WHERE userId = ?
-      `).all(userId);
-    } catch (e) {
-      // If achievements table doesn't exist, return empty array
-    }
-    
-    // Define available achievements
-    const availableAchievements = [
-      {
-        id: 'first_travel',
-        name: 'First Journey',
-        description: 'Complete your first travel',
-        icon: 'ROCKET'
-      },
-      {
-        id: 'explorer',
-        name: 'Explorer',
-        description: 'Visit 10 different servers',
-        icon: 'MAP'
-      },
-      {
-        id: 'boss_slayer',
-        name: 'Boss Slayer',
-        description: 'Defeat your first boss',
-        icon: 'SWORD'
-      },
-      {
-        id: 'collector',
-        name: 'Collector',
-        description: 'Collect 50 items',
-        icon: 'BACKPACK'
-      },
-      {
-        id: 'wealthy',
-        name: 'Wealthy Adventurer',
-        description: 'Accumulate 1000 gems',
-        icon: 'DIAMOND'
-      },
-      {
-        id: 'veteran',
-        name: 'Veteran Traveler',
-        description: 'Complete 100 journeys',
-        icon: 'TROPHY'
-      },
-      {
-        id: 'storm_chaser',
-        name: 'Storm Chaser',
-        description: 'Fly through 10 different weather events',
-        icon: 'TORNADO'
-      },
-      {
-        id: 'weather_navigator',
-        name: 'Weather Navigator',
-        description: 'Successfully avoid 5 severe weather systems',
-        icon: 'COMPASS'
-      },
-      {
-        id: 'eye_of_storm',
-        name: 'Eye of the Storm',
-        description: 'Travel through a cyclone or hurricane',
-        icon: 'EYE'
-      },
-      {
-        id: 'aurora_witness',
-        name: 'Aurora Witness',
-        description: 'Experience the beauty of an Aurora Storm',
-        icon: 'STARS'
-      },
-      {
-        id: 'weather_survivor',
-        name: 'Weather Survivor',
-        description: 'Encounter 25 different weather events',
-        icon: 'CLOUDS'
-      }
-    ];
-    
-    // Check each achievement and auto-unlock if criteria is met
-    const achievementsWithStatus = [];
-    const userAchievementIds = new Set(userAchievements.map(a => a.achievementId));
-    
-    for (const achievement of availableAchievements) {
-      const isUnlocked = userAchievementIds.has(achievement.id);
-      const meetsCriteria = checkAchievementProgress(userId, achievement.id);
-      
-      // Auto-unlock achievement if user meets criteria but hasn't been awarded yet
-      if (!isUnlocked && meetsCriteria) {
-        try {
-          db.prepare(`
-            INSERT INTO achievements (userId, achievementId, unlockedAt, rewardClaimed)
-            VALUES (?, ?, ?, 0)
-          `).run(userId, achievement.id, Date.now());
-          
-          logger.info(`Auto-unlocked achievement ${achievement.id} for user ${userId}`);
-          
-          achievementsWithStatus.push({
-            ...achievement,
-            unlocked: true,
-            justUnlocked: true // Flag for UI to show notification
-          });
-        } catch (e) {
-          // Achievement might already exist due to race condition, treat as unlocked
-          achievementsWithStatus.push({
-            ...achievement,
-            unlocked: true
-          });
-        }
-      } else {
-        achievementsWithStatus.push({
-          ...achievement,
-          unlocked: isUnlocked
-        });
-      }
-    }
-    
-    const totalUnlocked = achievementsWithStatus.filter(a => a.unlocked).length;
-    
-    res.json({
-      achievements: achievementsWithStatus,
-      totalUnlocked,
-      totalAvailable: availableAchievements.length
-    });
-    
-  } catch (error) {
-    console.error('GET /api/achievements error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
 
 // === Admin Gems Management ===
 
@@ -1924,7 +1481,6 @@ router.get('/api/admin/user/debug-stats/:userId', rateLimit(30, 60000), async (r
     const playerStats = db.prepare('SELECT userId, bossKills, serversVisited FROM players WHERE userId = ?').get(userId);
     const battleAnalytics = db.prepare('SELECT COUNT(*) as totalAttacks, COUNT(CASE WHEN bossId IS NOT NULL THEN 1 END) as bossAttacks FROM battle_analytics WHERE userId = ?').get(userId);
     const travelHistory = db.prepare('SELECT COUNT(*) as totalTrips, COUNT(DISTINCT toGuildId) as uniqueServers FROM travel_history WHERE userId = ?').get(userId);
-    const achievements = db.prepare('SELECT COUNT(*) as totalAchievements FROM achievements WHERE userId = ?').get(userId);
     
     // Get sample boss attack entries
     const sampleBossAttacks = db.prepare('SELECT bossId, damage, weapon, timestamp FROM battle_analytics WHERE userId = ? AND bossId IS NOT NULL ORDER BY timestamp DESC LIMIT 5').all(userId);
@@ -1934,7 +1490,6 @@ router.get('/api/admin/user/debug-stats/:userId', rateLimit(30, 60000), async (r
       playerStats: playerStats || { userId, bossKills: 0, serversVisited: 0 },
       battleAnalytics: battleAnalytics || { totalAttacks: 0, bossAttacks: 0 },
       travelHistory: travelHistory || { totalTrips: 0, uniqueServers: 0 },
-      achievements: achievements || { totalAchievements: 0 },
       sampleBossAttacks,
       explanation: {
         bossKills_vs_bossAttacks: "bossKills = actual bosses defeated, bossAttacks = number of times attacked bosses",
@@ -2497,10 +2052,9 @@ router.post('/api/admin/user/reset-stats', rateLimit(20, 10000), ensureCsrf, asy
         resetOperations = [
           'DELETE FROM travel_history WHERE userId = ?',
           'DELETE FROM battle_analytics WHERE userId = ?', 
-          'DELETE FROM achievements WHERE userId = ?',
           'UPDATE players SET serversVisited = 0, bossKills = 0 WHERE userId = ?'
         ];
-        resetDescription = ['travel history', 'battle analytics', 'achievements', 'player stats'];
+        resetDescription = ['travel history', 'battle analytics', 'player stats'];
         break;
         
       case 'travel':
@@ -2519,13 +2073,9 @@ router.post('/api/admin/user/reset-stats', rateLimit(20, 10000), ensureCsrf, asy
         resetDescription = ['battle analytics', 'boss kill count'];
         break;
         
-      case 'achievements':
-        resetOperations = ['DELETE FROM achievements WHERE userId = ?'];
-        resetDescription = ['achievements'];
-        break;
         
       default:
-        return res.status(400).json({ error: 'invalid_input', message: 'resetType must be: all, travel, battle, or achievements' });
+        return res.status(400).json({ error: 'invalid_input', message: 'resetType must be: all, travel, or battle' });
     }
 
     // Execute reset operations
@@ -3300,79 +2850,6 @@ router.get('/api/profile/:userId', rateLimit(30, 60000), async (req, res) => {
       ...travelStats
     };
 
-    // Get achievements for public profiles
-    let achievements = {};
-    try {
-      let userAchievements = [];
-      try {
-        userAchievements = db.prepare(`
-          SELECT achievementId, unlockedAt 
-          FROM achievements 
-          WHERE userId = ?
-        `).all(userId);
-      } catch (e) {
-        // If achievements table doesn't exist, return empty array
-      }
-      
-      const availableAchievements = [
-        {
-          id: 'first_travel',
-          name: 'First Journey',
-          description: 'Complete your first travel',
-          icon: 'ROCKET'
-        },
-        {
-          id: 'explorer',
-          name: 'Explorer',
-          description: 'Visit 10 different servers',
-          icon: 'MAP'
-        },
-        {
-          id: 'boss_slayer',
-          name: 'Boss Slayer',
-          description: 'Defeat your first boss',
-          icon: 'SWORD'
-        },
-        {
-          id: 'collector',
-          name: 'Collector',
-          description: 'Collect 50 items',
-          icon: 'BACKPACK'
-        },
-        {
-          id: 'wealthy',
-          name: 'Wealthy Adventurer',
-          description: 'Accumulate 1000 gems',
-          icon: 'DIAMOND'
-        },
-        {
-          id: 'veteran',
-          name: 'Veteran Traveler',
-          description: 'Complete 100 journeys',
-          icon: 'TROPHY'
-        }
-      ];
-      
-      // Add unlocked status based on actual user achievements
-      const userAchievementIds = new Set(userAchievements.map(a => a.achievementId));
-      const achievementsWithStatus = availableAchievements.map(achievement => ({
-        ...achievement,
-        unlocked: userAchievementIds.has(achievement.id)
-      }));
-      
-      achievements = {
-        achievements: achievementsWithStatus,
-        totalUnlocked: userAchievements.length,
-        totalAvailable: availableAchievements.length
-      };
-    } catch (e) {
-      // Default empty achievements
-      achievements = {
-        achievements: [],
-        totalUnlocked: 0,
-        totalAvailable: 0
-      };
-    }
 
     const profileData = {
       user: {
@@ -3393,7 +2870,6 @@ router.get('/api/profile/:userId', rateLimit(30, 60000), async (req, res) => {
       travel,
       currentLocationServer,
       analytics,
-      achievements,
       isOwnProfile: req.session?.user?.id === userId
     };
 
@@ -3478,45 +2954,6 @@ router.get('/api/boss-timer', rateLimit(60, 60000), async (req, res) => {
   }
 });
 
-// Weather events endpoint for real-time weather data
-router.get('/api/weather-events', rateLimit(60, 60000), async (req, res) => {
-  try {
-    const { getActiveWeather, WEATHER_TYPES } = require('../../utils/weather');
-    const { db } = require('../../utils/store_sqlite');
-
-    const activeWeather = getActiveWeather();
-
-    // Get weather events with region and server information
-    const weatherData = activeWeather.map(weather => {
-      // Get server information
-      const server = db.prepare('SELECT name, biome, lat, lon FROM servers WHERE guildId = ? AND archived = 0').get(weather.guildId);
-
-      return {
-        id: weather.id,
-        type: weather.type,
-        name: WEATHER_TYPES[weather.type]?.name || weather.type,
-        icon: WEATHER_TYPES[weather.type]?.icon || '🌤️',
-        color: WEATHER_TYPES[weather.type]?.color || '#808080',
-        severity: weather.severity,
-        region: server?.biome || 'Unknown Region',
-        serverName: server?.name || 'Unknown Server',
-        coordinates: server ? { lat: server.lat, lon: server.lon } : null,
-        expiresAt: weather.expiresAt,
-        timeRemaining: weather.expiresAt - Date.now()
-      };
-    }).filter(weather => weather.timeRemaining > 0); // Only show active weather
-
-    res.json({
-      events: weatherData,
-      totalActive: weatherData.length,
-      lastUpdate: Date.now()
-    });
-
-  } catch (error) {
-    console.error('GET /api/weather-events error:', error);
-    res.status(500).json({ error: 'server_error' });
-  }
-});
 
 // Travel routes endpoint for popular travel destinations (resets weekly)
 router.get('/api/travel-routes', rateLimit(60, 60000), async (req, res) => {
