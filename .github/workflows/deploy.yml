@@ -1,0 +1,46 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || '22' }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            cd /home/${{ secrets.VPS_USER }}/questcord
+
+            # Ensure it's a git repo on main and force to latest
+            if [ ! -d .git ]; then
+              echo "Repo missing. Run: git clone <SSH_URL> ~/questcord"
+              exit 1
+            fi
+            git fetch --all --prune
+            git checkout main || git checkout -b main
+            git reset --hard origin/main
+
+            # Install prod deps (your package.json is under production/)
+            cd production
+            npm ci --only=production || npm install --only=production
+
+            # Make sure pm2 is available in non-login shell
+            if ! command -v pm2 >/dev/null 2>&1 && [ -x "/usr/bin/pm2" ]; then
+              export PATH="/usr/bin:$PATH"
+            fi
+
+            # Start or restart your processes
+            pm2 restart questcord-bot    || pm2 start src/index.js       --name questcord-bot
+            pm2 restart questcord-worker || pm2 start worker/spawner.js  --name questcord-worker
+            pm2 save
