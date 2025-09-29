@@ -291,44 +291,16 @@ module.exports = {
     const maxS = tcfg.maxSeconds ?? 600;       // Maximum travel time (10 minutes)
     const distMult = tcfg.distanceMultiplier ?? 0.2; // Distance to time conversion factor
 
-    // Initialize weather system variables for travel route calculation
-    let weatherInfo = null;
-    let weatherMessage = '';
-    let weatherTimeMultiplier = 1.0; // Default no weather delay
-    
-    try {
-      // Attempt to load weather system for route planning
-      const { getWeatherEffectsForTravel, recordWeatherEncounter } = require('../utils/weather');
-      if (fromServer && fromServer.lat != null) {
-        // Get weather effects along the travel route
-        weatherInfo = getWeatherEffectsForTravel(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
-        weatherTimeMultiplier = weatherInfo.timeMultiplier || 1.0;
-        
-        // Format weather message based on conditions encountered
-        if (weatherInfo.detourRequired) {
-          // Severe weather requiring route changes
-          weatherMessage = `\n🌪️ **Weather Alert:** Route adjusted to avoid ${weatherInfo.weatherAvoided}`;
-        } else if (weatherInfo.weatherDescription !== 'Clear skies') {
-          // Minor weather causing delays but no detour needed
-          weatherMessage = `\n⛅ **Weather:** ${weatherInfo.weatherDescription} (${Math.round((weatherTimeMultiplier - 1) * 100)}% slower)`;
-        }
-      }
-    } catch (error) {
-      // Weather system is optional - continue without it if unavailable
-      console.warn('[landmark travel] Weather system unavailable:', error.message);
-    }
 
     // Initialize travel time with minimum duration as fallback
     let timeSec = minS;
     if (fromServer && fromServer.lat != null) {
-      // Calculate distance, using weather-adjusted route if available
-      const d = weatherInfo ? weatherInfo.totalDistance : haversine(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
+      // Calculate distance
+      const d = haversine(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
       // Get user's vehicle speed multiplier (premium users travel faster)
       const mult = await vehicleSpeed(interaction.client, interaction.user.id);
       // Calculate base travel time: minimum + (distance * multiplier) / vehicle speed
       let base = minS + (d * distMult) / mult;
-      // Apply weather time multiplier (storms slow travel, clear skies neutral)
-      base = Math.round(base * weatherTimeMultiplier);
 
       // Get player's current stamina for travel time reduction calculation
       const staminaRow = db.prepare('SELECT stamina FROM players WHERE userId=?').get(interaction.user.id);
@@ -380,7 +352,7 @@ module.exports = {
     // Get speed multiplier for display in embed
     const speedMult = await vehicleSpeed(interaction.client, interaction.user.id);
     
-    // Calculate actual distance for display purposes (not weather-adjusted)
+    // Calculate actual distance for display purposes
     const distance = fromServer && fromServer.lat != null ? 
       haversine(fromServer.lat, fromServer.lon, dest.lat, dest.lon) : 0;
     
@@ -426,9 +398,6 @@ module.exports = {
         }
       );
 
-    if (weatherMessage) {
-      travelEmbed.setDescription(`Traveling to ${dest.name}${weatherMessage}`);
-    }
 
     travelEmbed.setFooter({
       text: `QuestCord • Landing in ${Math.round(timeSec / 60)} minutes`,
@@ -469,43 +438,13 @@ module.exports = {
     const maxS = tcfg.maxSeconds ?? 600;
     const distMult = tcfg.distanceMultiplier ?? 0.2;
 
-    // Check for weather effects and calculate intelligent route
-    let weatherInfo = null;
-    let weatherMessage = '';
-    let weatherTimeMultiplier = 1.0;
-    
-    try {
-      const { getWeatherEffectsForTravel, recordWeatherEncounter } = require('../utils/weather');
-      if (fromServer && fromServer.lat != null) {
-        weatherInfo = getWeatherEffectsForTravel(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
-        weatherTimeMultiplier = weatherInfo.timeMultiplier || 1.0;
-        
-        if (weatherInfo.detourRequired) {
-          weatherMessage = `\n🌪️ **Weather Alert:** Route adjusted to avoid ${weatherInfo.weatherAvoided}`;
-          // Record weather avoidance for achievements
-          for (const weatherEvent of weatherInfo.weatherEncountered) {
-            recordWeatherEncounter(interaction.user.id, weatherEvent.id, 'avoided');
-          }
-        } else if (weatherInfo.weatherDescription !== 'Clear skies') {
-          weatherMessage = `\n⛅ **Weather:** ${weatherInfo.weatherDescription} (${Math.round((weatherTimeMultiplier - 1) * 100)}% slower)`;
-          // Record weather encounter for achievements
-          for (const effect of weatherInfo.weatherEffects) {
-            recordWeatherEncounter(interaction.user.id, effect.weather.id, 'flew_through');
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('[travel] Weather system unavailable:', error.message);
-    }
 
     let timeSec = minS;
     if (fromServer && fromServer.lat != null) {
-      const d = weatherInfo ? weatherInfo.totalDistance : haversine(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
+      const d = haversine(fromServer.lat, fromServer.lon, dest.lat, dest.lon);
       const mult = await vehicleSpeed(interaction.client, interaction.user.id);
       let base = minS + (d * distMult) / mult;
       
-      // Apply weather time multiplier
-      base *= weatherTimeMultiplier;
       
       const staminaRow = db.prepare('SELECT stamina FROM players WHERE userId=?').get(interaction.user.id);
       const stamina = staminaRow?.stamina || 0;
@@ -614,12 +553,6 @@ module.exports = {
       });
     }
 
-    if (weatherMessage) {
-      travelEmbed.addFields({
-        name: '🌦️ Weather Conditions',
-        value: weatherMessage.replace(/^\n/, ''),
-        inline: false
-      });
     }
 
     travelEmbed
