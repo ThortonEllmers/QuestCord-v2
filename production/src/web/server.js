@@ -97,7 +97,7 @@ function createWebServer() {
       }
 
       // Redirect to ban page with details
-      const banPageUrl = `/banned.html?ip=${encodeURIComponent(clientIP)}&reason=${encodeURIComponent(ban.reason)}&bannedAt=${ban.bannedAt}&expiresAt=${ban.expiresAt || 'null'}&bannedBy=${encodeURIComponent(bannedByName)}`;
+      const banPageUrl = `/banned.html?ip=${encodeURIComponent(clientIP)}&reason=${encodeURIComponent(ban.reason)}&bannedAt=${ban.bannedAt}&expiresAt=${ban.expiresAt || 'null'}&bannedBy=${encodeURIComponent(bannedByName)}&banId=${encodeURIComponent(ban.banId)}`;
       return res.redirect(banPageUrl);
     }
 
