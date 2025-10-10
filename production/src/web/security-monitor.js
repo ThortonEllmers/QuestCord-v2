@@ -17,6 +17,7 @@ const https = require('https');
 const http = require('http');
 const { db, generateBanId } = require('../utils/store_sqlite');
 const { normalizeIP } = require('../utils/ip_bans');
+const logger = require('../utils/logger');
 
 // In-memory tracking of suspicious activity per IP
 const suspiciousActivity = new Map();
@@ -411,7 +412,7 @@ function securityMonitor(req, res, next) {
 
   // Debug logging: Show current request count every 5th request
   if (rateData && rateData.requests && rateData.requests.length % 5 === 0 && rateData.requests.length > 0) {
-    console.log('[RateLimit] IP %s: %d requests in last 60s (endpoints: %d unique)',
+    logger.warn('[RateLimit] IP %s: %d requests in last 60s (endpoints: %d unique)',
       ip, rateData.requests.length, rateData.endpoints.length);
   }
 
@@ -531,17 +532,17 @@ function securityMonitor(req, res, next) {
       });
 
       const severity = getSeverity(tracking.totalAttempts);
-      console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.warn('%s SECURITY ALERT: %s severity attack detected', severity.emoji, severity.level);
-      console.warn('🌐 IP: %s', ip);
-      console.warn('📊 Attempts: %d', tracking.totalAttempts);
-      console.warn('🎯 Unique Endpoints: %d', tracking.uniqueEndpoints);
-      console.warn('📝 Latest: %s (%s)', req.path, suspiciousCheck.reason);
-      console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('%s SECURITY ALERT: %s severity attack detected', severity.emoji, severity.level);
+      logger.warn('🌐 IP: %s', ip);
+      logger.warn('📊 Attempts: %d', tracking.totalAttempts);
+      logger.warn('🎯 Unique Endpoints: %d', tracking.uniqueEndpoints);
+      logger.warn('📝 Latest: %s (%s)', req.path, suspiciousCheck.reason);
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     // Log suspicious request
-    console.warn('[Security] Suspicious request from %s: %s (%s)',
+    logger.warn('[Security] Suspicious request from %s: %s (%s)',
                  ip, req.path, suspiciousCheck.reason);
   }
 
