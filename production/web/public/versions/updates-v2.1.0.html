@@ -114,6 +114,18 @@
       border-radius: 12px;
       text-align: center;
       margin-bottom: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      color: var(--text-light);
+    }
+
+    .version-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
     }
 
     .version-number {
@@ -222,13 +234,13 @@
 </head>
 <body>
   <div class="container">
-    <div class="version-header">
-      <div class="version-number">Version 2.1.0 <span class="legacy-badge">Legacy</span></div>
-      <div class="release-date">Released: September 20, 2025</div>
-    </div>
+    <a href="/updates" class="version-header">
+      <div class="version-number">Version 2.1.0 <span class="legacy-badge">Legacy</span></a>
+      <div class="release-date">Released: September 20, 2025</a>
+    </a>
 
     <div class="update-section">
-      <div class="update-category new">NEW FEATURES</div>
+      <div class="update-category new">NEW FEATURES</a>
       <h3>🎮 Core System Enhancements</h3>
       <ul class="feature-list">
         <li><strong>Advanced Inventory System</strong> - Complete overhaul with sorting and filtering</li>
@@ -236,10 +248,10 @@
         <li><strong>Premium Integration</strong> - Enhanced gem-based premium features</li>
         <li><strong>Real-time Status Tracking</strong> - Live system health monitoring</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category improvement">IMPROVEMENTS</div>
+      <div class="update-category improvement">IMPROVEMENTS</a>
       <h3>🔧 System Enhancements</h3>
       <ul class="feature-list improvements">
         <li><strong>Database Performance</strong> - Optimized queries for faster response times</li>
@@ -247,10 +259,10 @@
         <li><strong>Error Handling</strong> - Comprehensive error logging and recovery</li>
         <li><strong>Security Updates</strong> - Enhanced authentication and rate limiting</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category ui">UI/UX UPDATES</div>
+      <div class="update-category ui">UI/UX UPDATES</a>
       <h3>🎨 Visual Improvements</h3>
       <ul class="feature-list ui">
         <li><strong>Responsive Design</strong> - Better mobile compatibility</li>
@@ -258,10 +270,10 @@
         <li><strong>Color Scheme</strong> - Updated brand colors and accessibility</li>
         <li><strong>Typography</strong> - Improved readability with Inter font family</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category fix">BUG FIXES</div>
+      <div class="update-category fix">BUG FIXES</a>
       <h3>🐛 Resolved Issues</h3>
       <ul class="feature-list fixes">
         <li><strong>Travel System</strong> - Fixed location synchronization issues</li>
@@ -269,19 +281,19 @@
         <li><strong>Memory Leaks</strong> - Fixed various memory management issues</li>
         <li><strong>Command Timeouts</strong> - Improved response time for all commands</li>
       </ul>
-    </div>
+    </a>
 
     <div class="technical-note">
       <p><strong>🔧 Technical Note:</strong> Version 2.1.0 introduced the foundation for our real-time systems architecture. This release focused on stability and performance optimizations that enabled future feature development.</p>
-    </div>
+    </a>
 
     <div style="text-align: center; margin-top: 40px;">
       <a href="/updates" class="back-button">Back to Updates</a>
-    </div>
-  </div>
+    </a>
+  </a>
 
   <!-- QuestCord Standalone Footer -->
-  <div id="footer-container"></div>
+  <div id="footer-container"></a>
   <script src="../shared/footer.js"></script>
 
 </body>
