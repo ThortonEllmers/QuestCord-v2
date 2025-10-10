@@ -19,7 +19,7 @@
     }
   },
   "web": {
-    "port": 3000,
+    "port": 80,
     "publicBaseUrl": "https://questcord.fun"
   },
   "economy": {
