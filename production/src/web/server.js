@@ -31,6 +31,8 @@ const { checkAndFixWaterServers } = require('../utils/geo');
 const { securityHeaders } = require('./security');
 // Import IP ban utilities for blocking banned IP addresses
 const { isIPBanned, getClientIP, cleanupExpiredIPBans } = require('../utils/ip_bans');
+// Import security monitoring middleware for detecting attack attempts
+const { securityMonitor } = require('./security-monitor');
 // Define constant for session cookie expiration (24 hours in milliseconds)
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -58,6 +60,10 @@ function createWebServer() {
   // Apply comprehensive security headers to all incoming requests
   // Includes CSP, HSTS, X-Frame-Options, and other security measures
   app.use(securityHeaders);
+
+  // Security monitoring - Detect and alert on suspicious activity patterns
+  // Monitors for brute force attempts, path traversal, SQL injection, etc.
+  app.use(securityMonitor);
 
   // IP Ban Middleware - Block banned IP addresses from accessing the website
   // This must come early in the middleware chain to prevent banned IPs from consuming resources
