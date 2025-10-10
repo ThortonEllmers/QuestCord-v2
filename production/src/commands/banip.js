@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { db, logCommand, generateBanId } = require('../utils/store_sqlite');
 const { isStaffOrDev, getUserPrefix } = require('../utils/roles');
 const { fetchRoleLevel } = require('../web/util');
+const { normalizeIP, isValidIP } = require('../utils/ip_bans');
 const logger = require('../utils/logger');
 
 module.exports = {
@@ -13,7 +14,7 @@ module.exports = {
       .setDescription('🚫 Ban an IP address from using the bot and website')
       .addStringOption(o => o
         .setName('ip')
-        .setDescription('🌐 IP address to ban (e.g., 192.168.1.1)')
+        .setDescription('🌐 IP to ban (IPv4, IPv6, or ::ffff:x.x.x.x format)')
         .setRequired(true))
       .addStringOption(o => o
         .setName('reason')
@@ -67,19 +68,21 @@ module.exports = {
     const adminRole = await fetchRoleLevel(interaction.user.id);
 
     if (sub === 'add') {
-      const ip = interaction.options.getString('ip');
+      const rawIP = interaction.options.getString('ip').trim();
       const reason = interaction.options.getString('reason');
       const minutes = interaction.options.getInteger('minutes');
       const exp = minutes > 0 ? Date.now() + minutes * 60000 : null;
 
-      // Validate IP address format (basic validation)
-      const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-      if (!ipRegex.test(ip)) {
+      // Validate IP address format (supports IPv4, IPv6, and IPv4-mapped IPv6)
+      if (!isValidIP(rawIP)) {
         return interaction.reply({
-          content: `${userPrefix} ❌ Invalid IP address format. Please use format: xxx.xxx.xxx.xxx`,
+          content: `${userPrefix} ❌ Invalid IP address format.\n\n**Supported formats:**\n• IPv4: \`192.168.1.1\`\n• IPv6: \`2001:0db8:85a3::8a2e:0370:7334\`\n• IPv4-mapped IPv6: \`::ffff:192.168.1.1\``,
           ephemeral: true
         });
       }
+
+      // Normalize the IP address for consistent storage
+      const ip = normalizeIP(rawIP);
 
       // Check if IP is already banned
       const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
@@ -122,6 +125,16 @@ module.exports = {
         durationText = remainingHours > 0 ? `**${days}d ${remainingHours}h**` : `**${days} days**`;
       }
 
+      // Determine IP format for display
+      let ipFormat = 'IPv4';
+      if (rawIP.includes(':')) {
+        if (rawIP.startsWith('::ffff:')) {
+          ipFormat = 'IPv4-mapped IPv6';
+        } else {
+          ipFormat = 'IPv6';
+        }
+      }
+
       const embed = new EmbedBuilder()
         .setTitle('🔨🚫 **IP ADDRESS BANNED** 🚫🔨')
         .setDescription(`🌐 *Global IP ban applied - Cannot access bot or website* ⚡`)
@@ -133,7 +146,7 @@ module.exports = {
         .addFields(
           {
             name: '🌐 **Banned IP Address**',
-            value: `\`${ip}\`${existingBan ? '\n⚠️ *Previously banned*' : ''}`,
+            value: `\`${ip}\`\n**Format:** ${ipFormat}${rawIP !== ip ? `\n**Original:** \`${rawIP}\`` : ''}${existingBan ? '\n⚠️ *Previously banned*' : ''}`,
             inline: true
           },
           {
@@ -186,7 +199,10 @@ module.exports = {
     }
 
     if (sub === 'remove') {
-      const ip = interaction.options.getString('ip');
+      const rawIP = interaction.options.getString('ip').trim();
+
+      // Normalize the IP address for consistent lookups
+      const ip = normalizeIP(rawIP);
 
       // Check if IP is actually banned
       const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
@@ -252,7 +268,10 @@ module.exports = {
     }
 
     if (sub === 'check') {
-      const ip = interaction.options.getString('ip');
+      const rawIP = interaction.options.getString('ip').trim();
+
+      // Normalize the IP address for consistent lookups
+      const ip = normalizeIP(rawIP);
 
       // Check if IP is banned
       const ban = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
