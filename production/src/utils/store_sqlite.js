@@ -692,23 +692,44 @@ try {
 
 /**
  * Log a command execution for live activity display
- * @param {string} userId - Discord user ID who ran the command
+ * @param {string|object} userId - Discord user ID or interaction object
  * @param {string} command - Command name (without slash prefix)
  * @param {string} guildId - Discord guild ID where command was run
+ * @param {string} username - Discord username (optional, auto-extracted from interaction)
  */
-function logCommand(userId, command, guildId) {
+function logCommand(userId, command, guildId, username = null) {
   try {
+    // Handle both old style (userId string) and new style (interaction object)
+    let actualUserId = userId;
+    let actualUsername = username;
+
+    // If first parameter is an interaction object, extract userId and username
+    if (typeof userId === 'object' && userId.user) {
+      actualUserId = userId.user.id;
+      actualUsername = userId.user.username || userId.user.tag || username;
+      guildId = guildId || userId.guild?.id;
+    }
+
     // Ensure the player exists before logging command
-    db.prepare(`
-      INSERT OR IGNORE INTO players (userId, name)
-      VALUES (?, ?)
-    `).run(userId, 'Unknown User');
+    // If username is provided, update the name; otherwise use existing or default
+    if (actualUsername) {
+      db.prepare(`
+        INSERT INTO players (userId, name)
+        VALUES (?, ?)
+        ON CONFLICT(userId) DO UPDATE SET name = excluded.name
+      `).run(actualUserId, actualUsername);
+    } else {
+      db.prepare(`
+        INSERT OR IGNORE INTO players (userId, name)
+        VALUES (?, ?)
+      `).run(actualUserId, 'Unknown User');
+    }
 
     // Insert the command log entry
     db.prepare(`
       INSERT INTO command_logs (userId, command, guildId, timestamp)
       VALUES (?, ?, ?, ?)
-    `).run(userId, command, guildId, Date.now());
+    `).run(actualUserId, command, guildId, Date.now());
 
     // Clean up old entries (keep only last 24 hours)
     db.prepare(`
