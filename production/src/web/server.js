@@ -103,7 +103,11 @@ function createWebServer() {
 
   // Configure Express session middleware for maintaining user authentication state
   // Sessions are required for OAuth flow and maintaining login status across requests
-  app.use(session({
+  //
+  // NOTE: Using MemoryStore (default) for sessions. While not recommended for multi-process
+  // production deployments, it's acceptable for single-process PM2 deployments. For true
+  // horizontal scaling, consider using connect-redis or express-session-sqlite.
+  const sessionConfig = {
     name: 'questcord_session',  // Custom session cookie name (helps with security through obscurity)
     secret: process.env.SESSION_SECRET || (() => {
       if (process.env.NODE_ENV === 'production') {
@@ -120,7 +124,9 @@ function createWebServer() {
       domain: cookieDomain,  // Set cookie domain for subdomain sharing if configured
       sameSite: 'lax'  // CSRF protection while allowing normal navigation
     }
-  }));
+  };
+
+  app.use(session(sessionConfig));
 
   // Serve static files (CSS, JavaScript, images, etc.) from the web/public directory
   // This middleware handles all requests for static assets used by the web interface
