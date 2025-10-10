@@ -774,6 +774,13 @@
 
             .stats {
                 gap: 32px;
+                justify-items: center;
+            }
+
+            .stat {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
             }
 
             .features {
@@ -783,6 +790,13 @@
             .features-grid {
                 grid-template-columns: 1fr;
                 gap: 24px;
+                justify-items: center;
+            }
+
+            .feature-card {
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
             }
 
             .section-header h2 {
@@ -791,6 +805,39 @@
 
             .faq {
                 padding: 80px 0;
+            }
+
+            .faq-container {
+                width: 100%;
+                padding: 0 16px;
+            }
+
+            .faq-item {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+                padding: 0 16px;
+            }
+
+            .event-widget {
+                max-width: 100%;
+                padding: 24px;
+            }
+
+            .widget-header {
+                flex-direction: row;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .boss-item,
+            .activity-item {
+                max-width: 100%;
+                flex-direction: column;
+                text-align: center;
             }
         }
 
@@ -806,6 +853,7 @@
             gap: 30px;
             max-width: 1200px;
             margin: 0 auto;
+            justify-items: center;
         }
 
         .event-widget {
@@ -816,6 +864,8 @@
             transition: all 0.2s ease;
             opacity: 0;
             transform: translateX(-50px);
+            width: 100%;
+            max-width: 450px;
         }
 
         .event-widget[data-animate="right"] {
@@ -916,6 +966,8 @@
             background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
             margin-bottom: 12px;
+            margin-left: auto;
+            margin-right: auto;
             transition: all 0.2s ease;
             width: 100%;
             max-width: 280px;
@@ -977,6 +1029,8 @@
             border-bottom: 1px solid var(--border);
             width: 100%;
             max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .activity-item:last-child {
