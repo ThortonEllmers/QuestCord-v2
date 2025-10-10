@@ -672,47 +672,6 @@ try {
   `);
   console.log('[db] Ensured system_settings table exists');
 
-  /**
-   * WEATHER EVENTS TABLE - Dynamic Weather System
-   *
-   * Stores active weather events that affect travel and gameplay.
-   * Weather events are temporary regional effects with geographic radius.
-   */
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS weather_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,    -- Unique weather event ID
-      type TEXT NOT NULL,                      -- Weather type (storm, fog, etc.)
-      centerLat REAL NOT NULL,                 -- Center latitude of weather event
-      centerLon REAL NOT NULL,                 -- Center longitude of weather event
-      radius REAL NOT NULL,                    -- Radius of effect in kilometers
-      severity INTEGER NOT NULL,               -- Severity level (1-5)
-      startTime INTEGER NOT NULL,              -- When weather event started
-      endTime INTEGER NOT NULL,                -- When weather event expires
-      active INTEGER DEFAULT 1,                -- Whether event is currently active
-      specialEffects TEXT,                     -- JSON string of special effects
-      created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000) -- Creation timestamp
-    )
-  `);
-  console.log('[db] Ensured weather_events table exists');
-
-  /**
-   * WEATHER ENCOUNTERS TABLE - Player Weather Interactions
-   *
-   * Tracks player encounters with weather events for statistics and rewards.
-   * Links to weather_events table via foreign key.
-   */
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS weather_encounters (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,    -- Unique encounter ID
-      userId TEXT NOT NULL,                    -- Player who encountered weather
-      weatherEventId INTEGER NOT NULL,         -- Reference to weather event
-      encounterType TEXT NOT NULL,             -- Type of encounter (travel, etc.)
-      timestamp INTEGER NOT NULL,              -- When encounter occurred
-      FOREIGN KEY (weatherEventId) REFERENCES weather_events(id) -- Link to weather event
-    )
-  `);
-  console.log('[db] Ensured weather_encounters table exists');
-
 } catch (e) {
   // Log if advanced feature table creation fails
   console.warn('[db] Could not create new feature tables:', e.message);
