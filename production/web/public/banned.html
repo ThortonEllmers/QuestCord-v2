@@ -198,7 +198,7 @@
 
         <div class="ban-footer">
             <p>If you believe this ban was issued in error, please contact the QuestCord staff team.</p>
-            <p style="margin-top: 12px; font-size: 0.85rem;">Ban ID: <code id="ban-timestamp">...</code></p>
+            <p style="margin-top: 12px; font-size: 0.85rem;">Ban ID: <code id="ban-id-display">...</code></p>
         </div>
 
         <a href="https://discord.gg/ACGKvKkZ5Z" class="home-button" style="background: #5865f2; margin-right: 12px;">Appeal Ban on Discord</a>
@@ -234,8 +234,11 @@
         if (bannedAt) {
             const banDate = new Date(parseInt(bannedAt));
             document.getElementById('banned-at').textContent = banDate.toLocaleString();
-            document.getElementById('ban-timestamp').textContent = bannedAt;
         }
+
+        // Set unique Ban ID (8-character alphanumeric)
+        const banId = urlParams.get('banId') || 'Unknown';
+        document.getElementById('ban-id-display').textContent = banId;
 
         // Set banned by (staff member)
         const bannedBy = urlParams.get('bannedBy') || 'QuestCord Staff';
