@@ -312,7 +312,35 @@ function safeDbOperation(operation, fallbackValue = null) {
   }
 }
 
-module.exports = { db, logCommand, checkDatabaseHealth, safeDbOperation };
+/**
+ * Generate a unique ban ID
+ * @returns {string} 8-character alphanumeric ban ID (e.g., "A3F7K2M9")
+ */
+function generateBanId() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let banId;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  do {
+    banId = '';
+    for (let i = 0; i < 8; i++) {
+      banId += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    attempts++;
+
+    // Check if this ID already exists
+    const existing = db.prepare('SELECT 1 FROM ip_bans WHERE banId = ?').get(banId);
+    if (!existing) {
+      return banId;
+    }
+  } while (attempts < maxAttempts);
+
+  // Fallback: use timestamp-based ID if collision keeps happening
+  return `BAN${Date.now().toString(36).toUpperCase()}`;
+}
+
+module.exports = { db, logCommand, checkDatabaseHealth, safeDbOperation, generateBanId };
 
 /**
  * DYNAMIC COLUMN EXISTENCE CHECKS AND ADDITIONS
@@ -680,7 +708,8 @@ try {
    */
   db.exec(`
     CREATE TABLE IF NOT EXISTS ip_bans (
-      ip TEXT PRIMARY KEY,                -- IP address to ban
+      banId TEXT PRIMARY KEY,             -- Unique ban ID (8-character alphanumeric)
+      ip TEXT NOT NULL UNIQUE,            -- IP address to ban
       reason TEXT NOT NULL,               -- Reason for the ban
       bannedBy TEXT NOT NULL,             -- User ID of staff member who issued ban
       bannedAt INTEGER NOT NULL,          -- When ban was applied (timestamp)
