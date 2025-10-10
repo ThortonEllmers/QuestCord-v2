@@ -40,6 +40,13 @@ module.exports = {
       .addStringOption(o => o
         .setName('ip')
         .setDescription('🌐 IP address to check')
+        .setRequired(true)))
+    .addSubcommand(sc => sc
+      .setName('lookup')
+      .setDescription('🔎 Look up a ban by Ban ID')
+      .addStringOption(o => o
+        .setName('ban-id')
+        .setDescription('📋 Ban ID (timestamp from ban page)')
         .setRequired(true))),
 
   async execute(interaction){
@@ -394,6 +401,97 @@ module.exports = {
       .setTimestamp();
 
       return interaction.reply({ embeds: [embed] });
+    }
+
+    if (sub === 'lookup') {
+      const banId = interaction.options.getString('ban-id');
+
+      // Try to parse the ban ID as a timestamp
+      const bannedAtTimestamp = parseInt(banId);
+      if (isNaN(bannedAtTimestamp)) {
+        return interaction.reply({
+          content: `${userPrefix} ❌ Invalid Ban ID format. Please provide a valid timestamp.`,
+          ephemeral: true
+        });
+      }
+
+      // Look up ban by bannedAt timestamp
+      const ban = db.prepare('SELECT * FROM ip_bans WHERE bannedAt = ?').get(bannedAtTimestamp);
+
+      if (!ban) {
+        return interaction.reply({
+          content: `${userPrefix} ❌ No ban found with Ban ID: \`${banId}\``,
+          ephemeral: true
+        });
+      }
+
+      // Check if ban is expired
+      const isExpired = ban.expiresAt && ban.expiresAt <= Date.now();
+
+      const embed = new EmbedBuilder()
+        .setTitle(isExpired ? '⚠️ **IP BAN EXPIRED** ⚠️' : '🚫 **IP BAN FOUND** 🚫')
+        .setDescription(isExpired ?
+          `⏰ *This IP ban has expired and should be cleaned up* ⚡` :
+          `🔎 *Ban details retrieved by Ban ID* ⚡`)
+        .setColor(isExpired ? 0xF39C12 : 0xE74C3C)
+        .addFields(
+          {
+            name: '🆔 **Ban ID**',
+            value: `\`${ban.bannedAt}\``,
+            inline: true
+          },
+          {
+            name: '🌐 **IP Address**',
+            value: `\`${ban.ip}\``,
+            inline: true
+          },
+          {
+            name: '📊 **Status**',
+            value: isExpired ? '⚠️ Expired' : '🚫 Active',
+            inline: true
+          }
+        );
+
+      embed.addFields(
+        {
+          name: '📝 **Ban Reason**',
+          value: ban.reason,
+          inline: false
+        },
+        {
+          name: '🛡️ **Banned By**',
+          value: `<@${ban.bannedBy}>`,
+          inline: true
+        },
+        {
+          name: '📅 **Banned At**',
+          value: `<t:${Math.floor(ban.bannedAt / 1000)}:F>\n<t:${Math.floor(ban.bannedAt / 1000)}:R>`,
+          inline: true
+        },
+        {
+          name: '⏰ **Duration**',
+          value: ban.expiresAt ?
+            `**Expires:** <t:${Math.floor(ban.expiresAt / 1000)}:F>\n<t:${Math.floor(ban.expiresAt / 1000)}:R>` :
+            '**Permanent**',
+          inline: true
+        }
+      );
+
+      if (ban.notes) {
+        embed.addFields({
+          name: '📌 **Notes**',
+          value: ban.notes,
+          inline: false
+        });
+      }
+
+      embed.setFooter({
+        text: `🛡️ QuestCord IP Ban System • Ban Lookup`,
+        iconURL: interaction.client.user.displayAvatarURL()
+      })
+      .setTimestamp();
+
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
 };
