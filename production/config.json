@@ -1,7 +1,6 @@
 {
   "_comment": "QuestCord Configuration File",
   "_lastUpdated": "2025-09-25",
-
   "environments": {
     "development": {
       "tokens": 10,
@@ -19,64 +18,60 @@
       "healthRegen": 5
     }
   },
-
   "web": {
-    "port": 3000,
+    "port": 80,
     "publicBaseUrl": "https://questcord.fun"
   },
-
   "economy": {
     "currencyName": "Drakari",
     "marketTaxPct": 5,
     "tradeBlacklist": []
   },
-
   "game": {
     "rarityMultipliers": {
-    "common": 1,
-    "uncommon": 1.5,
-    "rare": 2,
-    "epic": 3,
-    "legendary": 5,
+      "common": 1,
+      "uncommon": 1.5,
+      "rare": 2,
+      "epic": 3,
+      "legendary": 5,
       "mythic": 10
     },
-
     "lootRarityWeights": {
-    "1": {
-      "common": 60,
-      "uncommon": 30,
-      "rare": 8,
-      "epic": 2
-    },
-    "2": {
-      "common": 50,
-      "uncommon": 35,
-      "rare": 12,
-      "epic": 3
-    },
-    "3": {
-      "common": 40,
-      "uncommon": 30,
-      "rare": 20,
-      "epic": 8,
-      "legendary": 2
-    },
-    "4": {
-      "common": 30,
-      "uncommon": 25,
-      "rare": 25,
-      "epic": 15,
-      "legendary": 5
-    },
-    "5": {
-      "common": 20,
-      "uncommon": 20,
-      "rare": 25,
-      "epic": 20,
-      "legendary": 10,
-      "mythic": 5
+      "1": {
+        "common": 60,
+        "uncommon": 30,
+        "rare": 8,
+        "epic": 2
+      },
+      "2": {
+        "common": 50,
+        "uncommon": 35,
+        "rare": 12,
+        "epic": 3
+      },
+      "3": {
+        "common": 40,
+        "uncommon": 30,
+        "rare": 20,
+        "epic": 8,
+        "legendary": 2
+      },
+      "4": {
+        "common": 30,
+        "uncommon": 25,
+        "rare": 25,
+        "epic": 15,
+        "legendary": 5
+      },
+      "5": {
+        "common": 20,
+        "uncommon": 20,
+        "rare": 25,
+        "epic": 20,
+        "legendary": 10,
+        "mythic": 5
+      }
     }
-  }
   },
   "regen": {
     "maxHealth": 100,
