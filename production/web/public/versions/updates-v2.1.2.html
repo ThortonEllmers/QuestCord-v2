@@ -114,6 +114,18 @@
       border-radius: 12px;
       text-align: center;
       margin-bottom: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      color: var(--text-light);
+    }
+
+    .version-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
     }
 
     .version-number {
@@ -229,13 +241,13 @@
 </head>
 <body>
   <div class="container">
-    <div class="version-header">
-      <div class="version-number">Version 2.1.2</div>
-      <div class="release-date">Released: September 29, 2025</div>
-    </div>
+    <a href="/updates" class="version-header">
+      <div class="version-number">Version 2.1.2</a>
+      <div class="release-date">Released: September 29, 2025</a>
+    </a>
 
     <div class="update-section">
-      <div class="update-category fix">CRITICAL FIXES</div>
+      <div class="update-category fix">CRITICAL FIXES</a>
       <h3>🐛 Database & Travel System Repairs</h3>
       <ul class="feature-list fixes">
         <li><strong>Weather Command Fixed</strong> - Resolved SQLite3 binding error that prevented /weather command from working</li>
@@ -244,10 +256,10 @@
         <li><strong>Travel Query Optimization</strong> - Added GROUP BY clauses to prevent duplicate server results</li>
         <li><strong>Database Corruption Recovery</strong> - Fixed foreign key constraint violations in weekly reset and added corruption error handling</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category new">NEW FEATURES</div>
+      <div class="update-category new">NEW FEATURES</a>
       <h3>⚡ Live Activity Widget</h3>
       <ul class="feature-list">
         <li><strong>Real-time Command Tracking</strong> - Server Activity widget now shows live command usage as it happens</li>
@@ -263,10 +275,10 @@
         <li><strong>Automatic Weather Generation</strong> - Weather events spawn globally every 5 minutes with realistic severity distribution</li>
         <li><strong>Enhanced Weather Notifications</strong> - Rich embeds show travel warnings, storm details, and affected areas</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category improvement">IMPROVEMENTS</div>
+      <div class="update-category improvement">IMPROVEMENTS</a>
       <h3>🔧 System Enhancements</h3>
       <ul class="feature-list improvements">
         <li><strong>Widget Cleanup</strong> - Removed Live Leaderboard, Market Trends, and Popular Routes widgets for better focus</li>
@@ -275,19 +287,19 @@
         <li><strong>Weather System Reliability</strong> - Fixed column name mismatches throughout weather system</li>
         <li><strong>Database Consistency</strong> - Ensured all weather-related queries use correct column names</li>
       </ul>
-    </div>
+    </a>
 
     <div class="technical-note">
       <p><strong>🔧 Technical Note:</strong> This patch release addresses critical database inconsistencies that were causing command failures. The weather system now uses consistent column naming (endTime) throughout the codebase, and the travel system properly deduplicates server results using GROUP BY clauses.</p>
-    </div>
+    </a>
 
     <div style="text-align: center; margin-top: 40px;">
       <a href="/updates" class="back-button">Back to Updates</a>
-    </div>
-  </div>
+    </a>
+  </a>
 
   <!-- QuestCord Standalone Footer -->
-  <div id="footer-container"></div>
+  <div id="footer-container"></a>
   <script src="../shared/footer.js"></script>
 
 </body>
