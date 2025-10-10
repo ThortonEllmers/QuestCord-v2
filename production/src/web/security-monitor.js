@@ -206,6 +206,17 @@ function securityMonitor(req, res, next) {
                       req.path.startsWith('/auth/') ||
                       req.path.startsWith('/images/') ||
                       req.path.startsWith('/shared/') ||
+                      req.path.startsWith('/store') ||
+                      req.path.startsWith('/health') ||
+                      req.path.startsWith('/enhanced-stats') ||
+                      req.path === '/status' ||
+                      req.path === '/terms' ||
+                      req.path === '/privacy' ||
+                      req.path === '/updates' ||
+                      req.path === '/banned' ||
+                      req.path === '/banned.html' ||
+                      req.path.startsWith('/updates/') ||
+                      req.path.match(/^\/\d{17,19}$/) || // Discord guild ID routes
                       req.path.endsWith('.html');
 
   if (isLegitStatic || isKnownGood) {
