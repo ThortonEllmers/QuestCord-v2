@@ -145,9 +145,6 @@ function createWebServer() {
 
     // Override res.end to log response
     res.end = function(chunk, encoding) {
-      res.end = originalEnd;
-      const result = res.end(chunk, encoding);
-
       const duration = Date.now() - startTime;
       const statusEmoji = res.statusCode < 400 ? '✅' : (res.statusCode < 500 ? '⚠️' : '❌');
 
@@ -165,7 +162,8 @@ function createWebServer() {
         logger.info('%s %s %s %d (%dms)', statusEmoji, req.method, req.path, res.statusCode, duration);
       }
 
-      return result;
+      // Call original end function to actually send the response
+      return originalEnd.call(this, chunk, encoding);
     };
 
     next();
