@@ -76,6 +76,7 @@
       "legendary": 10,
       "mythic": 5
     }
+  }
   },
   "regen": {
     "maxHealth": 100,
