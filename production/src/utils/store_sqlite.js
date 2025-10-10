@@ -672,6 +672,24 @@ try {
   `);
   console.log('[db] Ensured system_settings table exists');
 
+  /**
+   * IP BANS TABLE - IP Address Ban Management
+   *
+   * Manages IP address bans to prevent abusive users from accessing both
+   * the Discord bot and the web server. Supports temporary and permanent bans.
+   */
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ip_bans (
+      ip TEXT PRIMARY KEY,                -- IP address to ban
+      reason TEXT NOT NULL,               -- Reason for the ban
+      bannedBy TEXT NOT NULL,             -- User ID of staff member who issued ban
+      bannedAt INTEGER NOT NULL,          -- When ban was applied (timestamp)
+      expiresAt INTEGER,                  -- When ban expires (NULL = permanent)
+      notes TEXT                          -- Additional notes about the ban
+    )
+  `);
+  console.log('[db] Ensured ip_bans table exists');
+
 } catch (e) {
   // Log if advanced feature table creation fails
   console.warn('[db] Could not create new feature tables:', e.message);
