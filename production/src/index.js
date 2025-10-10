@@ -10,7 +10,11 @@ const { createAutoPlacementIfMissing } = require('./web/util');
 const { placeOnSpiral, findLandPosition, checkAndFixWaterServers, findNonCollidingLandPosition } = require('./utils/geo');
 const logger = require('./utils/logger');
 const config = require('./utils/config');
+const { validateStartupConfiguration } = require('./utils/config-validator');
 const { logBotStartup, logError, logBotShutdown, logCommandError } = require('./utils/webhook_safe');
+
+// Validate configuration before starting
+validateStartupConfiguration(config);
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
