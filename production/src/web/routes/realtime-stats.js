@@ -98,26 +98,6 @@ function recordCommandUsage(commandName, userId, guildId = null, success = true)
   }
 }
 
-// Function to record travel activity
-function recordTravel(userId, fromGuildId, toGuildId) {
-  try {
-    const stmt = db.prepare(`
-      INSERT INTO travel_history (userId, fromGuildId, toGuildId, timestamp)
-      VALUES (?, ?, ?, ?)
-    `);
-    stmt.run(userId, fromGuildId, toGuildId, Date.now());
-
-    // Keep only last 30 days of travel history
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    db.prepare('DELETE FROM travel_history WHERE timestamp < ?').run(thirtyDaysAgo);
-  } catch (error) {
-    if (error.code === 'SQLITE_CORRUPT' || error.message.includes('malformed')) {
-      logger.error('Database corruption detected while recording travel:', error.message);
-    } else {
-      logger.error('Failed to record travel:', error);
-    }
-  }
-}
 
 // Real-time bot statistics endpoint
 router.get('/bot-stats', async (req, res) => {
@@ -427,6 +407,5 @@ router.get('/command-stats', async (req, res) => {
 // Export utility functions for use in other parts of the application
 router.recordUptimeStatus = recordUptimeStatus;
 router.recordCommandUsage = recordCommandUsage;
-router.recordTravel = recordTravel;
 
 module.exports = router;
