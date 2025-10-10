@@ -264,7 +264,15 @@ async function spawnRandomBoss(client = null) {
       expiresAt
     };
     
-    console.log(`[boss_spawner] Spawned Tier ${tier} ${name} (${hp} HP) in ${server.name} (${server.guildId})`);
+    const logger = require('./logger');
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.info('👹 BOSS SPAWNED');
+    logger.info('💀 Boss: %s (Tier %d)', name, tier);
+    logger.info('❤️  HP: %d', hp);
+    logger.info('🏰 Server: %s (%s)', server.name, server.guildId);
+    logger.info('🌿 Biome: %s', server.biome || 'Unknown');
+    logger.info('⏰ Expires: %s', new Date(expiresAt).toISOString());
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     // Send Discord notification (both global and server-specific)
     if (client) {
