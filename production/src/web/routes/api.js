@@ -736,7 +736,7 @@ router.get('/api/bosses/recent', rateLimit(60, 60000), async (req, res) => {
       LEFT JOIN servers s ON b.guildId = s.guildId
       WHERE b.startedAt > ?
       ORDER BY b.startedAt DESC
-      LIMIT 10
+      LIMIT 3
     `).all(Date.now(), Date.now() - (24 * 60 * 60 * 1000));
 
     // Add emojis and format the data
