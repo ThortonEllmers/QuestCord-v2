@@ -4,7 +4,8 @@ const path = require('path');
 const { REST, Routes } = require('discord.js');
 
 const commands = [];
-const dir = path.join(process.cwd(), 'src', 'commands');
+// Go up one directory from scripts/ to production/, then into src/commands
+const dir = path.join(__dirname, '..', 'src', 'commands');
 const cmdFiles = fs.readdirSync(dir).filter(f=>f.endsWith('.js') && !['_common.js','_guard.js'].includes(f));
 for (const f of cmdFiles){
   const c = require(path.join(dir, f));
