@@ -29,6 +29,34 @@
             justify-content: center;
             color: var(--text-light);
             padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .emoji-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-emoji {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.3;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
         }
 
         .ban-container {
@@ -40,6 +68,8 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 2px solid var(--danger);
             text-align: center;
+            position: relative;
+            z-index: 10;
         }
 
         .ban-icon {
@@ -163,6 +193,9 @@
     </style>
 </head>
 <body>
+    <!-- Floating emoji background -->
+    <div class="emoji-container" id="emoji-container"></div>
+
     <div class="ban-container">
         <div class="ban-icon">🚫</div>
         <h1 class="ban-title">Access Denied</h1>
@@ -243,6 +276,44 @@
         // Set banned by (staff member)
         const bannedBy = urlParams.get('bannedBy') || 'QuestCord Staff';
         document.getElementById('banned-by').textContent = bannedBy;
+
+        // Create floating laughing emojis
+        const emojiContainer = document.getElementById('emoji-container');
+        const laughingEmojis = ['😂', '🤣', '😆', '😹'];
+        const emojiCount = 15; // Number of emojis to spawn
+
+        function createFloatingEmoji() {
+            const emoji = document.createElement('div');
+            emoji.className = 'floating-emoji';
+
+            // Random emoji from array
+            emoji.textContent = laughingEmojis[Math.floor(Math.random() * laughingEmojis.length)];
+
+            // Random size between 2rem and 5rem
+            const size = (Math.random() * 3 + 2).toFixed(1);
+            emoji.style.fontSize = `${size}rem`;
+
+            // Random horizontal position
+            emoji.style.left = `${Math.random() * 100}%`;
+
+            // Random animation duration (10-25 seconds)
+            const duration = (Math.random() * 15 + 10).toFixed(1);
+            emoji.style.animationDuration = `${duration}s`;
+
+            // Random delay before starting
+            const delay = (Math.random() * 5).toFixed(1);
+            emoji.style.animationDelay = `-${delay}s`;
+
+            // Random opacity between 0.2 and 0.4
+            emoji.style.opacity = (Math.random() * 0.2 + 0.2).toFixed(2);
+
+            emojiContainer.appendChild(emoji);
+        }
+
+        // Spawn all emojis
+        for (let i = 0; i < emojiCount; i++) {
+            createFloatingEmoji();
+        }
     </script>
 </body>
 </html>
