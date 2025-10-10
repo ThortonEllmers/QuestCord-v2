@@ -29,6 +29,8 @@ const { db } = require('../utils/store_sqlite');
 const { checkAndFixWaterServers } = require('../utils/geo');
 // Import security headers middleware for protecting against common web vulnerabilities
 const { securityHeaders } = require('./security');
+// Import IP ban utilities for blocking banned IP addresses
+const { isIPBanned, getClientIP, cleanupExpiredIPBans } = require('../utils/ip_bans');
 // Define constant for session cookie expiration (24 hours in milliseconds)
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -56,7 +58,53 @@ function createWebServer() {
   // Apply comprehensive security headers to all incoming requests
   // Includes CSP, HSTS, X-Frame-Options, and other security measures
   app.use(securityHeaders);
-  
+
+  // IP Ban Middleware - Block banned IP addresses from accessing the website
+  // This must come early in the middleware chain to prevent banned IPs from consuming resources
+  app.use((req, res, next) => {
+    // Skip IP check for the banned page itself to avoid redirect loop
+    if (req.path === '/banned.html' || req.path === '/banned') {
+      return next();
+    }
+
+    // Get client's real IP address (handles proxies like Cloudflare)
+    const clientIP = getClientIP(req);
+
+    // Check if IP is banned
+    const ban = isIPBanned(clientIP);
+
+    if (ban) {
+      // Log the blocked access attempt
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('🚫 BANNED IP ACCESS BLOCKED');
+      logger.warn('🌐 IP: %s', clientIP);
+      logger.warn('📝 Reason: %s', ban.reason);
+      logger.warn('⏰ Time: %s', new Date().toISOString());
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // Fetch Discord client to get staff member's username
+      let bannedByName = 'QuestCord Staff';
+      try {
+        const client = req.app.locals.discordClient;
+        if (client && ban.bannedBy) {
+          const user = await client.users.fetch(ban.bannedBy).catch(() => null);
+          if (user) {
+            bannedByName = user.username;
+          }
+        }
+      } catch (e) {
+        // Fallback to default name if fetching fails
+      }
+
+      // Redirect to ban page with details
+      const banPageUrl = `/banned.html?ip=${encodeURIComponent(clientIP)}&reason=${encodeURIComponent(ban.reason)}&bannedAt=${ban.bannedAt}&expiresAt=${ban.expiresAt || 'null'}&bannedBy=${encodeURIComponent(bannedByName)}`;
+      return res.redirect(banPageUrl);
+    }
+
+    // IP is not banned, continue to next middleware
+    next();
+  });
+
   // Handle preflight OPTIONS requests for Cross-Origin Resource Sharing (CORS)
   // This middleware responds to browser preflight requests before actual API calls
   app.use((req, res, next) => {
@@ -87,6 +135,27 @@ function createWebServer() {
       logger.error('[Web] Water check failed: %s', error.message);
     }
   }, 5000); // 5-second delay to ensure database and other dependencies are fully initialized
+
+  // Periodic cleanup of expired IP bans (every hour)
+  setInterval(() => {
+    try {
+      cleanupExpiredIPBans();
+    } catch (error) {
+      logger.error('[Web] IP ban cleanup failed: %s', error.message);
+    }
+  }, 60 * 60 * 1000); // Run every hour
+
+  // Initial cleanup on startup
+  setTimeout(() => {
+    try {
+      const cleaned = cleanupExpiredIPBans();
+      if (cleaned > 0) {
+        logger.info('[Web] Cleaned up %d expired IP bans on startup', cleaned);
+      }
+    } catch (error) {
+      logger.error('[Web] Initial IP ban cleanup failed: %s', error.message);
+    }
+  }, 10000); // 10-second delay
 
   // Configure cookie domain from environment variable (useful for subdomain sharing)
   // Undefined allows cookies to work on any domain (good for development)
