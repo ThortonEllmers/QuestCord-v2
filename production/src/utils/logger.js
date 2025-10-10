@@ -22,6 +22,16 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
 // Flag to completely disable webhook logging (useful for development)
 const DISABLE_WEBHOOK = process.env.DISABLE_WEBHOOK === 'true';
 
+// ANSI color codes for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  cyan: '\x1b[36m',
+  aqua: '\x1b[96m',  // Bright cyan/aqua
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  gray: '\x1b[90m'
+};
+
 /**
  * LOG MESSAGE FORMATTER
  * 
@@ -73,14 +83,14 @@ async function sendWebhook(level, args) {
 
 /**
  * LOGGER OBJECT WITH MULTIPLE LOG LEVELS
- * 
+ *
  * Provides standard logging functions with both console output and webhook integration.
  * Each level has different behavior and use cases in the application.
  */
 const loggerObj = {
   /**
    * INFO LEVEL LOGGING
-   * 
+   *
    * For general information, status updates, and normal operation events.
    * Outputs to console and sends to webhook for monitoring.
    */
@@ -92,10 +102,26 @@ const loggerObj = {
     // Send to Discord webhook for remote monitoring
     sendWebhook('INFO', arguments);
   },
-  
+
+  /**
+   * AQUA LEVEL LOGGING
+   *
+   * For important startup events and system status that should stand out visually.
+   * Uses bright cyan/aqua color to differentiate from regular info logs.
+   * Examples: server startup, configuration loaded, major system events.
+   */
+  aqua: function() {
+    // Format message with INFO level (same structure as info)
+    const line = fmt('INFO ', arguments);
+    // Output to console with aqua/cyan color highlighting
+    console.log(colors.aqua + line + colors.reset);
+    // Send to Discord webhook as INFO level
+    sendWebhook('INFO', arguments);
+  },
+
   /**
    * WARN LEVEL LOGGING
-   * 
+   *
    * For warning conditions that don't prevent operation but should be noted.
    * Examples: fallback usage, recoverable errors, deprecated features.
    */
@@ -107,10 +133,10 @@ const loggerObj = {
     // Send to Discord webhook for alerting
     sendWebhook('WARN', arguments);
   },
-  
+
   /**
    * ERROR LEVEL LOGGING
-   * 
+   *
    * For error conditions that require attention but don't crash the application.
    * Always sent to webhook for immediate notification.
    */
@@ -122,10 +148,10 @@ const loggerObj = {
     // Send to Discord webhook for immediate alerting
     sendWebhook('ERROR', arguments);
   },
-  
+
   /**
    * DEBUG LEVEL LOGGING
-   * 
+   *
    * For detailed debugging information during development.
    * Only outputs to console when DEBUG environment variable is set.
    * Never sent to webhook to avoid spam.
@@ -160,6 +186,7 @@ module.exports.default = loggerObj;
 
 // Individual function exports for destructuring imports
 module.exports.info = loggerObj.info;   // Information logging
-module.exports.warn = loggerObj.warn;   // Warning logging  
+module.exports.aqua = loggerObj.aqua;   // Aqua/cyan highlighted logging
+module.exports.warn = loggerObj.warn;   // Warning logging
 module.exports.error = loggerObj.error; // Error logging
 module.exports.debug = loggerObj.debug; // Debug logging
