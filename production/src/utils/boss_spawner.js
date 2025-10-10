@@ -266,15 +266,35 @@ function spawnRandomBoss(client = null) {
     
     console.log(`[boss_spawner] Spawned Tier ${tier} ${name} (${hp} HP) in ${server.name} (${server.guildId})`);
     
-    // Send Discord notification
+    // Send Discord notification (both global and server-specific)
     if (client) {
-      notifyBossSpawn(bossData, client);
+      await notifyBossSpawn(bossData, client);
     }
     
     return bossData;
     
   } catch (error) {
     console.error('[boss_spawner] Error spawning random boss:', error.message);
+    console.error('[boss_spawner] Stack trace:', error.stack);
+
+    // Log detailed error information for debugging
+    logger.error('boss_spawner_error', {
+      error: error.message,
+      stack: error.stack,
+      serverCount: eligibleServers ? eligibleServers.length : 'unknown',
+      tier: tier || 'unknown'
+    });
+
+    // Attempt graceful recovery - clean up any partial data
+    try {
+      if (result && result.lastInsertRowid) {
+        console.log('[boss_spawner] Attempting to clean up partial boss spawn...');
+        db.prepare('DELETE FROM bosses WHERE id = ?').run(result.lastInsertRowid);
+      }
+    } catch (cleanupError) {
+      console.error('[boss_spawner] Failed to clean up partial spawn:', cleanupError.message);
+    }
+
     return null;
   }
 }
@@ -283,12 +303,23 @@ function spawnRandomBoss(client = null) {
  * Send Discord notification for new boss spawn
  */
 async function notifyBossSpawn(bossData, client) {
-  try {
-    const channel = await client.channels.fetch(BOSS_CONFIG.NOTIFICATION_CHANNEL_ID);
-    if (!channel) {
-      console.warn('[boss_spawner] Could not find boss notification channel');
-      return;
-    }
+  const maxRetries = 3;
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      if (!client || !client.isReady()) {
+        throw new Error('Discord client is not ready');
+      }
+
+      const channel = await client.channels.fetch(BOSS_CONFIG.NOTIFICATION_CHANNEL_ID);
+      if (!channel) {
+        throw new Error(`Boss notification channel not found: ${BOSS_CONFIG.NOTIFICATION_CHANNEL_ID}`);
+      }
+
+      if (!channel.isTextBased()) {
+        throw new Error('Boss notification channel is not a text channel');
+      }
 
     // Calculate time remaining
     const timeRemainingMs = bossData.expiresAt - Date.now();
@@ -344,16 +375,124 @@ async function notifyBossSpawn(bossData, client) {
       })
       .setTimestamp();
 
-    // Send notification with boss role ping
+      // Send notification with boss role ping
+      await channel.send({
+        content: `<@&${BOSS_CONFIG.BOSS_ROLE_ID}> 🔥 NEW BOSS ALERT 🔥`,
+        embeds: [embed]
+      });
+
+      console.log(`[boss_spawner] Sent global Discord notification for ${bossData.name}`);
+
+      // Also send server-specific notification if configured
+      await sendServerSpecificBossNotification(bossData, client);
+
+      return; // Success, exit retry loop
+
+    } catch (error) {
+      retryCount++;
+      console.error(`[boss_spawner] Failed to send boss notification (attempt ${retryCount}/${maxRetries}):`, error.message);
+
+      if (retryCount >= maxRetries) {
+        console.error('[boss_spawner] Max retries reached for boss notification');
+        logger.error('boss_notification_failed', {
+          error: error.message,
+          bossId: bossData.id,
+          bossName: bossData.name,
+          channelId: BOSS_CONFIG.NOTIFICATION_CHANNEL_ID,
+          attempts: retryCount
+        });
+        return;
+      }
+
+      // Wait before retrying (exponential backoff)
+      const delay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
+      console.log(`[boss_spawner] Retrying notification in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
+/**
+ * Send server-specific boss notification if configured
+ */
+async function sendServerSpecificBossNotification(bossData, client) {
+  try {
+    // Check if the server where the boss spawned has notification settings
+    const notificationSettings = db.prepare(`
+      SELECT * FROM boss_notification_settings
+      WHERE guildId = ? AND enabled = 1
+    `).get(bossData.guildId);
+
+    if (!notificationSettings || !notificationSettings.channelId) {
+      console.log(`[boss_spawner] No server-specific notification settings for ${bossData.guildId}`);
+      return;
+    }
+
+    const channel = await client.channels.fetch(notificationSettings.channelId);
+    if (!channel || !channel.isTextBased()) {
+      console.warn(`[boss_spawner] Server notification channel not found or invalid: ${notificationSettings.channelId}`);
+      return;
+    }
+
+    // Create server-specific embed
+    const { EmbedBuilder } = require('discord.js');
+
+    const timeRemainingMs = bossData.expiresAt - Date.now();
+    const timeRemainingHours = Math.round(timeRemainingMs / 1000 / 60 / 60 * 10) / 10;
+
+    const tierColors = {
+      1: 0x808080, // Gray
+      2: 0x00FF00, // Green
+      3: 0x0080FF, // Blue
+      4: 0x8000FF, // Purple
+      5: 0xFFD700  // Gold
+    };
+
+    const tierNames = {
+      1: 'Common',
+      2: 'Uncommon',
+      3: 'Rare',
+      4: 'Epic',
+      5: 'Legendary'
+    };
+
+    const embed = new EmbedBuilder()
+      .setTitle(`🌟 A boss has spawned in your realm!`)
+      .setDescription(`**${bossData.name}** has emerged and threatens your server!`)
+      .setColor(tierColors[bossData.tier] || 0xFF0000)
+      .addFields(
+        {
+          name: '💀 Boss Details',
+          value: `**HP:** ${bossData.maxHp.toLocaleString()}\n**Tier:** ${bossData.tier} (${tierNames[bossData.tier]})\n**Time Left:** ${timeRemainingHours}h`,
+          inline: true
+        },
+        {
+          name: '⚔️ Fight Instructions',
+          value: `• Use \`/boss attack\` to deal damage\n• Coordinate with other players\n• Defeat it for valuable rewards!`,
+          inline: true
+        }
+      )
+      .setFooter({
+        text: `QuestCord • Boss spawned locally`,
+        iconURL: client.user?.displayAvatarURL()
+      })
+      .setTimestamp();
+
+    // Send notification with optional role ping
+    let content = '🎯 **Local Boss Alert!**';
+    if (notificationSettings.roleId) {
+      content = `<@&${notificationSettings.roleId}> ${content}`;
+    }
+
     await channel.send({
-      content: `<@&${BOSS_CONFIG.BOSS_ROLE_ID}> 🔥 NEW BOSS ALERT 🔥`,
+      content: content,
       embeds: [embed]
     });
 
-    console.log(`[boss_spawner] Sent Discord notification for ${bossData.name}`);
+    console.log(`[boss_spawner] Sent server-specific notification for ${bossData.name} to ${bossData.guildId}`);
 
   } catch (error) {
-    console.error('[boss_spawner] Failed to send boss notification:', error.message);
+    console.error('[boss_spawner] Failed to send server-specific boss notification:', error.message);
   }
 }
 
