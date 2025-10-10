@@ -218,7 +218,51 @@ try {
       PRIMARY KEY (bossId, userId)         -- Composite key: one row per boss-player pair
     )
   `);
-  
+
+  /**
+   * BOSS NOTIFICATION PREFERENCES TABLE
+   *
+   * Stores server-specific boss notification settings to allow servers to receive
+   * boss spawn notifications in their own channels instead of global notifications.
+   */
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS boss_notification_settings (
+      guildId TEXT PRIMARY KEY,            -- Discord server ID
+      channelId TEXT,                      -- Discord channel ID for boss notifications
+      enabled INTEGER DEFAULT 1,          -- Whether notifications are enabled (0/1)
+      roleId TEXT,                         -- Role to ping for boss notifications (optional)
+      enabledAt INTEGER,                   -- Timestamp when notifications were enabled
+      disabledAt INTEGER,                  -- Timestamp when notifications were disabled
+      updatedBy TEXT                       -- User ID who last updated settings
+    )
+  `);
+
+  /**
+   * TRAVEL HISTORY TABLE
+   *
+   * Stores a log of all player travel activities for history tracking and analytics.
+   */
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS travel_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique travel record ID
+      userId TEXT NOT NULL,                 -- Discord user ID who traveled
+      fromGuildId TEXT,                     -- Source server ID (null for first travel)
+      toGuildId TEXT NOT NULL,              -- Destination server ID
+      fromServerName TEXT,                  -- Source server name (for display)
+      toServerName TEXT NOT NULL,           -- Destination server name
+      distance REAL,                        -- Travel distance in kilometers
+      travelTime INTEGER,                   -- Travel time in seconds
+      staminaCost INTEGER,                  -- Stamina cost for the travel
+      isPremium INTEGER DEFAULT 0,         -- Whether user was premium (0/1)
+      vehicleSpeed REAL DEFAULT 1.0,       -- Vehicle speed multiplier used
+      travelType TEXT DEFAULT 'server',    -- Type: 'server', 'landmark', 'poi'
+      destinationId TEXT,                   -- POI ID if traveling to landmark
+      startedAt INTEGER NOT NULL,          -- Timestamp when travel started
+      arrivedAt INTEGER,                   -- Timestamp when travel completed
+      cancelled INTEGER DEFAULT 0         -- Whether travel was cancelled (0/1)
+    )
+  `);
+
   // Log successful completion of core table creation
   console.log('[db] Core tables initialized');
 } catch (e) {
