@@ -107,7 +107,15 @@ router.get('/bot-stats', async (req, res) => {
     // Get real bot statistics from Discord client if available
     const client = req.app.locals.discordClient;
     const realServerCount = client ? client.guilds.cache.size : 0;
-    const realUserCount = client ? client.users.cache.size : 0;
+
+    // Calculate total member count across all guilds (sum of memberCount for each guild)
+    let realUserCount = 0;
+    if (client && client.guilds && client.guilds.cache) {
+      // Sum up memberCount from all guilds
+      for (const [guildId, guild] of client.guilds.cache) {
+        realUserCount += guild.memberCount || 0;
+      }
+    }
 
     // Fallback to database if client not available
     const dbServerCount = db.prepare('SELECT COUNT(*) as count FROM servers WHERE archived = 0').get();
