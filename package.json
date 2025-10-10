@@ -5,7 +5,7 @@
   "description": "QuestCord workspace with separate production and development environments",
   "type": "commonjs",
   "scripts": {
-    "start:prod": "cd production && cross-env NODE_ENV=production PORT=80 node src/index.js",
+    "start:prod": "cd production && cross-env NODE_ENV=production PORT=3000 node src/index.js",
     "start:dev": "cd development && cross-env NODE_ENV=development PORT=3001 nodemon src/index.js",
     "deploy:commands:prod": "cd production && cross-env NODE_ENV=production node scripts/deploy-commands.js",
     "deploy:commands:dev": "cd development && cross-env NODE_ENV=development node scripts/deploy-commands.js",
