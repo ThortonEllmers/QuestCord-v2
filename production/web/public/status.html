@@ -12,6 +12,11 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         :root {
             --primary: #5865f2;
             --primary-dark: #4752c4;
@@ -31,11 +36,17 @@
             min-height: 100vh;
             padding: 20px;
             color: var(--text-light);
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1200px;
+            width: 100%;
+            max-width: calc(100vw - 40px);
             margin: 0 auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .header {
@@ -587,6 +598,15 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 10px;
+                margin: 0 auto;
+            }
+
             .header h1 {
                 font-size: 2rem;
             }
@@ -599,8 +619,53 @@
                 grid-template-columns: 1fr;
             }
 
+            .game-functions {
+                grid-template-columns: 1fr;
+            }
+
+            .player-engagement {
+                grid-template-columns: 1fr;
+            }
+
+            .economy-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .health-grid {
+                grid-template-columns: 1fr;
+            }
+
             .uptime-legend {
                 justify-content: flex-start;
+            }
+
+            .overall-status {
+                padding: 24px 16px;
+            }
+
+            .system-health-section,
+            .performance-metrics-section,
+            .game-functions-section,
+            .player-engagement-section,
+            .economy-section {
+                padding: 20px 16px;
+            }
+
+            .stat-card, .metric-card, .health-card {
+                padding: 16px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .status-badge {
+                padding: 12px 24px;
+                font-size: 1rem;
+            }
+
+            .stat-number, .metric-value {
+                font-size: 1.8rem;
             }
         }
 
