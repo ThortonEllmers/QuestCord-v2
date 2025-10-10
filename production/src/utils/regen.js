@@ -351,10 +351,21 @@ function applyRegenToAll() {
 
       if (completedTravels.length === 0) return;
 
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`🚶 TRAVEL COMPLETIONS: ${completedTravels.length} player(s) arrived`);
+      console.log('⏰ Time: %s', new Date().toISOString());
+
       // Record travel history for completed travels
       for (const travel of completedTravels) {
         const travelTime = travel.travelArrivalAt - travel.travelStartAt;
+        const travelMinutes = Math.round(travelTime / 60000);
         recordTravel(travel.userId, travel.travelFromGuildId, travel.locationGuildId, travelTime);
+
+        // Log individual travel completion
+        const destination = travel.locationGuildId.startsWith('landmark_')
+          ? `Landmark: ${travel.locationGuildId}`
+          : `Server: ${travel.locationGuildId}`;
+        console.log(`   👤 User ${travel.userId} → ${destination} (${travelMinutes} min)`);
 
         // Handle landmark arrivals
         if (travel.locationGuildId && travel.locationGuildId.startsWith('landmark_')) {
@@ -372,6 +383,7 @@ function applyRegenToAll() {
                 db.prepare('INSERT INTO poi_visits (userId, poiId, visitedAt, isFirstVisit) VALUES (?, ?, ?, 1)').run(
                   travel.userId, landmarkId, now
                 );
+                console.log(`      🎉 First visit to ${poi.name}!`);
               }
             }
           } catch (error) {
@@ -379,6 +391,7 @@ function applyRegenToAll() {
           }
         }
       }
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Clear completed travels atomically
       db.prepare(`
