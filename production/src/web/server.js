@@ -128,6 +128,49 @@ function createWebServer() {
 
   app.use(session(sessionConfig));
 
+  // Add HTTP request logging middleware BEFORE routes (optimized - skip static files)
+  app.use((req, res, next) => {
+    // Skip logging for static assets to reduce noise
+    const isStatic = req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/);
+    const isHealthCheck = req.path === '/healthz';
+
+    if (isStatic || isHealthCheck) {
+      return next();
+    }
+
+    const startTime = Date.now();
+
+    // Capture the original end function
+    const originalEnd = res.end;
+
+    // Override res.end to log response
+    res.end = function(chunk, encoding) {
+      res.end = originalEnd;
+      const result = res.end(chunk, encoding);
+
+      const duration = Date.now() - startTime;
+      const statusEmoji = res.statusCode < 400 ? '✅' : (res.statusCode < 500 ? '⚠️' : '❌');
+
+      // Only log full details for important endpoints or errors
+      if (res.statusCode >= 400 || req.path.startsWith('/api/') || req.path.startsWith('/auth/')) {
+        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        logger.info('🌐 %s %s', req.method, req.path);
+        logger.info('%s %d (%dms) | IP: %s', statusEmoji, res.statusCode, duration, req.ip || req.connection.remoteAddress);
+        if (req.session && req.session.user) {
+          logger.info('👤 %s (@%s)', req.session.user.username, req.session.user.id);
+        }
+        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      } else {
+        // Compact logging for normal requests
+        logger.info('%s %s %s %d (%dms)', statusEmoji, req.method, req.path, res.statusCode, duration);
+      }
+
+      return result;
+    };
+
+    next();
+  });
+
   // Serve static files (CSS, JavaScript, images, etc.) from the web/public directory
   // This middleware handles all requests for static assets used by the web interface
   app.use(express.static(path.join(process.cwd(), 'web', 'public')));
@@ -196,17 +239,21 @@ function createWebServer() {
   // 3. Default: port 80 for standard HTTP
   const config = require('../utils/config');
   const port = config.web?.port || process.env.PORT || 80;
-  
+
   // Start the HTTP server and bind it to the determined port
   const server = app.listen(port, () => {
     // Get the current environment (defaults to production for security)
     const env = process.env.NODE_ENV || 'production';
+    const publicUrl = config.web?.publicBaseUrl || `http://localhost:${port}`;
+
     // Log server startup information for monitoring and debugging
-    logger.info('Web server listening on port %s (environment: %s)', port, env);
-    // In development mode, provide a convenient localhost URL for developers
-    if (env === 'development') {
-      logger.info('Development server running at http://localhost:%s', port);
-    }
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.info('🌐 WEB SERVER STARTED');
+    logger.info('📡 Port: %d', port);
+    logger.info('🌍 Environment: %s', env);
+    logger.info('🔗 Public URL: %s', publicUrl);
+    logger.info('⏰ Started at: %s', new Date().toISOString());
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   });
 
   // Return both the Express app and HTTP server instances for external use
