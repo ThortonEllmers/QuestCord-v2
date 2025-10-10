@@ -306,6 +306,45 @@ function createWebServer() {
     });
   });
 
+  // ============================================================================
+  // 404 ERROR HANDLER - CUSTOM NOT FOUND PAGE
+  // ============================================================================
+  // This must be defined AFTER all routes to catch any unhandled requests
+  // Detects suspicious paths and shows appropriate warnings on the 404 page
+  app.use((req, res, next) => {
+    // Get client IP
+    const clientIP = getClientIP(req);
+
+    // Check if path is suspicious (admin probing, exploits, etc.)
+    const lowerPath = req.path.toLowerCase();
+    let suspicious = false;
+
+    // Patterns that indicate malicious intent
+    const suspiciousPatterns = [
+      '/admin', '/administrator', '/wp-admin', '/phpmyadmin', '/cpanel',
+      '/webadmin', '/controlpanel', '/management', '/config', '/.env',
+      '/wp-login', '.php', '.asp', '.jsp', '/cgi-bin', '/shell',
+      '/backdoor', '/cmd', '/exec', '../', '..\\', '%2e%2e',
+      'etc/passwd', 'windows/system32', 'union', 'select', '<script'
+    ];
+
+    suspicious = suspiciousPatterns.some(pattern => lowerPath.includes(pattern));
+
+    // Log 404 with suspicion level
+    if (suspicious) {
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('🚨 SUSPICIOUS 404 - ADMIN PATH PROBING');
+      logger.warn('🌐 IP: %s', clientIP);
+      logger.warn('📍 Path: %s', req.path);
+      logger.warn('🕐 Time: %s', new Date().toISOString());
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+
+    // Redirect to 404 page with details
+    const notFoundUrl = `/404.html?path=${encodeURIComponent(req.path)}&suspicious=${suspicious}&ip=${encodeURIComponent(clientIP)}`;
+    res.status(404).redirect(notFoundUrl);
+  });
+
   // Determine the port to bind the web server to using a priority system:
   // 1. Configuration file setting (highest priority)
   // 2. Environment variable PORT
