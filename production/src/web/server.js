@@ -187,9 +187,9 @@ function createWebServer() {
   // Determine the port to bind the web server to using a priority system:
   // 1. Configuration file setting (highest priority)
   // 2. Environment variable PORT
-  // 3. Default based on environment (development: 3001, production: 3000)
+  // 3. Default: port 80 for standard HTTP
   const config = require('../utils/config');
-  const port = config.web?.port || process.env.PORT || (process.env.NODE_ENV === 'development' ? 3001 : 3000);
+  const port = config.web?.port || process.env.PORT || 80;
   
   // Start the HTTP server and bind it to the determined port
   const server = app.listen(port, () => {
