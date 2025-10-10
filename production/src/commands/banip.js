@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { db, logCommand } = require('../utils/store_sqlite');
+const { db, logCommand, generateBanId } = require('../utils/store_sqlite');
 const { isStaffOrDev, getUserPrefix } = require('../utils/roles');
 const { fetchRoleLevel } = require('../web/util');
 const logger = require('../utils/logger');
@@ -84,13 +84,27 @@ module.exports = {
       // Check if IP is already banned
       const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
 
-      // Insert or update ban
-      db.prepare(`
-        INSERT OR REPLACE INTO ip_bans(ip, reason, bannedBy, bannedAt, expiresAt)
-        VALUES(?,?,?,?,?)
-      `).run(ip, reason, interaction.user.id, Date.now(), exp);
+      // Generate unique ban ID
+      const banId = generateBanId();
 
-      logger.info('banip_add: %s banned IP %s for %s minutes', interaction.user.id, ip, minutes);
+      // Insert or update ban
+      if (existingBan) {
+        // Update existing ban, keep the old banId
+        db.prepare(`
+          UPDATE ip_bans
+          SET reason=?, bannedBy=?, bannedAt=?, expiresAt=?
+          WHERE ip=?
+        `).run(reason, interaction.user.id, Date.now(), exp, ip);
+      } else {
+        // Insert new ban with new banId
+        db.prepare(`
+          INSERT INTO ip_bans(banId, ip, reason, bannedBy, bannedAt, expiresAt)
+          VALUES(?,?,?,?,?,?)
+        `).run(banId, ip, reason, interaction.user.id, Date.now(), exp);
+      }
+
+      const finalBanId = existingBan ? existingBan.banId : banId;
+      logger.info('banip_add: %s banned IP %s (Ban ID: %s) for %s minutes', interaction.user.id, ip, finalBanId, minutes);
 
       // Format duration
       let durationText;
@@ -152,7 +166,7 @@ module.exports = {
       embed.addFields(
         {
           name: '🛡️ **Administrative Details**',
-          value: `**Staff Member:** ${interaction.user.displayName}\n**Role Level:** ${adminRole || 'Staff'}\n**Action:** ${existingBan ? 'Ban Updated' : 'New Ban'}`,
+          value: `**Staff Member:** ${interaction.user.displayName}\n**Role Level:** ${adminRole || 'Staff'}\n**Action:** ${existingBan ? 'Ban Updated' : 'New Ban'}\n**Ban ID:** \`${finalBanId}\``,
           inline: true
         },
         {
@@ -404,19 +418,10 @@ module.exports = {
     }
 
     if (sub === 'lookup') {
-      const banId = interaction.options.getString('ban-id');
+      const banId = interaction.options.getString('ban-id').toUpperCase().trim();
 
-      // Try to parse the ban ID as a timestamp
-      const bannedAtTimestamp = parseInt(banId);
-      if (isNaN(bannedAtTimestamp)) {
-        return interaction.reply({
-          content: `${userPrefix} ❌ Invalid Ban ID format. Please provide a valid timestamp.`,
-          ephemeral: true
-        });
-      }
-
-      // Look up ban by bannedAt timestamp
-      const ban = db.prepare('SELECT * FROM ip_bans WHERE bannedAt = ?').get(bannedAtTimestamp);
+      // Look up ban by unique banId
+      const ban = db.prepare('SELECT * FROM ip_bans WHERE banId = ?').get(banId);
 
       if (!ban) {
         return interaction.reply({
@@ -437,7 +442,7 @@ module.exports = {
         .addFields(
           {
             name: '🆔 **Ban ID**',
-            value: `\`${ban.bannedAt}\``,
+            value: `\`${ban.banId}\``,
             inline: true
           },
           {
@@ -471,7 +476,7 @@ module.exports = {
         {
           name: '⏰ **Duration**',
           value: ban.expiresAt ?
-            `**Expires:** <t:${Math.floor(ban.expiresAt / 1000)}:F>\n<t:${Math.floor(ban.expiresAt / 1000)}:R>` :
+            `**Expires:** <t:${Math.floor(ban.expiresAt / 1000)}:F}\n<t:${Math.floor(ban.expiresAt / 1000)}:R>` :
             '**Permanent**',
           inline: true
         }
