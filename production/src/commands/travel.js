@@ -399,17 +399,6 @@ module.exports = {
       arrival, Date.now(), dest.guildId, fromServer ? fromServer.guildId : null, interaction.user.id
     );
 
-    // Record travel activity for real-time statistics
-    try {
-      const realtimeStats = require('../web/routes/realtime-stats');
-      if (realtimeStats && realtimeStats.recordTravel) {
-        realtimeStats.recordTravel(interaction.user.id, fromServer ? fromServer.guildId : null, dest.guildId);
-      }
-    } catch (statsError) {
-      // Don't let stats tracking errors affect travel execution
-      console.warn('Failed to record travel activity:', statsError.message);
-    }
-    
     // Get web base URL for map links (if configured)
     const base = (config.web && config.web.publicBaseUrl || '').replace(/\/$/, '');
     // Check premium status for enhanced embed styling and features
@@ -525,16 +514,6 @@ module.exports = {
     const arrival = Date.now() + timeSec * 1000;
     db.prepare('UPDATE players SET travelArrivalAt=?, travelStartAt=?, locationGuildId=?, travelFromGuildId=? WHERE userId=?').run(arrival, Date.now(), dest.guildId, fromServer ? fromServer.guildId : null, interaction.user.id);
 
-    // Record travel activity for real-time statistics
-    try {
-      const realtimeStats = require('../web/routes/realtime-stats');
-      if (realtimeStats && realtimeStats.recordTravel) {
-        realtimeStats.recordTravel(interaction.user.id, fromServer ? fromServer.guildId : null, dest.guildId);
-      }
-    } catch (statsError) {
-      // Don't let stats tracking errors affect travel execution
-      console.warn('Failed to record travel activity:', statsError.message);
-    }
     const base = (config.web && config.web.publicBaseUrl || '').replace(/\/$/, '');
     const isPremiumUser = await isPremium(interaction.client, interaction.user.id);
     const speedMult = await vehicleSpeed(interaction.client, interaction.user.id);
