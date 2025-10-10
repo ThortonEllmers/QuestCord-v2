@@ -43,20 +43,6 @@ const { rateLimit } = require('../security');
 // Create Express router instance for authentication routes
 const router = express.Router();
 
-// Session middleware - exactly like the working version
-router.use(session({
-  name: 'auth_session',
-  secret: process.env.SESSION_SECRET || 'fallback_secret_change_this',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.COOKIE_SECURE === 'true',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
 // Discord OAuth config
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || process.env.CLIENT_SECRET;
