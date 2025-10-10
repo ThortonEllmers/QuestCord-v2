@@ -61,7 +61,7 @@ function createWebServer() {
 
   // IP Ban Middleware - Block banned IP addresses from accessing the website
   // This must come early in the middleware chain to prevent banned IPs from consuming resources
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     // Skip IP check for the banned page itself to avoid redirect loop
     if (req.path === '/banned.html' || req.path === '/banned') {
       return next();
