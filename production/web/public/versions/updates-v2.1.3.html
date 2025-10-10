@@ -114,6 +114,18 @@
       border-radius: 12px;
       text-align: center;
       margin-bottom: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      color: var(--text-light);
+    }
+
+    .version-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
     }
 
     .version-number {
@@ -237,13 +249,13 @@
 </head>
 <body>
   <div class="container">
-    <div class="version-header">
-      <div class="version-number">Version 2.1.3 <span class="current-badge">Current</span></div>
-      <div class="release-date">Released: September 29, 2025</div>
-    </div>
+    <a href="/updates" class="version-header">
+      <div class="version-number">Version 2.1.3 <span class="current-badge">Current</span></a>
+      <div class="release-date">Released: September 29, 2025</a>
+    </a>
 
     <div class="update-section">
-      <div class="update-category removal">MAJOR SYSTEM REMOVALS</div>
+      <div class="update-category removal">MAJOR SYSTEM REMOVALS</a>
       <h3>🗑️ Weather System Complete Removal</h3>
       <ul class="feature-list removals">
         <li><strong>Weather Commands Removed</strong> - Deleted /weather command and all weather-related functionality</li>
@@ -264,10 +276,10 @@
         <li><strong>Admin Features Cleanup</strong> - Removed achievements from user reset functionality and analytics</li>
         <li><strong>Help System Update</strong> - Removed achievement references from /help command documentation</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category new">NEW FEATURES</div>
+      <div class="update-category new">NEW FEATURES</a>
       <h3>⚔️ Live Boss Activity Tracker</h3>
       <ul class="feature-list">
         <li><strong>Real-time Boss Tracking</strong> - Replaced weather widget with live boss activity tracker on homepage</li>
@@ -278,10 +290,10 @@
         <li><strong>Auto-Refresh Updates</strong> - Boss tracker updates every 30 seconds automatically</li>
         <li><strong>New API Endpoint</strong> - Added /api/bosses/recent endpoint for boss activity data</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category improvement">IMPROVEMENTS</div>
+      <div class="update-category improvement">IMPROVEMENTS</a>
       <h3>🔧 System Streamlining</h3>
       <ul class="feature-list improvements">
         <li><strong>Reduced Code Complexity</strong> - Removed thousands of lines of weather and achievement logic</li>
@@ -291,10 +303,10 @@
         <li><strong>Focused User Experience</strong> - Boss tracking provides more relevant real-time server activity information</li>
         <li><strong>Easier Maintenance</strong> - Fewer systems to maintain, debug, and keep synchronized</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category fix">CRITICAL FIXES</div>
+      <div class="update-category fix">CRITICAL FIXES</a>
       <h3>🐛 Syntax and Integration Repairs</h3>
       <ul class="feature-list fixes">
         <li><strong>Travel Command Syntax Error</strong> - Fixed orphaned travelEmbed statement and extra closing brace</li>
@@ -302,10 +314,10 @@
         <li><strong>Database Query Cleanup</strong> - Removed references to non-existent weather and achievement tables</li>
         <li><strong>API Consistency</strong> - Ensured all removed endpoints are properly cleaned from route handlers</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category ui">USER INTERFACE</div>
+      <div class="update-category ui">USER INTERFACE</a>
       <h3>🎨 Homepage Widget Redesign</h3>
       <ul class="feature-list ui">
         <li><strong>Boss Tracker Widget</strong> - Completely redesigned weather panel as boss activity tracker</li>
@@ -314,10 +326,10 @@
         <li><strong>Responsive Design</strong> - Boss tracker adapts to different screen sizes and devices</li>
         <li><strong>Loading States</strong> - Proper loading indicators while fetching boss data</li>
       </ul>
-    </div>
+    </a>
 
     <div class="update-section">
-      <div class="update-category improvement">BOSS TIMING ENHANCEMENTS</div>
+      <div class="update-category improvement">BOSS TIMING ENHANCEMENTS</a>
       <h3>⏱️ Dynamic Boss Spawning System</h3>
       <ul class="feature-list improvements">
         <li><strong>Extended Boss Duration</strong> - Bosses now remain active for 60 minutes (increased from 30 minutes)</li>
@@ -327,23 +339,23 @@
         <li><strong>Improved Spawn Timing</strong> - System checks for scheduled spawns every 30 seconds for more responsive boss appearance</li>
         <li><strong>Automatic Cleanup Enhancement</strong> - Boss expiry and defeat events now trigger next spawn scheduling automatically</li>
       </ul>
-    </div>
+    </a>
 
     <div class="technical-note">
       <p><strong>🔧 Technical Note:</strong> This major release removes two complex systems (Weather and Achievements) that were adding significant overhead to the codebase. The new boss tracker focuses on providing actionable, real-time information about server activity without the complexity of weather calculations or achievement progress tracking. This results in improved performance, easier maintenance, and a more focused user experience.</p>
-    </div>
+    </a>
 
     <div class="technical-note">
       <p><strong>⚠️ Breaking Changes:</strong> The /weather and /achievements commands have been completely removed. Any external integrations or scripts that relied on weather or achievement API endpoints will need to be updated. Database tables weather_events, weather_encounters, and achievements will no longer be created in fresh installations.</p>
-    </div>
+    </a>
 
     <div style="text-align: center; margin-top: 40px;">
       <a href="/updates" class="back-button">Back to Updates</a>
-    </div>
-  </div>
+    </a>
+  </a>
 
   <!-- QuestCord Standalone Footer -->
-  <div id="footer-container"></div>
+  <div id="footer-container"></a>
   <script src="../shared/footer.js"></script>
 
 </body>
