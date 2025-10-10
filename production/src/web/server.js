@@ -223,19 +223,14 @@ function createWebServer() {
       const duration = Date.now() - startTime;
       const statusEmoji = res.statusCode < 400 ? '✅' : (res.statusCode < 500 ? '⚠️' : '❌');
 
-      // Only log full details for important endpoints or errors
-      if (res.statusCode >= 400 || req.path.startsWith('/api/') || req.path.startsWith('/auth/')) {
-        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        logger.info('🌐 %s %s', req.method, req.path);
-        logger.info('%s %d (%dms) | IP: %s', statusEmoji, res.statusCode, duration, req.ip || req.connection.remoteAddress);
-        if (req.session && req.session.user) {
-          logger.info('👤 %s (@%s)', req.session.user.username, req.session.user.id);
-        }
-        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      } else {
-        // Compact logging for normal requests
-        logger.info('%s %s %s %d (%dms)', statusEmoji, req.method, req.path, res.statusCode, duration);
+      // Log all requests with separator lines
+      logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.aqua('🌐 %s %s', req.method, req.path);
+      logger.aqua('%s %d (%dms) | IP: %s', statusEmoji, res.statusCode, duration, req.ip || req.connection.remoteAddress);
+      if (req.session && req.session.user) {
+        logger.aqua('👤 %s (@%s)', req.session.user.username, req.session.user.id);
       }
+      logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Call original end function to actually send the response
       return originalEnd.call(this, chunk, encoding);
@@ -431,13 +426,13 @@ function createWebServer() {
     const publicUrl = config.web?.publicBaseUrl || `http://localhost:${port}`;
 
     // Log server startup information for monitoring and debugging
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info('🌐 WEB SERVER STARTED');
-    logger.info('📡 Port: %d', port);
-    logger.info('🌍 Environment: %s', env);
-    logger.info('🔗 Public URL: %s', publicUrl);
-    logger.info('⏰ Started at: %s', new Date().toISOString());
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('🌐 WEB SERVER STARTED');
+    logger.aqua('📡 Port: %d', port);
+    logger.aqua('🌍 Environment: %s', env);
+    logger.aqua('🔗 Public URL: %s', publicUrl);
+    logger.aqua('⏰ Started at: %s', new Date().toISOString());
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   });
 
   // Return both the Express app and HTTP server instances for external use
