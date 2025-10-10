@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - QuestCord</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5865f2;
+            --danger: #ed4245;
+            --bg-dark: #0f0f23;
+            --bg-light: #1a1a2e;
+            --text-light: #ffffff;
+            --text-muted: #b9bbbe;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            padding: 20px;
+        }
+
+        .ban-container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 48px 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--danger);
+            text-align: center;
+        }
+
+        .ban-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .ban-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--danger);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .ban-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .ban-details {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .ban-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ban-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .ban-detail-label {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .ban-detail-value {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .ban-reason {
+            background: rgba(237, 66, 69, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        .ban-reason-label {
+            font-weight: 700;
+            color: var(--danger);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .ban-reason-text {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .ban-footer {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .home-button {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 12px 32px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .home-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            .ban-container {
+                padding: 32px 24px;
+            }
+
+            .ban-title {
+                font-size: 2rem;
+            }
+
+            .ban-subtitle {
+                font-size: 1rem;
+            }
+
+            .ban-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ban-container">
+        <div class="ban-icon">🚫</div>
+        <h1 class="ban-title">Access Denied</h1>
+        <p class="ban-subtitle">Your IP address has been banned from accessing QuestCord</p>
+
+        <div class="ban-details">
+            <div class="ban-detail-row">
+                <span class="ban-detail-label">Your IP Address:</span>
+                <span class="ban-detail-value" id="ip-address">Loading...</span>
+            </div>
+            <div class="ban-detail-row">
+                <span class="ban-detail-label">Ban Type:</span>
+                <span class="ban-detail-value" id="ban-type">Loading...</span>
+            </div>
+            <div class="ban-detail-row">
+                <span class="ban-detail-label">Banned At:</span>
+                <span class="ban-detail-value" id="banned-at">Loading...</span>
+            </div>
+            <div class="ban-detail-row" id="expires-row" style="display: none;">
+                <span class="ban-detail-label">Ban Expires:</span>
+                <span class="ban-detail-value" id="expires-at">Never</span>
+            </div>
+            <div class="ban-detail-row">
+                <span class="ban-detail-label">Banned By:</span>
+                <span class="ban-detail-value" id="banned-by">Staff Member</span>
+            </div>
+        </div>
+
+        <div class="ban-reason">
+            <span class="ban-reason-label">📝 Reason for Ban:</span>
+            <p class="ban-reason-text" id="ban-reason">Loading...</p>
+        </div>
+
+        <div class="ban-footer">
+            <p>If you believe this ban was issued in error, please contact the QuestCord staff team.</p>
+            <p style="margin-top: 12px; font-size: 0.85rem;">Ban ID: <code id="ban-timestamp">...</code></p>
+        </div>
+
+        <a href="/" class="home-button">Return to Homepage</a>
+    </div>
+
+    <script>
+        // Parse ban details from URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Set IP address
+        const ip = urlParams.get('ip') || 'Unknown';
+        document.getElementById('ip-address').textContent = ip;
+
+        // Set ban reason
+        const reason = urlParams.get('reason') || 'No reason provided';
+        document.getElementById('ban-reason').textContent = reason;
+
+        // Set ban type
+        const expiresAt = urlParams.get('expiresAt');
+        if (expiresAt && expiresAt !== 'null') {
+            document.getElementById('ban-type').textContent = 'Temporary';
+            document.getElementById('expires-row').style.display = 'flex';
+
+            const expiryDate = new Date(parseInt(expiresAt));
+            document.getElementById('expires-at').textContent = expiryDate.toLocaleString();
+        } else {
+            document.getElementById('ban-type').textContent = 'Permanent';
+        }
+
+        // Set banned at timestamp
+        const bannedAt = urlParams.get('bannedAt');
+        if (bannedAt) {
+            const banDate = new Date(parseInt(bannedAt));
+            document.getElementById('banned-at').textContent = banDate.toLocaleString();
+            document.getElementById('ban-timestamp').textContent = bannedAt;
+        }
+
+        // Set banned by (staff member)
+        const bannedBy = urlParams.get('bannedBy') || 'QuestCord Staff';
+        document.getElementById('banned-by').textContent = bannedBy;
+    </script>
+</body>
+</html>
