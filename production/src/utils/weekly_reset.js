@@ -54,29 +54,6 @@ async function performWeeklyReset() {
         const travelResult = db.prepare('DELETE FROM travel_history WHERE timestamp < ?').run(oneWeekAgo);
         logger.info(`[weekly-reset] Removed ${travelResult.changes} old travel records`);
 
-        // Clean old weather events (delete encounters first due to foreign key constraint)
-        logger.info('[weekly-reset] Cleaning expired weather events...');
-
-        // First, get expired weather event IDs
-        const expiredEvents = db.prepare('SELECT id FROM weather_events WHERE endTime < ?').all(resetTimestamp);
-        logger.info(`[weekly-reset] Found ${expiredEvents.length} expired weather events`);
-
-        // Delete weather encounters for each expired event individually to avoid FK constraint issues
-        let totalEncountersRemoved = 0;
-        for (const event of expiredEvents) {
-          try {
-            const encounterResult = db.prepare('DELETE FROM weather_encounters WHERE weatherEventId = ?').run(event.id);
-            totalEncountersRemoved += encounterResult.changes;
-          } catch (error) {
-            logger.warn(`[weekly-reset] Failed to delete encounters for weather event ${event.id}:`, error.message);
-          }
-        }
-        logger.info(`[weekly-reset] Removed ${totalEncountersRemoved} weather encounters`);
-
-        // Then delete the expired weather events
-        const weatherResult = db.prepare('DELETE FROM weather_events WHERE endTime < ?').run(resetTimestamp);
-        logger.info(`[weekly-reset] Removed ${weatherResult.changes} expired weather events`);
-
         // Reset any weekly statistics
         logger.info('[weekly-reset] Resetting weekly player statistics...');
 
@@ -89,9 +66,7 @@ async function performWeeklyReset() {
                 getWeekStart().getTime(),
                 resetTimestamp,
                 JSON.stringify({
-                    travel_records: travelResult.changes,
-                    weather_events: weatherResult.changes,
-                    weather_encounters: totalEncountersRemoved
+                    travel_records: travelResult.changes
                 })
             );
         } catch (error) {
@@ -112,9 +87,7 @@ async function performWeeklyReset() {
                 getWeekStart().getTime(),
                 resetTimestamp,
                 JSON.stringify({
-                    travel_records: travelResult.changes,
-                    weather_events: weatherResult.changes,
-                    weather_encounters: totalEncountersRemoved
+                    travel_records: travelResult.changes
                 })
             );
         }
