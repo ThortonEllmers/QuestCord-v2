@@ -359,13 +359,13 @@ client.on(Events.GuildCreate, async (guild) => {
   const iconUrl = guild.iconURL({ extension: 'png', size: 64 });
   const exists = db.prepare('SELECT 1 FROM servers WHERE guildId=?').get(guild.id);
 
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  logger.info('🎉 BOT ADDED TO NEW SERVER');
-  logger.info('🏰 Server: %s', guild.name);
-  logger.info('🆔 Guild ID: %s', guild.id);
-  logger.info('👑 Owner ID: %s', guild.ownerId);
-  logger.info('👥 Members: %d', guild.memberCount);
-  logger.info('⏰ Time: %s', new Date().toISOString());
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('🎉 BOT ADDED TO NEW SERVER');
+  logger.aqua('🏰 Server: %s', guild.name);
+  logger.aqua('🆔 Guild ID: %s', guild.id);
+  logger.aqua('👑 Owner ID: %s', guild.ownerId);
+  logger.aqua('👥 Members: %d', guild.memberCount);
+  logger.aqua('⏰ Time: %s', new Date().toISOString());
 
   if (!exists) {
     db.prepare('INSERT INTO servers(guildId, name, ownerId, addedAt, iconUrl, archived) VALUES(?,?,?,?,?,0)').run(guild.id, guild.name, guild.ownerId, Date.now(), iconUrl);
@@ -383,8 +383,8 @@ client.on(Events.GuildCreate, async (guild) => {
     const biome = require('./web/util').assignBiomeDeterministic(guild.id);
     
     db.prepare('UPDATE servers SET lat=?, lon=?, biome=? WHERE guildId=?').run(pos.lat, pos.lon, biome, guild.id);
-    logger.info('📍 Placed at coordinates: (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('📍 Placed at coordinates: (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   } catch (error) {
     logger.error('Error placing guild with collision detection: %s', error.message);
     // Fallback to original placement if advanced placement fails
@@ -393,21 +393,21 @@ client.on(Events.GuildCreate, async (guild) => {
     const pos = placeOnSpiral(count, center);
     const biome = require('./web/util').assignBiomeDeterministic(guild.id);
     db.prepare('UPDATE servers SET lat=?, lon=?, biome=? WHERE guildId=?').run(pos.lat, pos.lon, biome, guild.id);
-    logger.info('📍 Placed at coordinates (fallback): (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('📍 Placed at coordinates (fallback): (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 });
 
 client.on(Events.GuildDelete, (guild) => {
   db.prepare('UPDATE servers SET archived=1, archivedAt=?, archivedBy=? WHERE guildId=?').run(Date.now(), 'system', guild.id);
 
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  logger.info('👋 BOT REMOVED FROM SERVER');
-  logger.info('🏰 Server: %s', guild.name);
-  logger.info('🆔 Guild ID: %s', guild.id);
-  logger.info('📦 Server archived (data preserved)');
-  logger.info('⏰ Time: %s', new Date().toISOString());
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('👋 BOT REMOVED FROM SERVER');
+  logger.aqua('🏰 Server: %s', guild.name);
+  logger.aqua('🆔 Guild ID: %s', guild.id);
+  logger.aqua('📦 Server archived (data preserved)');
+  logger.aqua('⏰ Time: %s', new Date().toISOString());
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
 // Handle new members joining ANY server - add them to spawn server display
@@ -429,13 +429,13 @@ client.on(Events.GuildMemberAdd, async (member) => {
     // Create new player and place them at spawn server (regardless of which server they joined)
     await ensurePlayerWithVehicles(client, member.user.id, member.user.username, process.env.SPAWN_GUILD_ID);
 
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info('🆕 NEW USER JOINED');
-    logger.info('👤 User: %s (@%s)', member.user.username, member.user.id);
-    logger.info('🏰 Joined Server: %s', member.guild.name);
-    logger.info('✅ Registered at spawn server');
-    logger.info('⏰ Time: %s', new Date().toISOString());
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('🆕 NEW USER JOINED');
+    logger.aqua('👤 User: %s (@%s)', member.user.username, member.user.id);
+    logger.aqua('🏰 Joined Server: %s', member.guild.name);
+    logger.aqua('✅ Registered at spawn server');
+    logger.aqua('⏰ Time: %s', new Date().toISOString());
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
   } catch (error) {
     logger.error('Failed to handle new member join: %s', error.message);
@@ -731,12 +731,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // Ignore option parsing errors
     }
 
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info('📋 COMMAND EXECUTED: /%s%s', interaction.commandName, optionsStr);
-    logger.info('👤 User: %s (@%s)', username, userId);
-    logger.info('🏰 Server: %s (%s)', guildName, interaction.guildId || 'N/A');
-    logger.info('⏰ Time: %s', new Date().toISOString());
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('📋 COMMAND EXECUTED: /%s%s', interaction.commandName, optionsStr);
+    logger.aqua('👤 User: %s (@%s)', username, userId);
+    logger.aqua('🏰 Server: %s (%s)', guildName, interaction.guildId || 'N/A');
+    logger.aqua('⏰ Time: %s', new Date().toISOString());
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     await cmd.execute(interaction);
 
