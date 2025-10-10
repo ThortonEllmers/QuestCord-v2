@@ -99,7 +99,7 @@ module.exports = {
 
     // Get current environment info
     const currentEnv = process.env.NODE_ENV || 'production';
-    const port = process.env.PORT || (currentEnv === 'development' ? 3001 : 3000);
+    const port = process.env.PORT || 80;
     
     // Get backup information
     const backupDir = path.join(process.cwd(), 'backups');
