@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Version 2.0.0 Updates - QuestCord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5865f2;
+      --primary-dark: #4752c4;
+      --secondary: #7c3aed;
+      --bg-dark: #0f0f23;
+      --bg-light: #1a1a2e;
+      --text-light: #ffffff;
+      --text-muted: #b9bbbe;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      line-height: 1.6;
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 50px;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--text-light);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient);
+      color: var(--text-light);
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.3);
+      border: none;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
+    }
+
+    .back-button::before {
+      content: '←';
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .back-button:hover::before {
+      transform: translateX(-4px);
+    }
+
+    .version-header {
+      background: var(--gradient);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .version-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .release-date {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .update-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .update-category {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .update-category.new {
+      background: #3498DB;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .feature-list.new li::before {
+      content: '🆕';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .technical-note {
+      background: rgba(124, 58, 237, 0.1);
+      border-left: 4px solid var(--secondary);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .technical-note p {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="version-header">
+      <div class="version-number">Version 2.0.0</div>
+      <div class="release-date">Released: September 1, 2025</div>
+    </div>
+
+    <div class="update-section">
+      <div class="update-category new">INITIAL RELEASE</div>
+      <h3>🎉 QuestCord v2.0.0 - The Foundation</h3>
+      <ul class="feature-list new">
+        <li><strong>Discord Bot Integration</strong> - Full Discord bot with slash commands for server and player management</li>
+        <li><strong>Server-Based Travel System</strong> - Geographic travel between Discord servers with distance calculations</li>
+        <li><strong>Boss Battle System</strong> - Automated boss spawning with multi-player combat mechanics</li>
+        <li><strong>Inventory & Items</strong> - Complete item management with weapons, armor, and consumables</li>
+        <li><strong>Economy System</strong> - Drakari currency and premium gems for in-game purchases</li>
+        <li><strong>Web Dashboard</strong> - Real-time statistics and player profiles accessible via web interface</li>
+        <li><strong>Premium Features</strong> - Premium user system with enhanced benefits and exclusive items</li>
+        <li><strong>Database Architecture</strong> - SQLite database with optimized schema for game data persistence</li>
+      </ul>
+    </div>
+
+    <div class="technical-note">
+      <p><strong>🎊 Welcome to QuestCord!</strong> This is the foundation release establishing the core game mechanics, Discord integration, and web dashboard. All future updates will build upon this stable base to enhance gameplay, add features, and improve user experience.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/updates" class="back-button">Back to Updates</a>
+    </div>
+  </div>
+
+  <!-- QuestCord Standalone Footer -->
+  <div id="footer-container"></div>
+  <script src="../shared/footer.js"></script>
+
+</body>
+</html>
