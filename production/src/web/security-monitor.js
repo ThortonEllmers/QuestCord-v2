@@ -126,7 +126,7 @@ function getSeverity(totalAttempts) {
 /**
  * Automatically ban an IP address for rate limit violation
  */
-async function autobanIP(ip, requestCount, timeWindow) {
+async function autobanIP(ip, requestCount, timeWindow, discordClient) {
   try {
     // Normalize the IP for consistent storage
     const normalizedIP = normalizeIP(ip);
@@ -144,7 +144,7 @@ async function autobanIP(ip, requestCount, timeWindow) {
 
     // Ban for 24 hours (1440 minutes)
     const expiresAt = Date.now() + (24 * 60 * 60 * 1000);
-    const reason = `Automatic ban: Rate limit violation (${requestCount} requests in ${timeWindow}s)`;
+    const reason = `Automatic ban: Rate limit violation (${requestCount} unique endpoints in ${timeWindow}s)`;
 
     // Insert ban into database
     db.prepare(`
@@ -155,19 +155,19 @@ async function autobanIP(ip, requestCount, timeWindow) {
     console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.warn('🔨 AUTOMATIC IP BAN APPLIED');
     console.warn('🌐 IP: %s', normalizedIP);
-    console.warn('📊 Violation: %d requests in %d seconds', requestCount, timeWindow);
+    console.warn('📊 Violation: %d unique endpoints in %d seconds', requestCount, timeWindow);
     console.warn('⏰ Duration: 24 hours');
     console.warn('🆔 Ban ID: %s', banId);
     console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-    // Send webhook notification
+    // Send Discord notification via bot
     await sendAutobanAlert({
       ip: normalizedIP,
       banId,
       requestCount,
       timeWindow,
       expiresAt
-    });
+    }, discordClient);
 
     return true;
   } catch (error) {
@@ -177,84 +177,65 @@ async function autobanIP(ip, requestCount, timeWindow) {
 }
 
 /**
- * Send Discord webhook notification for automatic bans
+ * Send Discord notification for automatic bans via bot
  */
-async function sendAutobanAlert(data) {
-  const webhookUrl = process.env.SECURITY_WEBHOOK_URL;
+async function sendAutobanAlert(data, discordClient) {
+  try {
+    if (!discordClient) {
+      console.warn('[Security] Discord client not available for autoban alert');
+      return;
+    }
 
-  if (!webhookUrl) {
-    return;
-  }
+    const { EmbedBuilder } = require('discord.js');
+    const SECURITY_CHANNEL_ID = '1404555278594342993';
 
-  const url = new URL(webhookUrl);
-  const isHttps = url.protocol === 'https:';
+    const channel = await discordClient.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
+    if (!channel || !channel.isTextBased()) {
+      console.warn('[Security] Could not find security channel for autoban alert');
+      return;
+    }
 
-  const embed = {
-    title: '🔨 Automatic IP Ban Applied',
-    description: `**${data.ip}** has been automatically banned for rate limit violation`,
-    color: 0xFF0000, // Red
-    fields: [
-      {
-        name: '📊 Violation Details',
-        value: `\`\`\`
-Requests: ${data.requestCount} in ${data.timeWindow}s
-Threshold: 10 requests per 60s
+    const embed = new EmbedBuilder()
+      .setTitle('🔨 Automatic IP Ban Applied')
+      .setColor(0xFF0000) // Red
+      .setDescription(`**${data.ip}** has been automatically banned for rate limit violation`)
+      .addFields(
+        {
+          name: '📊 Violation Details',
+          value: `\`\`\`
+Unique Endpoints: ${data.requestCount} in ${data.timeWindow}s
+Threshold: 10+ unique endpoints per 60s
 Ban Duration: 24 hours
 \`\`\``,
-        inline: false
-      },
-      {
-        name: '🌐 IP Information',
-        value: `\`\`\`
+          inline: false
+        },
+        {
+          name: '🌐 IP Information',
+          value: `\`\`\`
 IP Address: ${data.ip}
 Ban ID: ${data.banId}
 Expires: ${new Date(data.expiresAt).toISOString()}
 \`\`\``,
-        inline: false
-      },
-      {
-        name: '⚙️ Ban Details',
-        value: `• **Type:** Automatic (System)\n• **Reason:** Rate limit violation\n• **Action:** All web access blocked`,
-        inline: false
-      }
-    ],
-    footer: {
-      text: 'QuestCord Auto-Ban System'
-    },
-    timestamp: new Date().toISOString()
-  };
+          inline: false
+        },
+        {
+          name: '⚙️ Ban Details',
+          value: `• **Type:** Automatic (System)\n• **Reason:** Rate limit violation\n• **Action:** All web access blocked`,
+          inline: false
+        }
+      )
+      .setFooter({ text: 'QuestCord Auto-Ban System', iconURL: discordClient.user.displayAvatarURL() })
+      .setTimestamp();
 
-  const payload = JSON.stringify({
-    content: '<@378501056008683530>',
-    username: 'QuestCord Security',
-    avatar_url: 'https://questcord.fun/images/questcord-icon.png',
-    embeds: [embed]
-  });
-
-  const options = {
-    hostname: url.hostname,
-    path: url.pathname + url.search,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const protocol = isHttps ? https : http;
-    const req = protocol.request(options, (res) => {
-      if (res.statusCode === 204 || res.statusCode === 200) {
-        resolve();
-      } else {
-        reject(new Error(`Webhook returned status ${res.statusCode}`));
-      }
+    await channel.send({
+      content: '<@378501056008683530>',
+      embeds: [embed]
     });
 
-    req.on('error', reject);
-    req.write(payload);
-    req.end();
-  });
+    console.log('[Security] Autoban notification sent to Discord');
+  } catch (error) {
+    console.error('[Security] Failed to send autoban Discord notification:', error.message);
+  }
 }
 
 /**
@@ -349,6 +330,9 @@ User-Agent: ${data.userAgent || 'Unknown'}
  * Security monitoring middleware
  */
 function securityMonitor(req, res, next) {
+  // Get Discord client from app locals (set by index.js when bot is ready)
+  const discordClient = req.app?.locals?.discordClient || null;
+
   // Get client IP for tracking
   const ip = req.headers['cf-connecting-ip'] ||
              req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
@@ -356,48 +340,85 @@ function securityMonitor(req, res, next) {
              req.connection.remoteAddress;
 
   // ===== RATE LIMIT TRACKING (for automatic bans) =====
-  // Track ALL requests (including static files) for rate limiting
+  // Only track SUSPICIOUS/UNKNOWN endpoints for rate limiting
+  // Legitimate pages (main, status, terms, etc.) should NOT count toward ban threshold
   const now = Date.now();
   const sixtySecondsAgo = now - 60000;
 
-  // Get or create rate limit tracking for this IP
+  // Define legitimate pages that should NOT count toward autoban
+  const isLegitPage = req.path === '/' ||
+                      req.path === '/healthz' ||
+                      req.path === '/status' ||
+                      req.path === '/status.html' ||
+                      req.path === '/terms' ||
+                      req.path === '/terms.html' ||
+                      req.path === '/privacy' ||
+                      req.path === '/privacy.html' ||
+                      req.path === '/updates' ||
+                      req.path === '/updates.html' ||
+                      req.path === '/changelog' ||
+                      req.path === '/changelog.html' ||
+                      req.path === '/banned' ||
+                      req.path === '/banned.html' ||
+                      req.path === '/404.html' ||
+                      req.path === '/index.html' ||
+                      req.path.startsWith('/api/') ||
+                      req.path.startsWith('/auth/') ||
+                      req.path.startsWith('/images/') ||
+                      req.path.startsWith('/shared/') ||
+                      req.path.startsWith('/store') ||
+                      req.path.startsWith('/health') ||
+                      req.path.startsWith('/enhanced-stats') ||
+                      req.path.startsWith('/updates/') ||
+                      req.path.match(/^\/\d{17,19}$/) || // Discord guild ID routes
+                      req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|json)$/); // Static files
+
+  // Get or initialize rate data for this IP (outside if/else for proper scoping)
   let rateData = rateLimitTracking.get(ip);
 
-  if (!rateData) {
-    rateData = {
-      requests: [],
-      endpoints: [],
-      banned: false
-    };
-    rateLimitTracking.set(ip, rateData);
+  // Only track suspicious/unknown endpoints
+  if (!isLegitPage) {
+    // Create tracking if it doesn't exist
+    if (!rateData) {
+      rateData = {
+        requests: [],
+        endpoints: [],
+        banned: false
+      };
+      rateLimitTracking.set(ip, rateData);
+    }
+
+    // Remove requests older than 60 seconds
+    rateData.requests = rateData.requests.filter(timestamp => timestamp > sixtySecondsAgo);
+
+    // Add current request with endpoint and timestamp
+    rateData.requests.push(now);
+
+    // Track endpoint for violation reporting
+    const existingEndpoint = rateData.endpoints.find(e => e.path === req.path);
+    if (existingEndpoint) {
+      existingEndpoint.count++;
+    } else {
+      rateData.endpoints.push({
+        path: req.path,
+        method: req.method,
+        count: 1
+      });
+    }
   }
-
-  // Remove requests older than 60 seconds
-  rateData.requests = rateData.requests.filter(timestamp => timestamp > sixtySecondsAgo);
-
-  // Add current request with endpoint and timestamp
-  rateData.requests.push(now);
-
-  // Track endpoint for violation reporting
-  const existingEndpoint = rateData.endpoints.find(e => e.path === req.path);
-  if (existingEndpoint) {
-    existingEndpoint.count++;
-  } else {
-    rateData.endpoints.push({
-      path: req.path,
-      method: req.method,
-      count: 1
-    });
-  }
+  // For legitimate pages, rateData may be undefined if user has only visited legitimate pages
+  // This is fine - they shouldn't be tracked or banned
 
   // Debug logging: Show current request count every 5th request
-  if (rateData.requests.length % 5 === 0 && rateData.requests.length > 0) {
+  if (rateData && rateData.requests && rateData.requests.length % 5 === 0 && rateData.requests.length > 0) {
     console.log('[RateLimit] IP %s: %d requests in last 60s (endpoints: %d unique)',
       ip, rateData.requests.length, rateData.endpoints.length);
   }
 
-  // Check if rate limit exceeded (10+ requests in 60 seconds)
-  if (rateData.requests.length >= 10 && !rateData.banned) {
+  // AUTOMATIC BANNING - Ban IPs that exceed rate limits
+  // Threshold: 10+ unique endpoints in 60 seconds (indicates automated scanning)
+  // Normal page loads trigger multiple requests but to the SAME endpoints
+  if (rateData && rateData.endpoints && rateData.endpoints.length >= 10 && !rateData.banned) {
     const timeWindow = Math.round((now - rateData.requests[0]) / 1000);
 
     // Sort endpoints by most accessed
@@ -407,19 +428,19 @@ function securityMonitor(req, res, next) {
     ).join(', ');
 
     console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.warn('⚠️  RATE LIMIT VIOLATION DETECTED');
+    console.warn('🔨 AUTOMATIC BAN TRIGGERED');
     console.warn('🌐 IP: %s', ip);
     console.warn('📊 Requests: %d in %d seconds', rateData.requests.length, timeWindow);
-    console.warn('🎯 Top Endpoints: %s', topEndpoints);
-    console.warn('🔨 Triggering automatic ban...');
+    console.warn('🎯 Unique Endpoints: %d', rateData.endpoints.length);
+    console.warn('📝 Top Endpoints: %s', topEndpoints);
     console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Mark as banned to prevent multiple ban attempts
     rateData.banned = true;
 
-    // Trigger automatic ban (async, don't block the request)
-    autobanIP(ip, rateData.requests.length, timeWindow).catch(error => {
-      console.error('[Security] Autoban failed:', error.message);
+    // Trigger automatic ban (async, don't block request)
+    autobanIP(ip, rateData.endpoints.length, timeWindow, discordClient).catch(error => {
+      console.error('[Security] Failed to autoban IP:', error.message);
     });
   }
 
