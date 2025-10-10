@@ -284,6 +284,12 @@ try { db.exec('ALTER TABLE players ADD COLUMN travelStartAt INTEGER DEFAULT 0');
 // Add boss tier column if it doesn't exist (for difficulty-based rewards)
 try { db.exec('ALTER TABLE bosses ADD COLUMN tier INTEGER'); } catch (e) { }
 
+// Add timestamp column to travel_history if it doesn't exist (for analytics and weekly reset)
+try { db.exec('ALTER TABLE travel_history ADD COLUMN timestamp INTEGER'); } catch (e) { }
+
+// Add created_at column to travel_history if it doesn't exist (for tracking)
+try { db.exec('ALTER TABLE travel_history ADD COLUMN created_at INTEGER DEFAULT (strftime(\'%s\', \'now\'))'); } catch (e) { }
+
 // Export the database connection for use by other modules
 /**
  * SAFE DATABASE OPERATION WRAPPER
@@ -634,7 +640,7 @@ try {
 
   /**
    * POI VISITS TABLE - Landmark Visit Tracking
-   * 
+   *
    * Tracks which players have visited which landmarks.
    * Prevents duplicate rewards for POI visits.
    */
@@ -650,6 +656,21 @@ try {
     )
   `);
   console.log('[db] Ensured poi_visits table exists');
+
+  /**
+   * SYSTEM SETTINGS TABLE - Global System Configuration
+   *
+   * Stores system-wide configuration values and state.
+   * Used for boss spawn timings, global cooldowns, and other system-level data.
+   */
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      key TEXT PRIMARY KEY,           -- Setting key/name
+      value TEXT NOT NULL,            -- Setting value (stored as text)
+      updatedAt INTEGER NOT NULL      -- Timestamp when setting was last updated
+    )
+  `);
+  console.log('[db] Ensured system_settings table exists');
 
 } catch (e) {
   // Log if advanced feature table creation fails
