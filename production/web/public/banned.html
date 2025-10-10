@@ -282,7 +282,7 @@
         const laughingEmojis = ['😂', '🤣', '😆', '😹'];
         const emojiCount = 15; // Number of emojis to spawn
 
-        function createFloatingEmoji() {
+        function createFloatingEmoji(index, total) {
             const emoji = document.createElement('div');
             emoji.className = 'floating-emoji';
 
@@ -293,16 +293,18 @@
             const size = (Math.random() * 3 + 2).toFixed(1);
             emoji.style.fontSize = `${size}rem`;
 
-            // Random horizontal position
-            emoji.style.left = `${Math.random() * 100}%`;
+            // Evenly distribute horizontally with slight random offset
+            const basePosition = (index / total) * 100;
+            const randomOffset = (Math.random() - 0.5) * (100 / total); // Small random offset
+            emoji.style.left = `${Math.max(0, Math.min(100, basePosition + randomOffset))}%`;
 
             // Random animation duration (10-25 seconds)
             const duration = (Math.random() * 15 + 10).toFixed(1);
             emoji.style.animationDuration = `${duration}s`;
 
-            // Random delay before starting
-            const delay = (Math.random() * 5).toFixed(1);
-            emoji.style.animationDelay = `-${delay}s`;
+            // Stagger start times evenly
+            const delay = (index / total) * 10; // Spread delays across 10 seconds
+            emoji.style.animationDelay = `-${delay.toFixed(1)}s`;
 
             // Random opacity between 0.2 and 0.4
             emoji.style.opacity = (Math.random() * 0.2 + 0.2).toFixed(2);
@@ -310,9 +312,9 @@
             emojiContainer.appendChild(emoji);
         }
 
-        // Spawn all emojis
+        // Spawn all emojis with even distribution
         for (let i = 0; i < emojiCount; i++) {
-            createFloatingEmoji();
+            createFloatingEmoji(i, emojiCount);
         }
     </script>
 </body>
