@@ -114,6 +114,18 @@
       border-radius: 12px;
       text-align: center;
       margin-bottom: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      color: var(--text-light);
+    }
+
+    .version-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(88, 101, 242, 0.4);
+      text-decoration: none;
+      color: var(--text-light);
     }
 
     .version-number {
@@ -241,10 +253,10 @@
 </head>
 <body>
   <div class="container">
-    <div class="version-header">
+    <a href="/updates" class="version-header">
       <div class="version-number">Version 2.2.0 <span class="current-badge">Current</span></div>
       <div class="release-date">Released: September 29, 2025</div>
-    </div>
+    </a>
 
     <div class="update-section">
       <div class="update-category fix">CRITICAL BUG FIXES</div>
