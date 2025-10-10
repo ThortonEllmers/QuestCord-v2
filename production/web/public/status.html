@@ -301,6 +301,7 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
+            justify-items: center;
         }
 
         .stat-card {
@@ -310,6 +311,8 @@
             text-align: center;
             transition: all 0.2s ease;
             border: 1px solid var(--border);
+            width: 100%;
+            max-width: 350px;
         }
 
         .stat-card:hover {
@@ -363,6 +366,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
+            justify-items: center;
         }
 
         .health-card {
@@ -371,6 +375,8 @@
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            width: 100%;
+            max-width: 400px;
         }
 
         .health-card:hover {
@@ -446,6 +452,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
+            justify-items: center;
         }
 
         .metric-card {
@@ -455,6 +462,8 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
             text-align: center;
+            width: 100%;
+            max-width: 350px;
         }
 
         .metric-card:hover {
@@ -501,6 +510,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
+            justify-items: center;
         }
 
         .player-engagement-section {
@@ -523,6 +533,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
+            justify-items: center;
         }
 
         .economy-section {
@@ -545,6 +556,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
+            justify-items: center;
         }
 
         .refresh-button {
@@ -605,6 +617,7 @@
             .container {
                 padding: 10px;
                 margin: 0 auto;
+                max-width: 100%;
             }
 
             .header h1 {
@@ -613,6 +626,7 @@
 
             .bot-stats {
                 grid-template-columns: 1fr;
+                padding: 0 16px;
             }
 
             .performance-metrics {
@@ -641,6 +655,8 @@
 
             .overall-status {
                 padding: 24px 16px;
+                margin: 0 auto;
+                max-width: 100%;
             }
 
             .system-health-section,
@@ -649,10 +665,14 @@
             .player-engagement-section,
             .economy-section {
                 padding: 20px 16px;
+                margin: 0 auto;
+                max-width: 100%;
             }
 
             .stat-card, .metric-card, .health-card {
                 padding: 16px;
+                max-width: 100%;
+                margin: 0 auto;
             }
 
             h2 {
@@ -666,6 +686,12 @@
 
             .stat-number, .metric-value {
                 font-size: 1.8rem;
+            }
+
+            .back-button {
+                width: 100%;
+                max-width: 280px;
+                margin: 0 auto;
             }
         }
 
