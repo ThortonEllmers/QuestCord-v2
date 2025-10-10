@@ -819,25 +819,45 @@
 
             .events-grid {
                 grid-template-columns: 1fr;
-                padding: 0 16px;
+                padding: 0 20px;
+                gap: 24px;
             }
 
             .event-widget {
                 max-width: 100%;
-                padding: 24px;
+                padding: 24px 20px;
+                margin: 0;
             }
 
             .widget-header {
                 flex-direction: row;
                 justify-content: center;
                 text-align: center;
+                margin-bottom: 20px;
             }
 
-            .boss-item,
+            .widget-header h3 {
+                font-size: 1.3rem;
+            }
+
+            .boss-item {
+                padding: 12px;
+                gap: 12px;
+            }
+
             .activity-item {
-                max-width: 100%;
-                flex-direction: column;
-                text-align: center;
+                padding: 10px;
+                gap: 12px;
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .activity-info {
+                text-align: left;
+            }
+
+            .boss-info {
+                text-align: left;
             }
         }
 
@@ -850,9 +870,10 @@
         .events-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
+            gap: 32px;
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 16px;
             justify-items: center;
         }
 
@@ -865,7 +886,8 @@
             opacity: 0;
             transform: translateX(-50px);
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
+            box-sizing: border-box;
         }
 
         .event-widget[data-animate="right"] {
@@ -885,8 +907,10 @@
         .widget-header {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 15px;
             margin-bottom: 25px;
+            text-align: center;
         }
 
         .widget-icon {
@@ -899,11 +923,16 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin: 0;
+            text-align: center;
         }
 
         /* Center all widget content */
         .widget-content {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Individual widget centering adjustments */
@@ -954,23 +983,24 @@
 
         /* Boss Tracker Widget Styles */
         .boss-tracker {
-            space-y: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
         }
 
         .boss-item {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 15px;
             padding: 15px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
-            margin-bottom: 12px;
-            margin-left: auto;
-            margin-right: auto;
             transition: all 0.2s ease;
             width: 100%;
-            max-width: 280px;
+            max-width: 100%;
         }
 
         .boss-item:hover {
@@ -981,18 +1011,25 @@
         .boss-emoji {
             font-size: 1.5rem;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            flex-shrink: 0;
+        }
+
+        .boss-info {
+            flex: 1;
+            text-align: left;
         }
 
         .boss-name {
             color: var(--text-light);
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            font-size: 1rem;
         }
 
         .boss-server {
             color: var(--text-muted);
             font-size: 0.85rem;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .boss-status {
@@ -1018,28 +1055,33 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            width: 100%;
         }
 
         .activity-item {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             gap: 15px;
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid var(--border);
             width: 100%;
-            max-width: 280px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .activity-item:last-child {
             border-bottom: none;
         }
 
+        .activity-info {
+            flex: 1;
+            text-align: left;
+        }
+
         .activity-user {
-            font-weight: 500;
-            color: var(--text-primary);
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 4px;
+            font-size: 0.95rem;
         }
 
         .activity-details {
@@ -1051,6 +1093,7 @@
             color: var(--primary);
             font-size: 0.8rem;
             font-weight: 600;
+            flex-shrink: 0;
         }
 
         .server-count {
