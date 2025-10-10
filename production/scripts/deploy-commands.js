@@ -12,7 +12,7 @@ for (const f of cmdFiles){
 }
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-const appId = process.env.CLIENT_ID;
+const appId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
 
 (async () => {
   try {
