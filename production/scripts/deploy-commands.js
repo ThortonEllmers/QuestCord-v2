@@ -18,12 +18,22 @@ const appId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
 
 (async () => {
   try {
-    // Fast per-guild registration
+    // Fast per-guild registration - Always deploy to QuestCord server first
+    const questcordGuildId = '1404523107544469545';
+    console.log(`→ Putting guild commands for QuestCord server (${questcordGuildId}) ...`);
+    await rest.put(Routes.applicationGuildCommands(appId, questcordGuildId), { body: commands });
+    console.log(`✅ Commands deployed to QuestCord server!`);
+
+    // Also deploy to other guilds if specified
     const guildIds = new Set([
       process.env.SPAWN_GUILD_ID,
       process.env.ROLE_GUILD_ID,
       ...(process.env.COMMAND_GUILD_IDS ? process.env.COMMAND_GUILD_IDS.split(',').map(s=>s.trim()) : [])
     ].filter(Boolean));
+
+    // Remove QuestCord guild ID if it's already in the set to avoid duplicate deployment
+    guildIds.delete(questcordGuildId);
+
     for (const gid of guildIds){
       console.log(`→ Putting guild commands for ${gid} ...`);
       await rest.put(Routes.applicationGuildCommands(appId, gid), { body: commands });
