@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | QuestCord</title>
+    <link rel="icon" type="image/png" href="/images/questcord-icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5865f2;
+            --warning: #faa61a;
+            --danger: #ed4245;
+            --bg-dark: #0f0f23;
+            --bg-light: #1a1a2e;
+            --text-light: #ffffff;
+            --text-muted: #b9bbbe;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .emoji-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-emoji {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.2;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        .error-container {
+            max-width: 700px;
+            width: 100%;
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 48px 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--warning);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .error-container.suspicious {
+            border-color: var(--danger);
+        }
+
+        .error-icon {
+            font-size: 100px;
+            margin-bottom: 24px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #5865f2, #7289da);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .security-warning {
+            background: rgba(237, 66, 69, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            text-align: left;
+            display: none;
+        }
+
+        .security-warning.show {
+            display: block;
+        }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .warning-icon {
+            font-size: 2rem;
+        }
+
+        .warning-title {
+            font-weight: 700;
+            color: var(--danger);
+            font-size: 1.2rem;
+        }
+
+        .warning-text {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-left: 44px;
+        }
+
+        .warning-text strong {
+            color: var(--danger);
+        }
+
+        .path-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            color: var(--warning);
+            text-align: left;
+        }
+
+        .path-display code {
+            color: var(--warning);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(88, 101, 242, 0.2);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(88, 101, 242, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .error-footer {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .ip-display {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--warning);
+        }
+
+        @media (max-width: 640px) {
+            .error-container {
+                padding: 32px 24px;
+            }
+
+            .error-code {
+                font-size: 5rem;
+            }
+
+            .error-title {
+                font-size: 1.5rem;
+            }
+
+            .error-subtitle {
+                font-size: 1rem;
+            }
+
+            .error-icon {
+                font-size: 70px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating emoji background -->
+    <div class="emoji-container" id="emoji-container"></div>
+
+    <div class="error-container" id="error-container">
+        <div class="error-icon">🔍</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-subtitle">The page you're looking for doesn't exist or has been moved.</p>
+
+        <!-- Security Warning (shown for suspicious paths) -->
+        <div class="security-warning" id="security-warning">
+            <div class="warning-header">
+                <span class="warning-icon">⚠️</span>
+                <span class="warning-title" id="warning-title">Security Alert</span>
+            </div>
+            <div class="warning-text">
+                <p><strong>You are being monitored.</strong></p>
+                <p id="warning-description">This endpoint does not exist and appears to be an <strong>administrative path probe</strong> or unauthorized access attempt.</p>
+                <p style="margin-top: 12px;">Your IP address, request details, and activity are being logged and monitored by our security system.</p>
+
+                <!-- Severity Indicator -->
+                <div style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">THREAT LEVEL</div>
+                            <div style="font-size: 1.5rem; font-weight: 700;" id="severity-level">MEDIUM</div>
+                        </div>
+                        <div style="font-size: 3rem;" id="severity-emoji">🟡</div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">BAN RISK</div>
+                        <div style="width: 100%; background: rgba(0,0,0,0.5); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="ban-risk-bar" style="height: 100%; background: linear-gradient(90deg, #faa61a, #ed4245); width: 50%; transition: width 0.5s;"></div>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.9rem; color: var(--text-light);" id="ban-risk-text">
+                            Multiple suspicious requests may result in automatic IP ban
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="path-display">
+                <strong>Attempted Path:</strong> <code id="attempted-path">/</code>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a href="/" class="btn btn-primary">
+                <span>🏠</span>
+                <span>Return Home</span>
+            </a>
+            <a href="https://discord.gg/ACGKvKkZ5Z" class="btn btn-secondary" target="_blank">
+                <span>💬</span>
+                <span>Join Community</span>
+            </a>
+        </div>
+
+        <div class="error-footer">
+            <p>Lost? Need help? Join our Discord community for support!</p>
+            <p style="margin-top: 12px; font-size: 0.85rem;">
+                Your IP: <span class="ip-display" id="ip-display">Loading...</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedPath = urlParams.get('path') || window.location.pathname;
+        const suspicious = urlParams.get('suspicious') === 'true';
+        const ip = urlParams.get('ip') || 'Unknown';
+
+        // Set IP address display
+        document.getElementById('ip-display').textContent = ip;
+
+        // Set attempted path
+        document.getElementById('attempted-path').textContent = requestedPath;
+
+        // Calculate threat severity based on path characteristics
+        function calculateSeverity(path) {
+            const lowerPath = path.toLowerCase();
+            let score = 0;
+            let reasons = [];
+
+            // Critical patterns (40 points each)
+            if (lowerPath.includes('/admin') || lowerPath.includes('/administrator')) {
+                score += 40;
+                reasons.push('Admin panel access attempt');
+            }
+            if (lowerPath.includes('wp-admin') || lowerPath.includes('phpmyadmin')) {
+                score += 40;
+                reasons.push('CMS admin panel probe');
+            }
+            if (lowerPath.includes('.env') || lowerPath.includes('config')) {
+                score += 40;
+                reasons.push('Configuration file access attempt');
+            }
+
+            // High severity patterns (30 points each)
+            if (lowerPath.includes('../') || lowerPath.includes('..\\') || lowerPath.includes('%2e%2e')) {
+                score += 30;
+                reasons.push('Path traversal attempt');
+            }
+            if (lowerPath.includes('passwd') || lowerPath.includes('shadow')) {
+                score += 30;
+                reasons.push('System file access attempt');
+            }
+            if (lowerPath.includes('shell') || lowerPath.includes('backdoor') || lowerPath.includes('cmd')) {
+                score += 30;
+                reasons.push('Shell access attempt');
+            }
+
+            // Medium severity patterns (20 points each)
+            if (lowerPath.includes('.php') || lowerPath.includes('.asp') || lowerPath.includes('.jsp')) {
+                score += 20;
+                reasons.push('Script file probe');
+            }
+            if (lowerPath.includes('union') || lowerPath.includes('select')) {
+                score += 20;
+                reasons.push('SQL injection attempt');
+            }
+            if (lowerPath.includes('<script') || lowerPath.includes('javascript:')) {
+                score += 20;
+                reasons.push('XSS attempt');
+            }
+
+            // Low severity patterns (10 points each)
+            if (lowerPath.includes('/api/') || lowerPath.includes('/v1/') || lowerPath.includes('/v2/')) {
+                score += 10;
+                reasons.push('API endpoint enumeration');
+            }
+
+            return { score, reasons };
+        }
+
+        // Show security warning if path is suspicious
+        if (suspicious) {
+            const { score, reasons } = calculateSeverity(requestedPath);
+
+            // Determine severity level
+            let severityLevel, severityEmoji, severityColor, banRisk, banRiskText;
+
+            if (score >= 60) {
+                severityLevel = 'CRITICAL';
+                severityEmoji = '🔴';
+                severityColor = '#ed4245';
+                banRisk = 90;
+                banRiskText = 'High risk - Continued attempts WILL result in automatic IP ban';
+            } else if (score >= 40) {
+                severityLevel = 'HIGH';
+                severityEmoji = '🟠';
+                severityColor = '#ff6b00';
+                banRisk = 70;
+                banRiskText = 'Elevated risk - Further suspicious activity will trigger automatic ban';
+            } else if (score >= 20) {
+                severityLevel = 'MEDIUM';
+                severityEmoji = '🟡';
+                severityColor = '#faa61a';
+                banRisk = 50;
+                banRiskText = 'Moderate risk - Multiple suspicious requests may result in IP ban';
+            } else {
+                severityLevel = 'LOW';
+                severityEmoji = '🟢';
+                severityColor = '#43b581';
+                banRisk = 25;
+                banRiskText = 'Low risk - However, repeated 404s are being monitored';
+            }
+
+            // Update UI elements
+            document.getElementById('security-warning').classList.add('show');
+            document.getElementById('error-container').classList.add('suspicious');
+            document.querySelector('.error-icon').textContent = '🚨';
+
+            document.getElementById('severity-level').textContent = severityLevel;
+            document.getElementById('severity-level').style.color = severityColor;
+            document.getElementById('severity-emoji').textContent = severityEmoji;
+            document.getElementById('ban-risk-bar').style.width = banRisk + '%';
+            document.getElementById('ban-risk-text').textContent = banRiskText;
+
+            // Update warning description with specific reasons
+            if (reasons.length > 0) {
+                const reasonsText = reasons.slice(0, 2).join(', ');
+                document.getElementById('warning-description').innerHTML =
+                    `This endpoint does not exist and appears to be a <strong>${reasonsText.toLowerCase()}</strong>.`;
+            }
+        }
+
+        // Create floating emojis
+        const emojiContainer = document.getElementById('emoji-container');
+        const emojis = suspicious ? ['🚨', '⚠️', '🔒', '👁️'] : ['🔍', '❓', '🗺️', '🧭'];
+        const emojiCount = 12;
+
+        function createFloatingEmoji(index, total) {
+            const emoji = document.createElement('div');
+            emoji.className = 'floating-emoji';
+
+            // Random emoji from array
+            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+            // Random size between 2rem and 4rem
+            const size = (Math.random() * 2 + 2).toFixed(1);
+            emoji.style.fontSize = `${size}rem`;
+
+            // Evenly distribute horizontally with slight random offset
+            const basePosition = (index / total) * 100;
+            const randomOffset = (Math.random() - 0.5) * (100 / total);
+            emoji.style.left = `${Math.max(0, Math.min(100, basePosition + randomOffset))}%`;
+
+            // Random animation duration (12-20 seconds)
+            const duration = (Math.random() * 8 + 12).toFixed(1);
+            emoji.style.animationDuration = `${duration}s`;
+
+            // Stagger start times evenly
+            const delay = (index / total) * 8;
+            emoji.style.animationDelay = `-${delay.toFixed(1)}s`;
+
+            // Random opacity between 0.15 and 0.3
+            emoji.style.opacity = (Math.random() * 0.15 + 0.15).toFixed(2);
+
+            emojiContainer.appendChild(emoji);
+        }
+
+        // Spawn all emojis
+        for (let i = 0; i < emojiCount; i++) {
+            createFloatingEmoji(i, emojiCount);
+        }
+    </script>
+</body>
+</html>
