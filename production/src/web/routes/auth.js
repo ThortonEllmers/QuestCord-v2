@@ -68,7 +68,7 @@ const pendingStates = new Map();
 // Start OAuth flow
 router.get('/auth/discord', (req, res) => {
   const state = crypto.randomBytes(32).toString('hex');
-  
+
   // Store state with expiration
   pendingStates.set(state, Date.now());
   setTimeout(() => pendingStates.delete(state), 10 * 60 * 1000); // 10 min expiry
@@ -81,7 +81,13 @@ router.get('/auth/discord', (req, res) => {
     state: state
   });
 
-  // OAuth flow started
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('🔐 OAUTH FLOW STARTED');
+  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.info('🔑 State: %s', state.substring(0, 16) + '...');
+  logger.info('⏰ Time: %s', new Date().toISOString());
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
   res.redirect(authUrl);
 });
 
@@ -93,7 +99,12 @@ router.get('/auth/discord/callback', async (req, res) => {
 
   // Validate state
   if (!state || !pendingStates.has(state)) {
-    // Invalid OAuth state
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('⚠️  OAUTH FAILED: Invalid State');
+    logger.warn('💻 IP: %s', req.ip || req.connection.remoteAddress);
+    logger.warn('🔑 State: %s', state ? state.substring(0, 16) + '...' : 'missing');
+    logger.warn('⏰ Time: %s', new Date().toISOString());
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return res.status(400).send('Invalid state');
   }
   
@@ -137,7 +148,14 @@ router.get('/auth/discord/callback', async (req, res) => {
     }
 
     const user = await userResponse.json();
-    // User authentication successful
+
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.info('✅ USER AUTHENTICATED');
+    logger.info('👤 User: %s (@%s)', user.username, user.id);
+    logger.info('🎭 Global Name: %s', user.global_name || 'None');
+    logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
+    logger.info('⏰ Time: %s', new Date().toISOString());
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Store in session
     req.session.user = {
@@ -151,7 +169,13 @@ router.get('/auth/discord/callback', async (req, res) => {
     res.redirect('/');
     
   } catch (error) {
-    console.error('OAuth error:', error);
+    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.error('❌ OAUTH ERROR');
+    logger.error('💻 IP: %s', req.ip || req.connection.remoteAddress);
+    logger.error('⚠️  Error: %s', error.message);
+    logger.error('📍 Stack: %s', error.stack);
+    logger.error('⏰ Time: %s', new Date().toISOString());
+    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     res.status(500).send('Authentication failed');
   }
 });
@@ -267,11 +291,31 @@ router.get('/login', (req, res) => res.redirect('/auth/discord'));
 
 // Logout (POST for API, GET for direct links)
 router.post('/auth/logout', (req, res) => {
+  const username = req.session?.user?.username || 'Unknown';
+  const userId = req.session?.user?.id || 'Unknown';
+
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('👋 USER LOGGED OUT');
+  logger.info('👤 User: %s (@%s)', username, userId);
+  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.info('⏰ Time: %s', new Date().toISOString());
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
   req.session.destroy();
   res.json({ success: true });
 });
 
 router.get('/auth/logout', (req, res) => {
+  const username = req.session?.user?.username || 'Unknown';
+  const userId = req.session?.user?.id || 'Unknown';
+
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('👋 USER LOGGED OUT');
+  logger.info('👤 User: %s (@%s)', username, userId);
+  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.info('⏰ Time: %s', new Date().toISOString());
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
   req.session.destroy();
   res.redirect('/');
 });
