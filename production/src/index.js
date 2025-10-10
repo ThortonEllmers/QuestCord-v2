@@ -274,10 +274,24 @@ client.once(Events.ClientReady, async () => {
   
   // Set up randomized spawning intervals
   function scheduleNextBossSpawn() {
-    const nextInterval = getNextSpawnInterval(); // 1 hour intervals
-    const hoursFromNow = (nextInterval / (1000 * 60 * 60)).toFixed(1);
-    logger.info(`[boss_spawner] Next boss spawn scheduled in ${hoursFromNow} hours`);
-    
+    const nextInterval = getNextSpawnInterval(); // Check interval (30 seconds or time until scheduled spawn)
+
+    // Log appropriate message based on interval type
+    if (nextInterval <= 60000) {
+      // Short interval = checking for spawn conditions
+      logger.info(`[boss_spawner] Boss spawn system active - checking spawn conditions every ${Math.round(nextInterval/1000)} seconds`);
+    } else {
+      // Long interval = time until scheduled spawn
+      const minutesFromNow = Math.round(nextInterval / (1000 * 60));
+      const hoursFromNow = (minutesFromNow / 60).toFixed(1);
+
+      if (minutesFromNow < 60) {
+        logger.info(`[boss_spawner] Next boss spawn scheduled in ${minutesFromNow} minutes`);
+      } else {
+        logger.info(`[boss_spawner] Next boss spawn scheduled in ${hoursFromNow} hours (${minutesFromNow} minutes)`);
+      }
+    }
+
     setTimeout(async () => {
       try {
         await runBossSpawningCycle(client);
@@ -728,12 +742,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     logger.info('✅ Command completed successfully: /%s', interaction.commandName);
 
-    // Record command usage for real-time statistics
+    // Record command usage for real-time statistics and live activity feed
     try {
-      const realtimeStats = require('./web/routes/realtime-stats');
-      if (realtimeStats && realtimeStats.recordCommandUsage) {
-        realtimeStats.recordCommandUsage(interaction.commandName, interaction.user.id, interaction.guildId, true);
-      }
+      const { logCommand } = require('./utils/store_sqlite');
+      // Pass the entire interaction object so logCommand can extract username
+      logCommand(interaction, interaction.commandName, interaction.guildId);
     } catch (statsError) {
       // Don't let stats tracking errors affect command execution
       console.warn('Failed to record command usage:', statsError.message);
@@ -756,10 +769,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     // Record failed command usage for statistics
     try {
-      const realtimeStats = require('./web/routes/realtime-stats');
-      if (realtimeStats && realtimeStats.recordCommandUsage) {
-        realtimeStats.recordCommandUsage(interaction.commandName, interaction.user.id, interaction.guildId, false);
-      }
+      const { logCommand } = require('./utils/store_sqlite');
+      // Still log failed commands for activity tracking
+      logCommand(interaction, interaction.commandName, interaction.guildId);
     } catch (statsError) {
       console.warn('Failed to record failed command usage:', statsError.message);
     }
