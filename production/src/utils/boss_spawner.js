@@ -221,7 +221,7 @@ function getEligibleServersForBoss() {
 /**
  * Spawn a boss on a random eligible server
  */
-function spawnRandomBoss(client = null) {
+async function spawnRandomBoss(client = null) {
   try {
     const eligibleServers = getEligibleServersForBoss();
     
@@ -629,7 +629,7 @@ async function runBossSpawningCycle(client = null) {
     
     for (let i = 0; i < bossesToSpawn; i++) {
       if (Math.random() < adaptiveSpawnChance) {
-        const boss = spawnRandomBoss(client);
+        const boss = await spawnRandomBoss(client);
         
         if (boss) {
           spawnedCount++;
