@@ -40,15 +40,14 @@
       max-width: 800px;
       width: 100%;
       max-width: calc(100vw - 40px);
-      margin: 0 auto;
+      margin: 50px auto;
       padding: 32px;
       background: var(--bg-light);
       border-radius: 12px;
       border: 1px solid var(--border);
-      margin-top: 50px;
-      margin-bottom: 50px;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      box-sizing: border-box;
     }
     
     h1 {
@@ -273,9 +272,15 @@
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
+      body {
+        padding: 0 16px;
+      }
+
       .container {
-        padding: 20px 16px;
+        padding: 24px 20px;
         margin: 20px auto;
+        max-width: 100%;
+        border-radius: 12px;
       }
 
       .title-text {
@@ -295,14 +300,32 @@
 
       h2 {
         font-size: 1.4rem;
+        word-wrap: break-word;
       }
 
       h3 {
         font-size: 1.2rem;
       }
 
+      ul, p {
+        padding-left: 0;
+        margin-left: 0;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
       .highlight {
         padding: 16px;
+        margin: 16px 0;
+      }
+
+      .back-button {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        display: flex;
       }
     }
 
