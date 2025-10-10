@@ -67,12 +67,12 @@ router.get('/auth/discord', (req, res) => {
     state: state
   });
 
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  logger.info('🔐 OAUTH FLOW STARTED');
-  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
-  logger.info('🔑 State: %s', state.substring(0, 16) + '...');
-  logger.info('⏰ Time: %s', new Date().toISOString());
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('🔐 OAUTH FLOW STARTED');
+  logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.aqua('🔑 State: %s', state.substring(0, 16) + '...');
+  logger.aqua('⏰ Time: %s', new Date().toISOString());
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   res.redirect(authUrl);
 });
@@ -135,13 +135,13 @@ router.get('/auth/discord/callback', async (req, res) => {
 
     const user = await userResponse.json();
 
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info('✅ USER AUTHENTICATED');
-    logger.info('👤 User: %s (@%s)', user.username, user.id);
-    logger.info('🎭 Global Name: %s', user.global_name || 'None');
-    logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
-    logger.info('⏰ Time: %s', new Date().toISOString());
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('✅ USER AUTHENTICATED');
+    logger.aqua('👤 User: %s (@%s)', user.username, user.id);
+    logger.aqua('🎭 Global Name: %s', user.global_name || 'None');
+    logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
+    logger.aqua('⏰ Time: %s', new Date().toISOString());
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Store in session
     req.session.user = {
@@ -280,12 +280,12 @@ router.post('/auth/logout', (req, res) => {
   const username = req.session?.user?.username || 'Unknown';
   const userId = req.session?.user?.id || 'Unknown';
 
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  logger.info('👋 USER LOGGED OUT');
-  logger.info('👤 User: %s (@%s)', username, userId);
-  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
-  logger.info('⏰ Time: %s', new Date().toISOString());
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('👋 USER LOGGED OUT');
+  logger.aqua('👤 User: %s (@%s)', username, userId);
+  logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.aqua('⏰ Time: %s', new Date().toISOString());
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   req.session.destroy();
   res.json({ success: true });
@@ -295,12 +295,12 @@ router.get('/auth/logout', (req, res) => {
   const username = req.session?.user?.username || 'Unknown';
   const userId = req.session?.user?.id || 'Unknown';
 
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  logger.info('👋 USER LOGGED OUT');
-  logger.info('👤 User: %s (@%s)', username, userId);
-  logger.info('💻 IP: %s', req.ip || req.connection.remoteAddress);
-  logger.info('⏰ Time: %s', new Date().toISOString());
-  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.aqua('👋 USER LOGGED OUT');
+  logger.aqua('👤 User: %s (@%s)', username, userId);
+  logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
+  logger.aqua('⏰ Time: %s', new Date().toISOString());
+  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   req.session.destroy();
   res.redirect('/');
