@@ -249,7 +249,7 @@ try {
       fromGuildId TEXT,                     -- Source server ID (null for first travel)
       toGuildId TEXT NOT NULL,              -- Destination server ID
       fromServerName TEXT,                  -- Source server name (for display)
-      toServerName TEXT NOT NULL,           -- Destination server name
+      toServerName TEXT,                    -- Destination server name
       distance REAL,                        -- Travel distance in kilometers
       travelTime INTEGER,                   -- Travel time in seconds
       staminaCost INTEGER,                  -- Stamina cost for the travel
@@ -257,7 +257,7 @@ try {
       vehicleSpeed REAL DEFAULT 1.0,       -- Vehicle speed multiplier used
       travelType TEXT DEFAULT 'server',    -- Type: 'server', 'landmark', 'poi'
       destinationId TEXT,                   -- POI ID if traveling to landmark
-      startedAt INTEGER NOT NULL,          -- Timestamp when travel started
+      startedAt INTEGER,                    -- Timestamp when travel started
       arrivedAt INTEGER,                   -- Timestamp when travel completed
       cancelled INTEGER DEFAULT 0         -- Whether travel was cancelled (0/1)
     )
@@ -459,25 +459,7 @@ try {
   `);
   console.log('[db] Ensured waypoints table exists');
 
-  /**
-   * TRAVEL HISTORY TABLE - Player Movement Tracking
-   * 
-   * Records all player travels between servers for statistics and analytics.
-   * Tracks distance, time taken, and server names for analytics.
-   */
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS travel_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique travel record ID
-      userId TEXT NOT NULL,                  -- Player who traveled
-      fromGuildId TEXT,                      -- Origin server (NULL for first spawn)
-      toGuildId TEXT NOT NULL,               -- Destination server
-      fromServerName TEXT,                   -- Cached origin server name
-      toServerName TEXT,                     -- Cached destination server name
-      travelTime INTEGER NOT NULL,           -- Travel duration in milliseconds
-      timestamp INTEGER NOT NULL            -- When travel was completed
-    )
-  `);
-  console.log('[db] Ensured travel_history table exists');
+  // NOTE: travel_history table is created above at line 246 - this duplicate has been removed to prevent schema conflicts
 
 
   /**
