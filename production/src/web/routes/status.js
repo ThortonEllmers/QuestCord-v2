@@ -242,12 +242,9 @@ router.get('/enhanced-stats', async (req, res) => {
     const totalGems = db.prepare('SELECT SUM(gems) as total FROM players').get();
     const avgLoginStreak = db.prepare('SELECT AVG(loginStreak) as avg FROM players WHERE loginStreak > 0').get();
 
-    // Get today's achievements
+    // Get today's start time
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    const achievementsToday = db.prepare(
-      'SELECT COUNT(*) as count FROM achievements WHERE unlockedAt >= ?'
-    ).get(todayStart.getTime());
 
     // Get crafting statistics
     const totalItemsCrafted = db.prepare('SELECT SUM(itemsCrafted) as total FROM players').get();
@@ -287,7 +284,6 @@ router.get('/enhanced-stats', async (req, res) => {
         totalServersVisited: totalServersVisited.total || 0
       },
       engagementStats: {
-        achievementsToday: achievementsToday.count || 0,
         totalPoiVisits: totalPoiVisits.count || 0
       },
       economyStats: {
