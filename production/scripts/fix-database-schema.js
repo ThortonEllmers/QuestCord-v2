@@ -90,7 +90,50 @@ try {
     console.log('[Fix] ✅ travel_history table created with correct camelCase schema');
   }
 
-  // 3. VERIFY weather_events AND weather_encounters TABLES
+  // 3. FIX travel_history SCHEMA - Add missing columns if needed
+  console.log('\n[Fix] Checking travel_history schema for missing columns...');
+
+  const travelTableInfo = db.pragma('table_info(travel_history)');
+  const hasTravelTime = travelTableInfo.some(col => col.name === 'travelTime');
+
+  if (!hasTravelTime) {
+    console.log('[Fix] 🔧 Adding missing columns to travel_history table...');
+
+    try {
+      // Add columns that might be missing
+      const columnsToAdd = [
+        'fromServerName TEXT',
+        'toServerName TEXT',
+        'distance REAL',
+        'travelTime INTEGER',
+        'staminaCost INTEGER',
+        'isPremium INTEGER DEFAULT 0',
+        'vehicleSpeed REAL DEFAULT 1.0',
+        'travelType TEXT DEFAULT \'server\'',
+        'destinationId TEXT',
+        'startedAt INTEGER',
+        'arrivedAt INTEGER'
+      ];
+
+      for (const column of columnsToAdd) {
+        try {
+          db.exec(`ALTER TABLE travel_history ADD COLUMN ${column}`);
+          console.log(`[Fix] ✅ Added column: ${column.split(' ')[0]}`);
+        } catch (err) {
+          // Column might already exist, ignore
+          if (!err.message.includes('duplicate column')) {
+            console.log(`[Fix] ⚠️ Could not add ${column.split(' ')[0]}: ${err.message}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.log('[Fix] ⚠️ Some columns may already exist:', error.message);
+    }
+  } else {
+    console.log('[Fix] ✅ travel_history table has all required columns');
+  }
+
+  // 4. VERIFY weather_events AND weather_encounters TABLES
   console.log('\n[Fix] Checking weather system tables...');
 
   const weatherEventsExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='weather_events'").get();
@@ -116,6 +159,7 @@ try {
         created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
       )
     `);
+    console.log('[Fix] ✅ weather_events table created');
   }
 
   if (!weatherEncountersExists) {
@@ -130,9 +174,10 @@ try {
         FOREIGN KEY (weatherEventId) REFERENCES weather_events(id)
       )
     `);
+    console.log('[Fix] ✅ weather_encounters table created');
   }
 
-  // 4. CLEAN UP ORPHANED WEATHER DATA
+  // 5. CLEAN UP ORPHANED WEATHER DATA
   console.log('\n[Fix] Cleaning up orphaned weather data...');
 
   if (weatherEventsExists && weatherEncountersExists) {
@@ -150,7 +195,7 @@ try {
     console.log(`[Fix] Removed ${expiredEvents.changes} expired weather events`);
   }
 
-  // 5. VERIFY COMMAND_LOGS TABLE
+  // 6. VERIFY COMMAND_LOGS TABLE
   console.log('\n[Fix] Checking command_logs table...');
 
   const commandLogsExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='command_logs'").get();
@@ -169,7 +214,7 @@ try {
     `);
   }
 
-  // 6. DATABASE INTEGRITY CHECK
+  // 7. DATABASE INTEGRITY CHECK
   console.log('\n[Fix] Running database integrity check...');
 
   const integrityResult = db.pragma('integrity_check');
@@ -179,7 +224,7 @@ try {
     console.log('[Fix] ⚠️ Database integrity issues detected:', integrityResult);
   }
 
-  // 7. FINAL VERIFICATION
+  // 8. FINAL VERIFICATION
   console.log('\n[Fix] Final verification...');
 
   const finalTableInfo = db.pragma('table_info(travel_history)');
