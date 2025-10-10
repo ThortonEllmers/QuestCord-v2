@@ -545,51 +545,61 @@
     </div>
 
     <div class="version-header scroll-animate">
-      <div class="version-number">Version 2.1.3</div>
-      <div class="release-date">Released: September 29, 2025</div>
+      <div class="version-number">Version 2.2.0</div>
+      <div class="release-date">Released: October 10, 2025</div>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category removal">MAJOR SYSTEM REMOVALS</div>
-      <h3>🗑️ Weather & Achievements System Complete Removal</h3>
+      <div class="update-category fix">CRITICAL BUG FIXES</div>
+      <h3>🐛 Production Stability & Database Fixes</h3>
       <ul class="feature-list fixes">
-        <li><strong>Weather System Removed</strong> - Completely deleted weather commands, API endpoints, and travel integration</li>
-        <li><strong>Achievements System Removed</strong> - Deleted achievement tracking, commands, and progress checking</li>
-        <li><strong>Database Schema Cleanup</strong> - Removed weather_events, weather_encounters, and achievements tables</li>
-        <li><strong>Travel System Simplified</strong> - Removed weather effects, focusing purely on distance and stamina</li>
-        <li><strong>Syntax Errors Fixed</strong> - Resolved travel command syntax error from system removal</li>
+        <li><strong>Database Schema Fixed</strong> - Resolved missing closing brace in config.json causing JSON parse errors</li>
+        <li><strong>Travel History Errors Resolved</strong> - Fixed "NOT NULL constraint failed" by making columns nullable</li>
+        <li><strong>Weather Events Table Added</strong> - Created missing weather_events and weather_encounters tables</li>
+        <li><strong>Discord Client ID Fixed</strong> - Updated deploy-commands.js to support both DISCORD_CLIENT_ID and CLIENT_ID</li>
+        <li><strong>Port Configuration Fixed</strong> - Changed web server default port to 80 for production</li>
+        <li><strong>Live Activity Display Fixed</strong> - Players now show actual Discord usernames instead of "Unknown User"</li>
+        <li><strong>System Settings Table Created</strong> - Fixed "no such table: system_settings" errors</li>
       </ul>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category new">NEW FEATURES</div>
-      <h3>⚔️ Live Boss Activity Tracker</h3>
+      <div class="update-category new">SECURITY & STABILITY</div>
+      <h3>🔒 Enhanced Security & Error Handling</h3>
       <ul class="feature-list">
-        <li><strong>Real-time Boss Tracking</strong> - Replaced weather widget with live boss activity tracker on homepage</li>
-        <li><strong>Recent Boss History</strong> - Shows last 24 hours of boss battles across all servers</li>
-        <li><strong>Boss Battle Outcomes</strong> - Displays whether bosses were "Defeated" or "Expired" with timestamps</li>
-        <li><strong>Smart Boss Emojis</strong> - Automatically assigns emojis based on boss names (🐉 dragons, 🐺 wolves, 🕷️ spiders)</li>
-        <li><strong>Auto-Refresh Updates</strong> - Boss tracker updates every 30 seconds automatically</li>
-        <li><strong>New API Endpoint</strong> - Added /api/bosses/recent endpoint for boss activity data</li>
+        <li><strong>Input Sanitization</strong> - Comprehensive review and improvement of all user input validation</li>
+        <li><strong>SQL Injection Prevention</strong> - Enhanced parameterized queries across all database operations</li>
+        <li><strong>Error Handling</strong> - Improved error handling in boss spawning and travel systems</li>
+        <li><strong>Configuration Validation</strong> - Added startup validation for required configuration values</li>
+        <li><strong>Environment Documentation</strong> - Created comprehensive .env.example file for secure deployment</li>
       </ul>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category improvement">IMPROVEMENTS</div>
-      <h3>🔧 System Streamlining</h3>
+      <div class="update-category improvement">PERFORMANCE & QUALITY</div>
+      <h3>⚡ System Optimization</h3>
       <ul class="feature-list improvements">
-        <li><strong>Reduced Code Complexity</strong> - Removed thousands of lines of weather and achievement logic</li>
-        <li><strong>Improved Performance</strong> - Eliminated weather calculations on travel and achievement checking overhead</li>
-        <li><strong>Cleaner Travel System</strong> - Travel now focuses purely on distance and stamina without weather complications</li>
-        <li><strong>Simplified Database Schema</strong> - Removed complex weather and achievement table relationships</li>
-        <li><strong>Focused User Experience</strong> - Boss tracking provides more relevant real-time server activity information</li>
-        <li><strong>Easier Maintenance</strong> - Fewer systems to maintain, debug, and keep synchronized</li>
+        <li><strong>Database Indexing</strong> - Added strategic indexes for faster database operations</li>
+        <li><strong>Response Time Optimization</strong> - Implemented intelligent caching for frequently accessed data</li>
+        <li><strong>Rate Limiting</strong> - Added command rate limiting to prevent spam</li>
+        <li><strong>Enhanced Metrics</strong> - Improved system monitoring and performance tracking</li>
+        <li><strong>Better Error Messages</strong> - More helpful and user-friendly error messages across all commands</li>
+        <li><strong>Mobile Web Responsiveness</strong> - Improved mobile experience for all web interface pages</li>
       </ul>
     </div>
 
     <div class="version-selector scroll-animate">
       <h3>📚 Previous Versions</h3>
       <div class="version-previews">
+        <a href="/updates/v2.1.3" class="version-preview">
+          <div class="version-info">
+            <div class="version-title">Version 2.1.3</div>
+            <div class="version-date">September 29, 2025</div>
+            <div class="version-snippet">Weather & achievements system removal, live boss activity tracker, and major system simplification for improved performance.</div>
+          </div>
+          <div class="version-arrow">→</div>
+        </a>
+
         <a href="/updates/v2.1.2" class="version-preview">
           <div class="version-info">
             <div class="version-title">Version 2.1.2</div>
@@ -633,7 +643,7 @@
     </div>
 
     <div class="technical-note scroll-animate">
-      <p><strong>🔧 Technical Note:</strong> Version 2.1.3 is a major release that removes two complex systems (Weather and Achievements) to significantly reduce codebase complexity and improve performance. The new boss tracker provides actionable, real-time information about server activity without the overhead of weather calculations or achievement progress tracking. This results in improved performance, easier maintenance, and a more focused user experience.</p>
+      <p><strong>🔧 Technical Note:</strong> Version 2.2.0 represents a major stability and security release focused on production readiness. This update includes comprehensive security hardening, performance optimizations, and critical database fixes based on production deployment feedback. All core systems have been thoroughly tested and validated for reliability.</p>
     </div>
 
     <div style="text-align: center; margin-top: 40px;">
