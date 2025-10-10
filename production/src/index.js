@@ -33,12 +33,22 @@ for (const f of cmdFiles) {
 // START WEB SERVER IMMEDIATELY (Don't wait for Discord bot)
 // ============================================================================
 // Start the webserver immediately so the website works even if Discord bot fails
-logger.info('[web] Starting web server independent of Discord bot...');
-const webServerResult = createWebServer();
-if (webServerResult && webServerResult.app) {
-  // Discord client will be attached later when bot connects
-  webServerResult.app.locals.discordClient = null;
-  logger.info('[web] Web server started successfully');
+let webServerResult;
+try {
+  logger.info('[web] Starting web server independent of Discord bot...');
+  webServerResult = createWebServer();
+  if (webServerResult && webServerResult.app) {
+    // Discord client will be attached later when bot connects
+    webServerResult.app.locals.discordClient = null;
+    logger.info('[web] ✅ Web server started successfully');
+  } else {
+    logger.error('[web] ❌ Failed to create web server - no result returned');
+  }
+} catch (error) {
+  logger.error('[web] ❌ CRITICAL ERROR starting web server:');
+  logger.error('[web] Error: %s', error.message);
+  logger.error('[web] Stack: %s', error.stack);
+  console.error('Web server startup failed:', error);
 }
 // ============================================================================
 
