@@ -265,14 +265,14 @@ async function spawnRandomBoss(client = null) {
     };
     
     const logger = require('./logger');
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    logger.info('👹 BOSS SPAWNED');
-    logger.info('💀 Boss: %s (Tier %d)', name, tier);
-    logger.info('❤️  HP: %d', hp);
-    logger.info('🏰 Server: %s (%s)', server.name, server.guildId);
-    logger.info('🌿 Biome: %s', server.biome || 'Unknown');
-    logger.info('⏰ Expires: %s', new Date(expiresAt).toISOString());
-    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.aqua('👹 BOSS SPAWNED');
+    logger.aqua('💀 Boss: %s (Tier %d)', name, tier);
+    logger.aqua('❤️  HP: %d', hp);
+    logger.aqua('🏰 Server: %s (%s)', server.name, server.guildId);
+    logger.aqua('🌿 Biome: %s', server.biome || 'Unknown');
+    logger.aqua('⏰ Expires: %s', new Date(expiresAt).toISOString());
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     // Send Discord notification (both global and server-specific)
     if (client) {
