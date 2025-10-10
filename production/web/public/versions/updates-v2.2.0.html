@@ -247,6 +247,21 @@
     </div>
 
     <div class="update-section">
+      <div class="update-category fix">CRITICAL BUG FIXES</div>
+      <h3>🐛 Recent Bug Fixes (Latest)</h3>
+      <ul class="feature-list fixes">
+        <li><strong>Database Schema Fixed</strong> - Resolved missing closing brace in config.json game object causing JSON parse errors</li>
+        <li><strong>Travel History Errors Resolved</strong> - Fixed "NOT NULL constraint failed: travel_history.travelTime" by removing problematic recordTravel function</li>
+        <li><strong>Achievements System Removed</strong> - Removed deprecated achievements table queries preventing status page errors</li>
+        <li><strong>Schema Conflicts Fixed</strong> - Removed duplicate travel_history table definition causing database conflicts</li>
+        <li><strong>Nullable Columns Updated</strong> - Made toServerName and startedAt columns nullable in travel_history to prevent constraint errors</li>
+        <li><strong>Port Configuration Fixed</strong> - Changed web server default port to 80 for proper production deployment</li>
+        <li><strong>Live Activity Display Fixed</strong> - Players now show actual Discord usernames instead of "Unknown User" in live activity widget</li>
+        <li><strong>User Interface Updates</strong> - Changed "Happy Users" label to "Users" on homepage statistics</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
       <div class="update-category security">SECURITY & STABILITY</div>
       <h3>🔒 Enhanced Security & Error Handling</h3>
       <ul class="feature-list security">
