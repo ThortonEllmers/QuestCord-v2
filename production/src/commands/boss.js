@@ -664,7 +664,15 @@ module.exports = {
         console.warn('[boss] Failed to award participation gems:', e.message);
       }
       
-      logger.info('boss_attack: user %s dmg=%s weapon=%s', userId, dmg, weapon?.id);
+      logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.info('⚔️  BOSS ATTACK');
+      logger.info('👤 User: %s (@%s)', interaction.user.username, userId);
+      logger.info('👹 Boss: %s (Tier %d)', boss.name, boss.tier || 1);
+      logger.info('💥 Damage: %d', dmg);
+      logger.info('🗡️  Weapon: %s', weapon ? weapon.name : 'Bare fists');
+      logger.info('❤️  Boss HP: %d/%d (%d%%)', current, boss.maxHp, Math.round((current/boss.maxHp)*100));
+      logger.info('⏰ Time: %s', new Date().toISOString());
+      logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       if (current <= 0) {
         db.prepare('UPDATE bosses SET active=0 WHERE id=?').run(boss.id);
@@ -707,7 +715,17 @@ module.exports = {
         }
         
         db.prepare('DELETE FROM boss_participants WHERE bossId=?').run(boss.id);
-        logger.info('boss_defeat: %s participants=%s name=%s', location, parts.length, boss.name);
+
+        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        logger.info('🏆 BOSS DEFEATED');
+        logger.info('👹 Boss: %s (Tier %d)', boss.name, boss.tier || 1);
+        logger.info('🏰 Server: %s', here?.name || location);
+        logger.info('👥 Participants: %d players', parts.length);
+        logger.info('💰 Rewards: %d Drakari each', 50 * (boss.tier || 1));
+        logger.info('⚔️  Final Blow: %s', interaction.user.username);
+        logger.info('⏱️  Duration: %dmin', Math.floor((Date.now() - boss.startedAt) / 60000));
+        logger.info('⏰ Time: %s', new Date().toISOString());
+        logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Also run global orphaned role cleanup to catch any other stale roles
         try {
