@@ -29,6 +29,19 @@ for (const f of cmdFiles) {
   if (cmd.data) client.commands.set(cmd.data.name, cmd);
 }
 
+// ============================================================================
+// START WEB SERVER IMMEDIATELY (Don't wait for Discord bot)
+// ============================================================================
+// Start the webserver immediately so the website works even if Discord bot fails
+logger.info('[web] Starting web server independent of Discord bot...');
+const webServerResult = createWebServer();
+if (webServerResult && webServerResult.app) {
+  // Discord client will be attached later when bot connects
+  webServerResult.app.locals.discordClient = null;
+  logger.info('[web] Web server started successfully');
+}
+// ============================================================================
+
 const buckets = new Map();
 
 // Cleanup expired rate limiting buckets every 10 minutes to prevent memory leaks
@@ -289,10 +302,10 @@ client.once(Events.ClientReady, async () => {
     console.error('Water check failed:', error.message);
   }
   
-  // Create web server and pass the Discord client for real-time stats
-  const webServerResult = createWebServer();
+  // Attach Discord client to already-running web server for real-time stats
   if (webServerResult && webServerResult.app) {
     webServerResult.app.locals.discordClient = client;
+    logger.info('[web] Discord client attached to web server');
   }
 
   // Start periodic uptime status recording
@@ -321,10 +334,21 @@ client.once(Events.ClientReady, async () => {
 client.on(Events.GuildCreate, async (guild) => {
   const iconUrl = guild.iconURL({ extension: 'png', size: 64 });
   const exists = db.prepare('SELECT 1 FROM servers WHERE guildId=?').get(guild.id);
+
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('🎉 BOT ADDED TO NEW SERVER');
+  logger.info('🏰 Server: %s', guild.name);
+  logger.info('🆔 Guild ID: %s', guild.id);
+  logger.info('👑 Owner ID: %s', guild.ownerId);
+  logger.info('👥 Members: %d', guild.memberCount);
+  logger.info('⏰ Time: %s', new Date().toISOString());
+
   if (!exists) {
     db.prepare('INSERT INTO servers(guildId, name, ownerId, addedAt, iconUrl, archived) VALUES(?,?,?,?,?,0)').run(guild.id, guild.name, guild.ownerId, Date.now(), iconUrl);
+    logger.info('✅ Server registered in database');
   } else {
     db.prepare('UPDATE servers SET name=?, ownerId=?, iconUrl=?, archived=0, archivedAt=NULL, archivedBy=NULL WHERE guildId=?').run(guild.name, guild.ownerId, iconUrl, guild.id);
+    logger.info('✅ Server un-archived and updated');
   }
   
   try {
@@ -335,7 +359,8 @@ client.on(Events.GuildCreate, async (guild) => {
     const biome = require('./web/util').assignBiomeDeterministic(guild.id);
     
     db.prepare('UPDATE servers SET lat=?, lon=?, biome=? WHERE guildId=?').run(pos.lat, pos.lon, biome, guild.id);
-    logger.info('guild_add: %s (%s) placed at collision-free land position %s,%s', guild.name, guild.id, pos.lat, pos.lon);
+    logger.info('📍 Placed at coordinates: (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   } catch (error) {
     logger.error('Error placing guild with collision detection: %s', error.message);
     // Fallback to original placement if advanced placement fails
@@ -344,13 +369,21 @@ client.on(Events.GuildCreate, async (guild) => {
     const pos = placeOnSpiral(count, center);
     const biome = require('./web/util').assignBiomeDeterministic(guild.id);
     db.prepare('UPDATE servers SET lat=?, lon=?, biome=? WHERE guildId=?').run(pos.lat, pos.lon, biome, guild.id);
-    logger.info('guild_add: %s (%s) placed at fallback position %s,%s', guild.name, guild.id, pos.lat, pos.lon);
+    logger.info('📍 Placed at coordinates (fallback): (%s, %s) | Biome: %s', pos.lat, pos.lon, biome);
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 });
 
 client.on(Events.GuildDelete, (guild) => {
   db.prepare('UPDATE servers SET archived=1, archivedAt=?, archivedBy=? WHERE guildId=?').run(Date.now(), 'system', guild.id);
-  logger.info('guild_remove_soft: %s', guild.id);
+
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('👋 BOT REMOVED FROM SERVER');
+  logger.info('🏰 Server: %s', guild.name);
+  logger.info('🆔 Guild ID: %s', guild.id);
+  logger.info('📦 Server archived (data preserved)');
+  logger.info('⏰ Time: %s', new Date().toISOString());
+  logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
 // Handle new members joining ANY server - add them to spawn server display
@@ -371,8 +404,14 @@ client.on(Events.GuildMemberAdd, async (member) => {
     
     // Create new player and place them at spawn server (regardless of which server they joined)
     await ensurePlayerWithVehicles(client, member.user.id, member.user.username, process.env.SPAWN_GUILD_ID);
-    
-    logger.info('new_user_auto_created: %s (%s) joined server %s and was registered at spawn server', member.user.username, member.user.id, member.guild.name);
+
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.info('🆕 NEW USER JOINED');
+    logger.info('👤 User: %s (@%s)', member.user.username, member.user.id);
+    logger.info('🏰 Joined Server: %s', member.guild.name);
+    logger.info('✅ Registered at spawn server');
+    logger.info('⏰ Time: %s', new Date().toISOString());
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
   } catch (error) {
     logger.error('Failed to handle new member join: %s', error.message);
@@ -622,7 +661,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     
     if (!interaction.isChatInputCommand()) return;
-    if (!hit(interaction.user.id)) return interaction.reply({ content: 'Slow down a bit.', ephemeral: true });
+
+    // Check rate limiting and log if user is rate limited
+    if (!hit(interaction.user.id)) {
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('⚠️  RATE LIMITED');
+      logger.warn('👤 User: %s (@%s)', interaction.user.username, interaction.user.id);
+      logger.warn('📋 Attempted Command: /%s', interaction.commandName);
+      logger.warn('🏰 Server: %s', interaction.guild ? interaction.guild.name : 'DM');
+      logger.warn('⏰ Time: %s', new Date().toISOString());
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return interaction.reply({ content: 'Slow down a bit.', ephemeral: true });
+    }
     const cmd = client.commands.get(interaction.commandName);
     if (!cmd) return;
     
@@ -635,8 +685,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
       log: (event, data) => logger.info('cmd_%s: %s', event, JSON.stringify(data))
     };
     
+    // Log detailed command execution information before executing
+    const guild = interaction.guild;
+    const guildName = guild ? guild.name : 'DM';
+    const username = interaction.user.username;
+    const userId = interaction.user.id;
+
+    // Extract command options/parameters for logging
+    let optionsStr = '';
+    try {
+      if (interaction.options && interaction.options.data && interaction.options.data.length > 0) {
+        const opts = interaction.options.data.map(opt => {
+          if (opt.type === 1 || opt.type === 2) { // SUB_COMMAND or SUB_COMMAND_GROUP
+            return `${opt.name}`;
+          }
+          return `${opt.name}=${opt.value}`;
+        }).join(', ');
+        optionsStr = opts ? ` [${opts}]` : '';
+      }
+    } catch (e) {
+      // Ignore option parsing errors
+    }
+
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.info('📋 COMMAND EXECUTED: /%s%s', interaction.commandName, optionsStr);
+    logger.info('👤 User: %s (@%s)', username, userId);
+    logger.info('🏰 Server: %s (%s)', guildName, interaction.guildId || 'N/A');
+    logger.info('⏰ Time: %s', new Date().toISOString());
+    logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     await cmd.execute(interaction);
-    logger.info('cmd: %s by %s in %s', interaction.commandName, interaction.user.id, interaction.guildId);
+
+    logger.info('✅ Command completed successfully: /%s', interaction.commandName);
 
     // Record command usage for real-time statistics
     try {
@@ -649,7 +729,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
       console.warn('Failed to record command usage:', statsError.message);
     }
   } catch (e) {
-    console.error(e);
+    // Log detailed error information
+    const guild = interaction.guild;
+    const guildName = guild ? guild.name : 'DM';
+    const username = interaction.user.username;
+    const userId = interaction.user.id;
+
+    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.error('❌ COMMAND ERROR: /%s', interaction.commandName);
+    logger.error('👤 User: %s (@%s)', username, userId);
+    logger.error('🏰 Server: %s (%s)', guildName, interaction.guildId || 'N/A');
+    logger.error('⚠️  Error: %s', e?.message || 'Unknown error');
+    logger.error('📍 Stack: %s', e?.stack || 'No stack trace');
+    logger.error('⏰ Time: %s', new Date().toISOString());
+    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Record failed command usage for statistics
     try {
@@ -667,12 +760,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch (webhookError) {
       console.warn('[webhook] Failed to log command error:', webhookError.message);
     }
-    
+
     if (interaction.isRepliable()) {
       if (interaction.deferred || interaction.replied) interaction.followUp({ content: 'Error executing command.', ephemeral: true });
       else interaction.reply({ content: 'Error executing command.', ephemeral: true });
     }
-    logger.error('cmd error: %s by %s in %s - %s', interaction.commandName, interaction.user.id, interaction.guildId, e?.message || e);
   }
 });
 
