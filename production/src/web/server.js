@@ -349,12 +349,12 @@ function createWebServer() {
 
     // Log 404 with suspicion level
     if (suspicious) {
-      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      logger.warn('🚨 SUSPICIOUS 404 - ADMIN PATH PROBING');
-      logger.warn('🌐 IP: %s', clientIP);
-      logger.warn('📍 Path: %s', req.path);
-      logger.warn('🕐 Time: %s', new Date().toISOString());
-      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.error('🚨 SUSPICIOUS 404 - ADMIN PATH PROBING');
+      logger.error('🌐 IP: %s', clientIP);
+      logger.error('📍 Path: %s', req.path);
+      logger.error('🕐 Time: %s', new Date().toISOString());
+      logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Send Discord notification via bot for suspicious 404s
       try {
@@ -399,7 +399,7 @@ function createWebServer() {
               .setTimestamp();
 
             await channel.send({ embeds: [embed] });
-            logger.info('[Security] Suspicious 404 notification sent to Discord');
+            logger.error('[Security] Suspicious 404 notification sent to Discord');
           }
         }
       } catch (error) {
