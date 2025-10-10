@@ -78,8 +78,8 @@ function securityHeaders(req, res, next) {
   const csp = [
     "default-src 'self'",  // Default: only load from same origin
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com", // Maps require inline/eval
-    "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com", // CSS from CDNs
-    "font-src 'self' https://fonts.gstatic.com", // Google Fonts
+    "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com", // CSS from CDNs
+    "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com", // Google Fonts + Font Awesome
     "img-src 'self' data: https://*.tile.openstreetmap.org https://cdn.discordapp.com", // Map tiles + Discord
     "connect-src 'self' https://nominatim.openstreetmap.org", // OpenStreetMap geocoding API
     "frame-ancestors 'none'", // Prevent embedding in frames
