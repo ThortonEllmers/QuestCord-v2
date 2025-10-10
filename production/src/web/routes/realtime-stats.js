@@ -38,6 +38,17 @@ try {
       userId TEXT NOT NULL,
       fromGuildId TEXT,
       toGuildId TEXT NOT NULL,
+      fromServerName TEXT,
+      toServerName TEXT,
+      distance REAL,
+      travelTime INTEGER,
+      staminaCost INTEGER,
+      isPremium INTEGER DEFAULT 0,
+      vehicleSpeed REAL DEFAULT 1.0,
+      travelType TEXT DEFAULT 'server',
+      destinationId TEXT,
+      startedAt INTEGER,
+      arrivedAt INTEGER,
       timestamp INTEGER NOT NULL,
       created_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
