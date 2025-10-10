@@ -9,6 +9,38 @@ const { itemById } = require('../utils/items');
 const { ensurePlayerWithVehicles } = require('../utils/players');
 const { getAllPOIs, getPOIById, calculateDistance, hasVisitedPOI, visitPOI } = require('../utils/pois');
 
+/**
+ * Log travel activity to travel history table
+ */
+function logTravelHistory(userId, fromServer, toServer, travelData) {
+  try {
+    db.prepare(`
+      INSERT INTO travel_history (
+        userId, fromGuildId, toGuildId, fromServerName, toServerName,
+        distance, travelTime, staminaCost, isPremium, vehicleSpeed,
+        travelType, destinationId, startedAt, arrivedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      userId,
+      fromServer?.guildId || null,
+      toServer.guildId || toServer.id,
+      fromServer?.name || null,
+      toServer.name,
+      travelData.distance || 0,
+      travelData.travelTime || 0,
+      travelData.staminaCost || 0,
+      travelData.isPremium ? 1 : 0,
+      travelData.vehicleSpeed || 1.0,
+      travelData.travelType || 'server',
+      travelData.destinationId || null,
+      travelData.startedAt,
+      travelData.arrivedAt
+    );
+  } catch (error) {
+    console.error('[travel] Failed to log travel history:', error.message);
+  }
+}
+
 async function vehicleSpeed(client, userId) {
   if (await isPremium(client, userId)) {
     return config.vehicles?.private_jet?.speedMultiplier || 3.0;
@@ -170,29 +202,62 @@ module.exports = {
    * @param {CommandInteraction} interaction - Discord slash command interaction
    */
   async execute(interaction) {
-    // Log command usage for live activity tracking
-    logCommand(interaction.user.id, 'travel', interaction.guild?.id);
+    try {
+      // Log command usage for live activity tracking
+      logCommand(interaction.user.id, 'travel', interaction.guild?.id);
 
-    // Get user's display prefix (premium users get special prefixes)
-    const userPrefix = await getUserPrefix(interaction.client, interaction.user);
+      // Get user's display prefix (premium users get special prefixes)
+      const userPrefix = await getUserPrefix(interaction.client, interaction.user);
 
-    // Check if user is banned from using the bot
-    if (isBanned(interaction.user.id)) return interaction.reply({ content: `${userPrefix} You are banned from using this bot.`, ephemeral: true });
+      // Check if user is banned from using the bot
+      if (isBanned(interaction.user.id)) return interaction.reply({ content: `${userPrefix} You are banned from using this bot.`, ephemeral: true });
 
-    // Regenerate user's stamina based on time passed since last update
-    regenStamina(interaction.user.id);
+      // Regenerate user's stamina based on time passed since last update
+      regenStamina(interaction.user.id);
 
-    // Extract command options from user input
-    const destinationType = interaction.options.getString('destination_type');
-    const target = interaction.options.getString('target');
-    
-    // Route to appropriate travel handler based on destination type
-    if (destinationType === 'landmark') {
-      // Handle landmark travel using POI ID
-      return this.handleLandmarkTravelById(interaction, userPrefix, target);
-    } else {
-      // Handle server travel using server name/ID
-      return this.handleServerTravel(interaction, userPrefix, target);
+      // Extract command options from user input
+      const destinationType = interaction.options.getString('destination_type');
+      const target = interaction.options.getString('target');
+
+      // Validate inputs
+      if (!target || target.trim().length === 0) {
+        return interaction.reply({
+          content: `${userPrefix} Please specify a destination to travel to.`,
+          ephemeral: true
+        });
+      }
+
+      // Route to appropriate travel handler based on destination type
+      if (destinationType === 'landmark') {
+        // Handle landmark travel using POI ID
+        return await this.handleLandmarkTravelById(interaction, userPrefix, target);
+      } else {
+        // Handle server travel using server name/ID
+        return await this.handleServerTravel(interaction, userPrefix, target);
+      }
+    } catch (error) {
+      console.error('[travel] Error executing travel command:', error.message);
+      console.error('[travel] Stack trace:', error.stack);
+
+      // Log error for monitoring
+      logger.error('travel_command_error', {
+        error: error.message,
+        stack: error.stack,
+        userId: interaction.user.id,
+        guildId: interaction.guild?.id,
+        destinationType: interaction.options?.getString('destination_type'),
+        target: interaction.options?.getString('target')
+      });
+
+      // Send user-friendly error message
+      const userPrefix = await getUserPrefix(interaction.client, interaction.user).catch(() => '🌟');
+      const errorMessage = `${userPrefix} An unexpected error occurred while processing your travel request. Our team has been notified and will investigate the issue.`;
+
+      if (interaction.replied || interaction.deferred) {
+        return interaction.followUp({ content: errorMessage, ephemeral: true });
+      } else {
+        return interaction.reply({ content: errorMessage, ephemeral: true });
+      }
     }
   },
 
