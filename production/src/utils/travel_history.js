@@ -1,5 +1,6 @@
 const { db } = require('./store_sqlite');
 const { awardServerVisitGems } = require('./gems');
+const logger = require('./logger');
 
 /**
  * Record a completed travel in the history
@@ -34,13 +35,13 @@ function recordTravel(userId, fromGuildId, toGuildId, travelTime) {
       const challenges = require('./challenges');
       challenges.updateChallengeProgress(userId, 'travel', 1);
     } catch (e) {
-      console.warn('[travel_history] Failed to update challenge progress:', e.message);
+      logger.warn('[travel_history] Failed to update challenge progress:', e.message);
     }
     
-    console.log(`[travel_history] Recorded travel for ${userId}: ${fromServerName || 'Unknown'} -> ${toServerName}`);
+    logger.info(`[travel_history] Recorded travel for ${userId}: ${fromServerName || 'Unknown'} -> ${toServerName}`);
     return true;
   } catch (error) {
-    console.error('[travel_history] Error recording travel:', error.message);
+    logger.error('[travel_history] Error recording travel:', error.message);
     return false;
   }
 }
@@ -58,7 +59,7 @@ function getTravelHistory(userId, limit = 10) {
       LIMIT ?
     `).all(userId, limit);
   } catch (error) {
-    console.error('[travel_history] Error getting travel history:', error.message);
+    logger.error('[travel_history] Error getting travel history:', error.message);
     return [];
   }
 }
@@ -105,7 +106,7 @@ function getTravelStats(userId) {
       recentTravels: recentActivity.recentTravels || 0
     };
   } catch (error) {
-    console.error('[travel_history] Error getting travel stats:', error.message);
+    logger.error('[travel_history] Error getting travel stats:', error.message);
     return {
       totalTravels: 0,
       uniqueServersVisited: 0,
