@@ -393,7 +393,6 @@ function applyRegenToAll() {
           }
         }
       }
-      logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Clear completed travels atomically
       db.prepare(`
