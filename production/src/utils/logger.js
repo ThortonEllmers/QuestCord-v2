@@ -258,28 +258,10 @@ const loggerObj = {
    *
    * For general information, status updates, and normal operation events.
    * Messages are automatically color-coded based on content.
-   * All messages wrapped with separator lines.
    */
   info: function() {
-    const message = util.format.apply(null, arguments);
-
-    // Skip separators if message IS a separator to avoid duplication
-    if (message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')) {
-      const line = fmt('INFO ', arguments);
-      console.log(line);
-      return;
-    }
-
-    // Print top separator (without timestamp)
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
-    console.log(separatorLine);
-
-    // Print the actual message (with timestamp)
     const line = fmt('INFO ', arguments);
     console.log(line);
-
-    // Print bottom separator (without timestamp)
-    console.log(separatorLine);
   },
 
   /**
@@ -288,17 +270,10 @@ const loggerObj = {
    * For important startup events and system status that should stand out visually.
    * Uses bright cyan color to differentiate from regular info logs.
    * Examples: server startup, major system events.
-   * Always wrapped with separator lines for maximum visibility.
    */
   aqua: function() {
-    // Always add separators for aqua (highlighted) messages (without timestamp)
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
-    console.log(separatorLine);
-
     const line = fmt('INFO ', arguments, colors.brightCyan);
     console.log(line);
-
-    console.log(separatorLine);
   },
 
   /**
@@ -306,16 +281,10 @@ const loggerObj = {
    *
    * For successful operations and positive confirmations.
    * Uses bright green to indicate successful completion.
-   * All messages wrapped with separator lines.
    */
   success: function() {
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
-    console.log(separatorLine);
-
     const line = fmt('INFO ', arguments, colors.brightGreen);
     console.log(line);
-
-    console.log(separatorLine);
   },
 
   /**
@@ -323,16 +292,10 @@ const loggerObj = {
    *
    * For warning conditions that don't prevent operation but should be noted.
    * Examples: fallback usage, recoverable errors, deprecated features.
-   * All messages wrapped with separator lines.
    */
   warn: function() {
-    const separatorLine = fmt('WARN ', [SEPARATOR], colors.gray, true);
-    console.warn(separatorLine);
-
     const line = fmt('WARN ', arguments);
     console.warn(line);
-
-    console.warn(separatorLine);
   },
 
   /**
@@ -340,16 +303,10 @@ const loggerObj = {
    *
    * For error conditions that require attention.
    * Uses bright red color to make errors immediately visible.
-   * All messages wrapped with separator lines.
    */
   error: function() {
-    const separatorLine = fmt('ERROR', [SEPARATOR], colors.gray, true);
-    console.error(separatorLine);
-
     const line = fmt('ERROR', arguments);
     console.error(line);
-
-    console.error(separatorLine);
   },
 
   /**
@@ -357,17 +314,11 @@ const loggerObj = {
    *
    * For detailed debugging information during development.
    * Only outputs to console when DEBUG environment variable is set.
-   * All messages wrapped with separator lines.
    */
   debug: function() {
     if (process.env.DEBUG) {
-      const separatorLine = fmt('DEBUG', [SEPARATOR], colors.gray, true);
-      console.debug(separatorLine);
-
       const line = fmt('DEBUG', arguments);
       console.debug(line);
-
-      console.debug(separatorLine);
     }
   }
 };
