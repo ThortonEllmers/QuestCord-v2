@@ -30,7 +30,7 @@ const CHANNELS = {
  */
 function initializeBotNotifications(client) {
   discordClient = client;
-  logger.info('[BotNotifications] Notification system initialized with Discord client');
+  logger.info('[Bot Notifications] Notification system initialized with Discord client');
 }
 
 /**
@@ -42,7 +42,7 @@ function initializeBotNotifications(client) {
  */
 async function sendChannelMessage(channelId, options, retries = 3) {
   if (!discordClient) {
-    console.warn('[BotNotifications] Discord client not initialized');
+    logger.warn('[Bot Notifications] Discord client not initialized');
     return false;
   }
 
@@ -52,7 +52,7 @@ async function sendChannelMessage(channelId, options, retries = 3) {
         const channel = await discordClient.channels.fetch(channelId).catch(() => null);
 
         if (!channel || !channel.isTextBased()) {
-          console.warn('[BotNotifications] Channel not found or not text-based: %s', channelId);
+          logger.warn('[Bot Notifications] Channel not found or not text-based: %s', channelId);
           return false;
         }
 
@@ -61,14 +61,14 @@ async function sendChannelMessage(channelId, options, retries = 3) {
       } catch (error) {
         if (error.code === 50013) {
           // Missing permissions - don't retry
-          console.warn('[BotNotifications] Missing permissions for channel %s', channelId);
+          logger.warn('[Bot Notifications] Missing permissions for channel %s', channelId);
           return false;
         }
 
         if (error.status === 429) {
           // Rate limited - wait and retry
           const retryAfter = error.retry_after || (1000 * attempt);
-          console.warn('[BotNotifications] Rate limited, waiting %dms', retryAfter);
+          logger.warn('[Bot Notifications] Rate limited, waiting %dms', retryAfter);
           await new Promise(resolve => setTimeout(resolve, retryAfter));
           continue;
         }
@@ -83,7 +83,7 @@ async function sendChannelMessage(channelId, options, retries = 3) {
     }
     return false;
   } catch (error) {
-    console.error('[BotNotifications] Failed to send message:', error.message);
+    logger.error('[Bot Notifications] Failed to send message:', error.message);
     return false;
   }
 }
@@ -94,7 +94,7 @@ async function sendChannelMessage(channelId, options, retries = 3) {
 async function logBotStartup() {
   try {
     if (!discordClient) {
-      console.warn('[BotNotifications] Cannot send startup notification - client not ready');
+      logger.warn('[Bot Notifications] Cannot send startup notification - client not ready');
       return;
     }
 
@@ -147,9 +147,9 @@ async function logBotStartup() {
       .setTimestamp();
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
-    logger.info('[BotNotifications] Startup notification sent');
+    logger.info('[Bot Notifications] Startup notification sent');
   } catch (error) {
-    console.error('[BotNotifications] Failed to send startup notification:', error.message);
+    logger.error('[Bot Notifications] Failed to send startup notification:', error.message);
   }
 }
 
@@ -218,7 +218,7 @@ async function logError(error, context = null) {
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
   } catch (notifError) {
-    console.error('[BotNotifications] Failed to send error notification:', notifError.message);
+    logger.error('[Bot Notifications] Failed to send error notification:', notifError.message);
   }
 }
 
@@ -266,7 +266,7 @@ async function logBotShutdown(reason = 'Unknown') {
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
   } catch (error) {
-    console.error('[BotNotifications] Failed to send shutdown notification:', error.message);
+    logger.error('[Bot Notifications] Failed to send shutdown notification:', error.message);
   }
 }
 
@@ -319,7 +319,7 @@ async function logCommandError(commandName, userId, guildId, error) {
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
   } catch (notifError) {
-    console.error('[BotNotifications] Failed to send command error notification:', notifError.message);
+    logger.error('[Bot Notifications] Failed to send command error notification:', notifError.message);
   }
 }
 
@@ -389,7 +389,7 @@ async function logAdminAction(action, adminUserId, adminUsername, targetId, targ
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
   } catch (error) {
-    console.error('[BotNotifications] Failed to send admin action notification:', error.message);
+    logger.error('[Bot Notifications] Failed to send admin action notification:', error.message);
   }
 }
 
@@ -401,7 +401,7 @@ async function logAdminAction(action, adminUserId, adminUsername, targetId, targ
 async function logWebServerStartup(port, publicUrl) {
   try {
     if (!discordClient) {
-      console.warn('[BotNotifications] Cannot send web server startup notification - client not ready');
+      logger.warn('[Bot Notifications] Cannot send web server startup notification - client not ready');
       return;
     }
 
@@ -441,9 +441,9 @@ async function logWebServerStartup(port, publicUrl) {
       .setTimestamp();
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
-    console.log('[BotNotifications] Web server startup notification sent');
+    logger.info('[Bot Notifications] Web server startup notification sent');
   } catch (error) {
-    console.error('[BotNotifications] Failed to send web server startup notification:', error.message);
+    logger.error('[Bot Notifications] Failed to send web server startup notification:', error.message);
   }
 }
 
@@ -483,7 +483,7 @@ async function logWebServerShutdown(reason = 'Unknown') {
 
     await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
   } catch (error) {
-    console.error('[BotNotifications] Failed to send web server shutdown notification:', error.message);
+    logger.error('[Bot Notifications] Failed to send web server shutdown notification:', error.message);
   }
 }
 
