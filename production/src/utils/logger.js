@@ -206,12 +206,10 @@ function applySmartColors(message, baseColor) {
  * @param {string} level - Log level string (INFO, WARN, ERROR, DEBUG, SUCCESS)
  * @param {Arguments} args - Arguments object from logging function call
  * @param {boolean} forceColor - Force specific color instead of smart detection
+ * @param {boolean} skipTimestamp - Skip timestamp for separator lines
  * @returns {string} Formatted and colorized log message
  */
-function fmt(level, args, forceColor = null) {
-  // Generate ISO timestamp for consistent time formatting
-  const ts = new Date().toISOString();
-
+function fmt(level, args, forceColor = null, skipTimestamp = false) {
   // Format arguments using util.format (supports %s, %d, %j placeholders)
   const message = util.format.apply(null, args);
 
@@ -221,9 +219,6 @@ function fmt(level, args, forceColor = null) {
   // Color the level tag
   const coloredLevel = levelColor + `[${level}]` + colors.reset;
 
-  // Color the timestamp in gray
-  const coloredTimestamp = colors.gray + ts + colors.reset;
-
   // Apply smart coloring to the message content
   let coloredMessage;
   if (forceColor) {
@@ -231,6 +226,17 @@ function fmt(level, args, forceColor = null) {
   } else {
     coloredMessage = applySmartColors(message, colors.white);
   }
+
+  // If skipTimestamp is true (for separator lines), omit the timestamp
+  if (skipTimestamp) {
+    return `${coloredLevel} ${coloredMessage}`;
+  }
+
+  // Generate ISO timestamp for consistent time formatting
+  const ts = new Date().toISOString();
+
+  // Color the timestamp in gray
+  const coloredTimestamp = colors.gray + ts + colors.reset;
 
   // Return formatted log line with colored components
   return `${coloredLevel} ${coloredTimestamp} ${coloredMessage}`;
@@ -264,15 +270,15 @@ const loggerObj = {
       return;
     }
 
-    // Print top separator
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    // Print top separator (without timestamp)
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
     console.log(separatorLine);
 
-    // Print the actual message
+    // Print the actual message (with timestamp)
     const line = fmt('INFO ', arguments);
     console.log(line);
 
-    // Print bottom separator
+    // Print bottom separator (without timestamp)
     console.log(separatorLine);
   },
 
@@ -285,8 +291,8 @@ const loggerObj = {
    * Always wrapped with separator lines for maximum visibility.
    */
   aqua: function() {
-    // Always add separators for aqua (highlighted) messages
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    // Always add separators for aqua (highlighted) messages (without timestamp)
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
     console.log(separatorLine);
 
     const line = fmt('INFO ', arguments, colors.brightCyan);
@@ -303,7 +309,7 @@ const loggerObj = {
    * All messages wrapped with separator lines.
    */
   success: function() {
-    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray, true);
     console.log(separatorLine);
 
     const line = fmt('INFO ', arguments, colors.brightGreen);
@@ -320,7 +326,7 @@ const loggerObj = {
    * All messages wrapped with separator lines.
    */
   warn: function() {
-    const separatorLine = fmt('WARN ', [SEPARATOR], colors.gray);
+    const separatorLine = fmt('WARN ', [SEPARATOR], colors.gray, true);
     console.warn(separatorLine);
 
     const line = fmt('WARN ', arguments);
@@ -337,7 +343,7 @@ const loggerObj = {
    * All messages wrapped with separator lines.
    */
   error: function() {
-    const separatorLine = fmt('ERROR', [SEPARATOR], colors.gray);
+    const separatorLine = fmt('ERROR', [SEPARATOR], colors.gray, true);
     console.error(separatorLine);
 
     const line = fmt('ERROR', arguments);
@@ -355,7 +361,7 @@ const loggerObj = {
    */
   debug: function() {
     if (process.env.DEBUG) {
-      const separatorLine = fmt('DEBUG', [SEPARATOR], colors.gray);
+      const separatorLine = fmt('DEBUG', [SEPARATOR], colors.gray, true);
       console.debug(separatorLine);
 
       const line = fmt('DEBUG', arguments);
