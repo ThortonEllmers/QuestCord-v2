@@ -11,7 +11,7 @@ const { placeOnSpiral, findLandPosition, checkAndFixWaterServers, findNonCollidi
 const logger = require('./utils/logger');
 const config = require('./utils/config');
 const { validateStartupConfiguration } = require('./utils/config-validator');
-const { logBotStartup, logError, logBotShutdown, logCommandError } = require('./utils/webhook_safe');
+const { initializeBotNotifications, logBotStartup, logError, logBotShutdown, logCommandError } = require('./utils/bot_notifications');
 
 // Validate configuration before starting
 validateStartupConfiguration(config);
@@ -171,13 +171,17 @@ module.exports = { updateBossStatus }; // Make updateBossStatus available to oth
 
 client.once(Events.ClientReady, async () => {
   logger.info(`[bot] Logged in as ${client.user.tag}`);
-  
-  // Log bot startup to Discord webhook for monitoring
+
+  // Initialize bot notification system with Discord client
+  initializeBotNotifications(client);
+  logger.info('[bot] Notification system initialized');
+
+  // Log bot startup notification via bot
   try {
-    await logBotStartup(); // Send startup notification to Discord webhook
-    logger.info('[webhook] Startup logged to Discord');
+    await logBotStartup(); // Send startup notification via Discord bot
+    logger.info('[bot] Startup logged to Discord');
   } catch (error) {
-    console.warn('[webhook] Failed to log startup:', error.message); // Non-critical error
+    console.warn('[bot] Failed to log startup:', error.message); // Non-critical error
   }
   
   // Auto-deploy slash commands on startup
