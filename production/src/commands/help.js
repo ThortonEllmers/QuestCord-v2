@@ -107,7 +107,7 @@ module.exports = {
     });
 
     embed.setFooter({
-      text: 'QuestCord • Version 2.1.0 • Made with ❤️ for Discord communities'
+      text: 'QuestCord • Version 2.2.1 • Made with ❤️ for Discord communities'
     })
     .setTimestamp();
 
