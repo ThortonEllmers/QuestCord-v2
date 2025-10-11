@@ -227,27 +227,10 @@ Expires: Never (Permanent)
       .setFooter({ text: 'QuestCord Auto-Ban System', iconURL: discordClient.user.displayAvatarURL() })
       .setTimestamp();
 
-    // Create unban button (ban button disabled since already banned)
-    const unbanButton = new ButtonBuilder()
-      .setCustomId(`security_unban_${data.ip}`)
-      .setLabel('Unban IP')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('✅');
-
-    const banButton = new ButtonBuilder()
-      .setCustomId(`security_ban_${data.ip}`)
-      .setLabel('Ban IP')
-      .setStyle(ButtonStyle.Danger)
-      .setEmoji('🔨')
-      .setDisabled(true); // Disabled because already banned
-
-    const actionRow = new ActionRowBuilder()
-      .addComponents(banButton, unbanButton);
-
+    // No buttons needed for autoban alerts since IP is already banned
     await channel.send({
       content: '<@378501056008683530>',
-      embeds: [embed],
-      components: [actionRow]
+      embeds: [embed]
     });
 
     logger.info('[Security] Autoban notification sent to Discord');
@@ -329,29 +312,32 @@ Status: ${alreadyBanned ? 'Already Banned' : 'Not Banned'}
       .setFooter({ text: 'QuestCord Security System', iconURL: discordClient.user.displayAvatarURL() })
       .setTimestamp();
 
-    // Create ban/unban buttons
-    const banButton = new ButtonBuilder()
-      .setCustomId(`security_ban_${data.ip}`)
-      .setLabel('Ban IP')
-      .setStyle(ButtonStyle.Danger)
-      .setEmoji('🔨')
-      .setDisabled(alreadyBanned);
+    // Create ban button (only if not already banned)
+    const components = [];
 
-    const unbanButton = new ButtonBuilder()
-      .setCustomId(`security_unban_${data.ip}`)
-      .setLabel('Unban IP')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('✅')
-      .setDisabled(!alreadyBanned);
+    if (!alreadyBanned) {
+      const banButton = new ButtonBuilder()
+        .setCustomId(`security_ban_${data.ip}`)
+        .setLabel('Ban IP')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji('🔨');
 
-    const actionRow = new ActionRowBuilder()
-      .addComponents(banButton, unbanButton);
+      const actionRow = new ActionRowBuilder()
+        .addComponents(banButton);
 
-    await channel.send({
+      components.push(actionRow);
+    }
+
+    const messageData = {
       content: '<@378501056008683530>',
-      embeds: [embed],
-      components: [actionRow]
-    });
+      embeds: [embed]
+    };
+
+    if (components.length > 0) {
+      messageData.components = components;
+    }
+
+    await channel.send(messageData);
 
     logger.info('[Security] Security alert sent to Discord via bot');
   } catch (error) {
