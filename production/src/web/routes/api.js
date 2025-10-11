@@ -14,8 +14,8 @@ const { rateLimit, ensureCsrf, setCsrf } = require('../security');
 const { createAutoPlacementIfMissing, getSpawnServer, ensurePlayerRow, fetchRoleLevel, getMemberRoleIds } = require('../util');
 // Import logger for consistent logging across the application
 const logger = require('../../utils/logger');
-// Import safe webhook logging utility for admin action tracking
-const { logAdminAction } = require('../../utils/webhook_safe');
+// Import bot notification system for admin action tracking
+const { logAdminAction } = require('../../utils/bot_notifications');
 
 // Create Express router instance for mounting API routes
 const router = express.Router();
