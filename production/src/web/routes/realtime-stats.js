@@ -175,7 +175,7 @@ router.get('/bot-stats', async (req, res) => {
     res.json({
       status: 'online',
       timestamp: Date.now(),
-      version: '2.2.0',
+      version: '2.2.1',
       uptime: {
         seconds: uptimeSeconds,
         formatted: `${uptimeDays}d ${uptimeHours}h ${uptimeMinutes}m`,
