@@ -1,4 +1,5 @@
 const { db } = require('./store_sqlite');
+const logger = require('./logger');
 
 // Famous landmarks data - Top 10 world landmarks (expensive to visit!)
 const LANDMARKS = [
@@ -153,11 +154,11 @@ function initializePOIs() {
       );
       inserted++;
     } catch (error) {
-      console.warn(`Failed to insert POI ${poi.id}:`, error.message);
+      logger.warn(`Failed to insert POI ${poi.id}: ${error.message}`);
     }
   }
 
-  console.log(`[POI] Initialized ${inserted}/${LANDMARKS.length} points of interest`);
+  logger.info(`[POI] Initialized ${inserted}/${LANDMARKS.length} points of interest`);
   return inserted;
 }
 
