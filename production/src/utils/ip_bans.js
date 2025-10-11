@@ -7,6 +7,7 @@
  */
 
 const { db } = require('./store_sqlite');
+const logger = require('./logger');
 
 /**
  * Normalize an IP address to a consistent format
@@ -79,7 +80,7 @@ function isIPBanned(ip) {
 
     return ban;
   } catch (error) {
-    console.error('[ip_bans] Error checking IP ban:', error);
+    logger.error('[ip_bans] Error checking IP ban:', error);
     return null;
   }
 }
@@ -125,12 +126,12 @@ function cleanupExpiredIPBans() {
     `).run(Date.now());
 
     if (result.changes > 0) {
-      console.log(`[ip_bans] Cleaned up ${result.changes} expired IP bans`);
+      logger.info(`[ip_bans] Cleaned up ${result.changes} expired IP bans`);
     }
 
     return result.changes;
   } catch (error) {
-    console.error('[ip_bans] Error cleaning up expired bans:', error);
+    logger.error('[ip_bans] Error cleaning up expired bans:', error);
     return 0;
   }
 }
