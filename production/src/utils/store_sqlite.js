@@ -266,10 +266,10 @@ try {
   `);
 
   // Log successful completion of core table creation
-  logger.info('[db] Core tables initialized');
+  logger.info('[Database] Core tables initialized');
 } catch (e) {
   // Log any errors during core table creation for debugging
-  logger.error('[db] Failed to create core tables:', e.message);
+  logger.error('[Database] Failed to create core tables:', e.message);
 }
 
 /**
@@ -365,7 +365,7 @@ try {
   if (!cols.includes('tokens')) {
     // Add tokens column with default value of 1 (servers get one token by default)
     db.exec("ALTER TABLE servers ADD COLUMN tokens INTEGER DEFAULT 1");
-    logger.info('[db] Added servers.tokens');
+    logger.info('[Database] Added servers.tokens');
   }
   
   // Legacy migration: convert old biomeChangeTokens to generic tokens system
@@ -373,15 +373,15 @@ try {
     try {
       // Copy biomeChangeTokens value to tokens, using COALESCE to handle NULL values
       db.exec("UPDATE servers SET tokens = COALESCE(tokens, biomeChangeTokens, 1)");
-      logger.info('[db] Migrated biomeChangeTokens -> tokens');
+      logger.info('[Database] Migrated biomeChangeTokens -> tokens');
     } catch (e) {
       // Log migration failures but don't stop the application
-      logger.warn('[db] Migration tokens from biomeChangeTokens failed:', e.message);
+      logger.warn('[Database] Migration tokens from biomeChangeTokens failed:', e.message);
     }
   }
 } catch (e) {
   // Log if the entire tokens column check/addition process fails
-  logger.warn('[db] Could not ensure tokens column:', e.message);
+  logger.warn('[Database] Could not ensure tokens column:', e.message);
 }
 
 /**
@@ -397,23 +397,23 @@ try {
   // Add ban status column if it doesn't exist (boolean flag: 0 = not banned, 1 = banned)
   if (!cols2.includes('isBanned')) {
     db.exec("ALTER TABLE servers ADD COLUMN isBanned INTEGER DEFAULT 0");
-    logger.info('[db] Added servers.isBanned');
+    logger.info('[Database] Added servers.isBanned');
   }
   
   // Add ban reason column if it doesn't exist (text description of why server was banned)
   if (!cols2.includes('banReason')) {
     db.exec("ALTER TABLE servers ADD COLUMN banReason TEXT");
-    logger.info('[db] Added servers.banReason');
+    logger.info('[Database] Added servers.banReason');
   }
   
   // Add ban timestamp column if it doesn't exist (when the ban was applied)
   if (!cols2.includes('bannedAt')) {
     db.exec("ALTER TABLE servers ADD COLUMN bannedAt INTEGER");
-    logger.info('[db] Added servers.bannedAt');
+    logger.info('[Database] Added servers.bannedAt');
   }
 } catch (e) {
   // Log if server ban column management fails
-  logger.warn('[db] Could not ensure ban columns:', e.message);
+  logger.warn('[Database] Could not ensure ban columns:', e.message);
 }
 
 /**
@@ -432,40 +432,40 @@ try {
   if (!playerCols.includes('gems')) {
     // Gems are premium currency used for special purchases and shortcuts
     db.exec("ALTER TABLE players ADD COLUMN gems INTEGER DEFAULT 0");
-    logger.info('[db] Added players.gems');
+    logger.info('[Database] Added players.gems');
   }
   
   // Add daily login streak tracking column if it doesn't exist
   if (!playerCols.includes('loginStreak')) {
     // Tracks consecutive days player has logged in (for daily rewards)
     db.exec("ALTER TABLE players ADD COLUMN loginStreak INTEGER DEFAULT 0");
-    logger.info('[db] Added players.loginStreak');
+    logger.info('[Database] Added players.loginStreak');
   }
   
   // Add last login timestamp column if it doesn't exist
   if (!playerCols.includes('lastLoginAt')) {
     // Tracks when player last claimed daily login rewards
     db.exec("ALTER TABLE players ADD COLUMN lastLoginAt INTEGER DEFAULT 0");
-    logger.info('[db] Added players.lastLoginAt');
+    logger.info('[Database] Added players.lastLoginAt');
   }
   
   // Add unique servers visited counter for achievement tracking
   if (!playerCols.includes('serversVisited')) {
     // Total number of different servers the player has visited
     db.exec("ALTER TABLE players ADD COLUMN serversVisited INTEGER DEFAULT 0");
-    logger.info('[db] Added players.serversVisited');
+    logger.info('[Database] Added players.serversVisited');
   }
   
   // Add total boss kills counter for achievement tracking
   if (!playerCols.includes('bossKills')) {
     // Total number of boss fights the player has participated in
     db.exec("ALTER TABLE players ADD COLUMN bossKills INTEGER DEFAULT 0");
-    logger.info('[db] Added players.bossKills');
+    logger.info('[Database] Added players.bossKills');
   }
   
 } catch (e) {
   // Log if player feature column management fails
-  logger.warn('[db] Could not ensure new feature columns:', e.message);
+  logger.warn('[Database] Could not ensure new feature columns:', e.message);
 }
 
 /**
@@ -493,7 +493,7 @@ try {
       UNIQUE(userId, name)                   -- Each user can only have one waypoint per name
     )
   `);
-  logger.info('[db] Ensured waypoints table exists');
+  logger.info('[Database] Ensured waypoints table exists');
 
   // NOTE: travel_history table is created above at line 246 - this duplicate has been removed to prevent schema conflicts
 
@@ -517,7 +517,7 @@ try {
       UNIQUE(userId, challengeId, dateKey)   -- One challenge per user per day
     )
   `);
-  logger.info('[db] Ensured daily_challenges table exists');
+  logger.info('[Database] Ensured daily_challenges table exists');
 
   /**
    * BATTLE ANALYTICS TABLE - Combat Statistics Tracking
@@ -535,7 +535,7 @@ try {
       timestamp INTEGER NOT NULL            -- When battle occurred
     )
   `);
-  logger.info('[db] Ensured battle_analytics table exists');
+  logger.info('[Database] Ensured battle_analytics table exists');
 
   /**
    * PREMIUM ITEMS TABLE - Premium Equipment Catalog
@@ -556,7 +556,7 @@ try {
       premiumOnly INTEGER DEFAULT 1     -- Whether item requires premium (0/1)
     )
   `);
-  logger.info('[db] Ensured premium_items table exists');
+  logger.info('[Database] Ensured premium_items table exists');
 
   /**
    * GEM TRANSACTIONS TABLE - Premium Currency Audit Trail
@@ -574,7 +574,7 @@ try {
       timestamp INTEGER NOT NULL            -- When transaction occurred
     )
   `);
-  logger.info('[db] Ensured gem_transactions table exists');
+  logger.info('[Database] Ensured gem_transactions table exists');
 
   /**
    * BANS TABLE - User Ban Management
@@ -590,7 +590,7 @@ try {
       bannedAt INTEGER NOT NULL DEFAULT (UNIXEPOCH() * 1000) -- When ban was applied
     )
   `);
-  logger.info('[db] Ensured bans table exists');
+  logger.info('[Database] Ensured bans table exists');
 
   /**
    * PREMIUM USERS TABLE - Premium Subscription Management
@@ -607,7 +607,7 @@ try {
       notes TEXT                                           -- Additional notes about premium status
     )
   `);
-  logger.info('[db] Ensured premium_users table exists');
+  logger.info('[Database] Ensured premium_users table exists');
 
   /**
    * EQUIPMENT TABLE - Player Equipped Items
@@ -624,7 +624,7 @@ try {
       PRIMARY KEY (userId, slot)                          -- One item per slot per player
     )
   `);
-  logger.info('[db] Ensured equipment table exists');
+  logger.info('[Database] Ensured equipment table exists');
 
   /**
    * MARKET LISTINGS TABLE - Player Trading System
@@ -643,7 +643,7 @@ try {
       createdAt INTEGER NOT NULL DEFAULT (UNIXEPOCH() * 1000) -- When listing was created
     )
   `);
-  logger.info('[db] Ensured market_listings table exists');
+  logger.info('[Database] Ensured market_listings table exists');
 
   /**
    * POIs TABLE - Points of Interest (Famous Landmarks)
@@ -666,7 +666,7 @@ try {
       createdAt INTEGER NOT NULL           -- When POI was added to database
     )
   `);
-  logger.info('[db] Ensured pois table exists');
+  logger.info('[Database] Ensured pois table exists');
 
   /**
    * POI VISITS TABLE - Landmark Visit Tracking
@@ -685,7 +685,7 @@ try {
       FOREIGN KEY (poiId) REFERENCES pois(id) -- Ensure POI exists
     )
   `);
-  logger.info('[db] Ensured poi_visits table exists');
+  logger.info('[Database] Ensured poi_visits table exists');
 
   /**
    * SYSTEM SETTINGS TABLE - Global System Configuration
@@ -700,7 +700,7 @@ try {
       updatedAt INTEGER NOT NULL      -- Timestamp when setting was last updated
     )
   `);
-  logger.info('[db] Ensured system_settings table exists');
+  logger.info('[Database] Ensured system_settings table exists');
 
   /**
    * IP BANS TABLE - IP Address Ban Management
@@ -719,11 +719,11 @@ try {
       notes TEXT                          -- Additional notes about the ban
     )
   `);
-  logger.info('[db] Ensured ip_bans table exists');
+  logger.info('[Database] Ensured ip_bans table exists');
 
 } catch (e) {
   // Log if advanced feature table creation fails
-  logger.warn('[db] Could not create new feature tables:', e.message);
+  logger.warn('[Database] Could not create new feature tables:', e.message);
 }
 
 /**
@@ -749,9 +749,9 @@ try {
     ON command_logs(timestamp DESC)
   `);
 
-  logger.info('[db] Ensured command_logs table exists');
+  logger.info('[Database] Ensured command_logs table exists');
 } catch (e) {
-  logger.warn('[db] Could not create command_logs table:', e.message);
+  logger.warn('[Database] Could not create command_logs table:', e.message);
 }
 
 /**
@@ -809,17 +809,17 @@ function logCommand(userId, command, guildId, username = null) {
 
   } catch (error) {
     if (error.code === 'SQLITE_CORRUPT' || error.message.includes('malformed')) {
-      logger.error('[db] Database corruption detected during command logging:', error.message);
+      logger.error('[Database] Database corruption detected during command logging:', error.message);
       // Don't attempt any further database operations when corrupted
       return;
     } else if (error.code === 'SQLITE_BUSY') {
-      logger.warn('[db] Database busy during command logging - command not logged:', error.message);
+      logger.warn('[Database] Database busy during command logging - command not logged:', error.message);
       return;
     } else if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
-      logger.warn('[db] Foreign key constraint during command logging:', error.message);
+      logger.warn('[Database] Foreign key constraint during command logging:', error.message);
       return;
     } else {
-      logger.warn('[db] Failed to log command:', error.message);
+      logger.warn('[Database] Failed to log command:', error.message);
     }
   }
 }
