@@ -45,12 +45,12 @@ const BOSS_NAMES = {
  */
 function initializeBossSpawner() {
   try {
-    logger.info('[boss_spawner] Automatic boss spawning system initialized');
-    logger.info(`[boss_spawner] Config: ${BOSS_CONFIG.MAX_GLOBAL_BOSSES} max bosses globally, ${BOSS_CONFIG.MAX_BOSSES_PER_CYCLE} max per cycle, ${(BOSS_CONFIG.SPAWN_CHANCE * 100)}% spawn chance`);
-    logger.info(`[boss_spawner] Timing: Random 5-180 minute delays after defeat/expiry, checks every 30 seconds`);
+    logger.info('[Boss Spawner] Automatic boss spawning system initialized');
+    logger.info(`[Boss Spawner] Config: ${BOSS_CONFIG.MAX_GLOBAL_BOSSES} max bosses globally, ${BOSS_CONFIG.MAX_BOSSES_PER_CYCLE} max per cycle, ${(BOSS_CONFIG.SPAWN_CHANCE * 100)}% spawn chance`);
+    logger.info(`[Boss Spawner] Timing: Random 5-180 minute delays after defeat/expiry, checks every 30 seconds`);
     return true;
   } catch (error) {
-    logger.error('[boss_spawner] Failed to initialize boss spawner:', error.message);
+    logger.error('[Boss Spawner] Failed to initialize boss spawner:', error.message);
     return false;
   }
 }
@@ -75,36 +75,36 @@ async function cleanupExpiredBosses(client = null) {
           // Get participants before deleting records
           const participants = db.prepare('SELECT userId FROM boss_participants WHERE bossId = ?').all(boss.id);
           
-          logger.info(`[boss_spawner] Cleaning up boss ${boss.id} (${boss.name}) in guild ${boss.guildId} - ${participants.length} participants`);
+          logger.info(`[Boss Spawner] Cleaning up boss ${boss.id} (${boss.name}) in guild ${boss.guildId} - ${participants.length} participants`);
           
           // Remove boss fighter roles from expired boss participants
           if (client && participants.length > 0) {
             try {
               await cleanupBossFighterRoles(client, boss.guildId, participants.map(p => p.userId));
-              logger.info(`[boss_spawner] Successfully cleaned up roles for boss ${boss.id}`);
+              logger.info(`[Boss Spawner] Successfully cleaned up roles for boss ${boss.id}`);
             } catch (error) {
-              logger.warn(`[boss_spawner] Failed to cleanup roles for boss ${boss.id}:`, error.message);
+              logger.warn(`[Boss Spawner] Failed to cleanup roles for boss ${boss.id}:`, error.message);
               // Continue with database cleanup even if role cleanup fails
             }
           }
           
           // Clean up database records
           const deleteResult = db.prepare('DELETE FROM boss_participants WHERE bossId = ?').run(boss.id);
-          logger.info(`[boss_spawner] Deleted ${deleteResult.changes} participation records for boss ${boss.id}`);
+          logger.info(`[Boss Spawner] Deleted ${deleteResult.changes} participation records for boss ${boss.id}`);
           
         } catch (error) {
-          logger.error(`[boss_spawner] Error cleaning up boss ${boss.id}:`, error.message);
+          logger.error(`[Boss Spawner] Error cleaning up boss ${boss.id}:`, error.message);
           // Try to at least clean up the database records
           try {
             db.prepare('DELETE FROM boss_participants WHERE bossId = ?').run(boss.id);
-            logger.info(`[boss_spawner] Fallback: Cleaned up database records for boss ${boss.id}`);
+            logger.info(`[Boss Spawner] Fallback: Cleaned up database records for boss ${boss.id}`);
           } catch (dbError) {
-            logger.error(`[boss_spawner] Failed to clean up database records for boss ${boss.id}:`, dbError.message);
+            logger.error(`[Boss Spawner] Failed to clean up database records for boss ${boss.id}:`, dbError.message);
           }
         }
       }
       
-      logger.info(`[boss_spawner] Cleaned up ${expiredBosses.length} expired bosses`);
+      logger.info(`[Boss Spawner] Cleaned up ${expiredBosses.length} expired bosses`);
 
       // Schedule next boss spawn after expiry
       if (expiredBosses.length > 0) {
@@ -133,11 +133,11 @@ async function cleanupExpiredBosses(client = null) {
         `).run(now);
         
         if (cleanupResult.changes > 0) {
-          logger.info(`[boss_spawner] Database integrity check: Cleaned up ${cleanupResult.changes} orphaned participation records`);
+          logger.info(`[Boss Spawner] Database integrity check: Cleaned up ${cleanupResult.changes} orphaned participation records`);
         }
       }
     } catch (error) {
-      logger.warn('[boss_spawner] Database integrity check failed:', error.message);
+      logger.warn('[Boss Spawner] Database integrity check failed:', error.message);
     }
 
     // Periodic cleanup of orphaned boss fighter roles (every 10 minutes for better UX)
@@ -146,13 +146,13 @@ async function cleanupExpiredBosses(client = null) {
         await cleanupOrphanedBossFighterRoles(client);
         cleanupExpiredBosses._lastRoleCleanup = now;
       } catch (error) {
-        logger.warn('[boss_spawner] Periodic role cleanup failed:', error.message);
+        logger.warn('[Boss Spawner] Periodic role cleanup failed:', error.message);
       }
     }
     
     return expiredBosses.length;
   } catch (error) {
-    logger.error('[boss_spawner] Error cleaning up expired bosses:', error.message);
+    logger.error('[Boss Spawner] Error cleaning up expired bosses:', error.message);
     return 0;
   }
 }
@@ -214,7 +214,7 @@ function getEligibleServersForBoss() {
     // All servers (except spawn server) are now eligible for boss spawns
     return servers;
   } catch (error) {
-    logger.error('[boss_spawner] Error getting eligible servers:', error.message);
+    logger.error('[Boss Spawner] Error getting eligible servers:', error.message);
     return [];
   }
 }
@@ -227,7 +227,7 @@ async function spawnRandomBoss(client = null) {
     const eligibleServers = getEligibleServersForBoss();
     
     if (eligibleServers.length === 0) {
-      logger.info('[boss_spawner] No eligible servers found for boss spawn');
+      logger.info('[Boss Spawner] No eligible servers found for boss spawn');
       return null;
     }
     
@@ -273,7 +273,6 @@ async function spawnRandomBoss(client = null) {
     logger.aqua('🏰 Server: %s (%s)', server.name, server.guildId);
     logger.aqua('🌿 Biome: %s', server.biome || 'Unknown');
     logger.aqua('⏰ Expires: %s', new Date(expiresAt).toISOString());
-    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     // Send Discord notification (both global and server-specific)
     if (client) {
@@ -283,8 +282,8 @@ async function spawnRandomBoss(client = null) {
     return bossData;
     
   } catch (error) {
-    logger.error('[boss_spawner] Error spawning random boss:', error.message);
-    logger.error('[boss_spawner] Stack trace:', error.stack);
+    logger.error('[Boss Spawner] Error spawning random boss:', error.message);
+    logger.error('[Boss Spawner] Stack trace:', error.stack);
 
     // Log detailed error information for debugging
     logger.error('boss_spawner_error', {
@@ -297,11 +296,11 @@ async function spawnRandomBoss(client = null) {
     // Attempt graceful recovery - clean up any partial data
     try {
       if (result && result.lastInsertRowid) {
-        logger.info('[boss_spawner] Attempting to clean up partial boss spawn...');
+        logger.info('[Boss Spawner] Attempting to clean up partial boss spawn...');
         db.prepare('DELETE FROM bosses WHERE id = ?').run(result.lastInsertRowid);
       }
     } catch (cleanupError) {
-      logger.error('[boss_spawner] Failed to clean up partial spawn:', cleanupError.message);
+      logger.error('[Boss Spawner] Failed to clean up partial spawn:', cleanupError.message);
     }
 
     return null;
@@ -390,7 +389,7 @@ async function notifyBossSpawn(bossData, client) {
         embeds: [embed]
       });
 
-      logger.info(`[boss_spawner] Sent global Discord notification for ${bossData.name}`);
+      logger.info(`[Boss Spawner] Sent global Discord notification for ${bossData.name}`);
 
       // Also send server-specific notification if configured
       await sendServerSpecificBossNotification(bossData, client);
@@ -399,10 +398,10 @@ async function notifyBossSpawn(bossData, client) {
 
     } catch (error) {
       retryCount++;
-      logger.error(`[boss_spawner] Failed to send boss notification (attempt ${retryCount}/${maxRetries}):`, error.message);
+      logger.error(`[Boss Spawner] Failed to send boss notification (attempt ${retryCount}/${maxRetries}):`, error.message);
 
       if (retryCount >= maxRetries) {
-        logger.error('[boss_spawner] Max retries reached for boss notification');
+        logger.error('[Boss Spawner] Max retries reached for boss notification');
         logger.error('boss_notification_failed', {
           error: error.message,
           bossId: bossData.id,
@@ -415,7 +414,7 @@ async function notifyBossSpawn(bossData, client) {
 
       // Wait before retrying (exponential backoff)
       const delay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
-      logger.info(`[boss_spawner] Retrying notification in ${delay}ms...`);
+      logger.info(`[Boss Spawner] Retrying notification in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -433,13 +432,13 @@ async function sendServerSpecificBossNotification(bossData, client) {
     `).get(bossData.guildId);
 
     if (!notificationSettings || !notificationSettings.channelId) {
-      logger.info(`[boss_spawner] No server-specific notification settings for ${bossData.guildId}`);
+      logger.info(`[Boss Spawner] No server-specific notification settings for ${bossData.guildId}`);
       return;
     }
 
     const channel = await client.channels.fetch(notificationSettings.channelId);
     if (!channel || !channel.isTextBased()) {
-      logger.warn(`[boss_spawner] Server notification channel not found or invalid: ${notificationSettings.channelId}`);
+      logger.warn(`[Boss Spawner] Server notification channel not found or invalid: ${notificationSettings.channelId}`);
       return;
     }
 
@@ -498,10 +497,10 @@ async function sendServerSpecificBossNotification(bossData, client) {
       embeds: [embed]
     });
 
-    logger.info(`[boss_spawner] Sent server-specific notification for ${bossData.name} to ${bossData.guildId}`);
+    logger.info(`[Boss Spawner] Sent server-specific notification for ${bossData.name} to ${bossData.guildId}`);
 
   } catch (error) {
-    logger.error('[boss_spawner] Failed to send server-specific boss notification:', error.message);
+    logger.error('[Boss Spawner] Failed to send server-specific boss notification:', error.message);
   }
 }
 
@@ -531,7 +530,7 @@ function getNextSpawnInterval() {
     // Default to check every 30 seconds when no specific spawn is scheduled
     return 30 * 1000; // 30 seconds
   } catch (error) {
-    logger.warn('[boss_spawner] Error getting next spawn interval:', error.message);
+    logger.warn('[Boss Spawner] Error getting next spawn interval:', error.message);
     return 60 * 1000; // Fallback to 1 minute
   }
 }
@@ -554,11 +553,11 @@ function scheduleNextBossSpawn() {
       VALUES (?, ?, ?)
     `).run('nextBossSpawn', nextSpawnTime.toString(), Date.now());
 
-    logger.info(`[boss_spawner] Next boss spawn scheduled in ${randomMinutes} minutes (${new Date(nextSpawnTime).toLocaleTimeString()})`);
+    logger.info(`[Boss Spawner] Next boss spawn scheduled in ${randomMinutes} minutes (${new Date(nextSpawnTime).toLocaleTimeString()})`);
 
     return nextSpawnTime;
   } catch (error) {
-    logger.error('[boss_spawner] Error scheduling next boss spawn:', error.message);
+    logger.error('[Boss Spawner] Error scheduling next boss spawn:', error.message);
     return null;
   }
 }
@@ -578,7 +577,7 @@ async function runBossSpawningCycle(client = null) {
     runBossSpawningCycle.cycleCount++;
     
     if (client && runBossSpawningCycle.cycleCount % 2 === 0) {
-      logger.info('[boss_spawner] Running periodic orphaned boss fighter role cleanup...');
+      logger.info('[Boss Spawner] Running periodic orphaned boss fighter role cleanup...');
       cleanupOrphanedBossFighterRoles(client);
     }
     
@@ -586,11 +585,11 @@ async function runBossSpawningCycle(client = null) {
     const activeBosses = db.prepare('SELECT COUNT(*) as count FROM bosses WHERE active = 1').get();
     const currentCount = activeBosses?.count || 0;
     
-    logger.info(`[boss_spawner] Current active bosses: ${currentCount}/1 (single boss system, cleaned up ${expiredCount} expired)`);
+    logger.info(`[Boss Spawner] Current active bosses: ${currentCount}/1 (single boss system, cleaned up ${expiredCount} expired)`);
     
     // Don't spawn if we already have an active boss
     if (currentCount >= 1) {
-      logger.info('[boss_spawner] Boss already active, skipping spawn cycle');
+      logger.info('[Boss Spawner] Boss already active, skipping spawn cycle');
       return;
     }
     
@@ -612,7 +611,7 @@ async function runBossSpawningCycle(client = null) {
       const setting = db.prepare('SELECT value FROM system_settings WHERE key = ?').get('lastBossDefeat');
       lastBossDefeat = setting ? parseInt(setting.value) : 0;
     } catch (error) {
-      logger.warn('[boss_spawner] Error checking last boss defeat time:', error.message);
+      logger.warn('[Boss Spawner] Error checking last boss defeat time:', error.message);
       lastBossDefeat = 0;
     }
     
@@ -620,7 +619,7 @@ async function runBossSpawningCycle(client = null) {
     
     if (lastBossDefeat && (Date.now() - lastBossDefeat) < defeatCooldown) {
       const timeLeft = Math.round((defeatCooldown - (Date.now() - lastBossDefeat)) / 1000 / 60);
-      logger.info(`[boss_spawner] Global boss defeat cooldown active, ${timeLeft} minutes remaining`);
+      logger.info(`[Boss Spawner] Global boss defeat cooldown active, ${timeLeft} minutes remaining`);
       return;
     }
     
@@ -628,13 +627,13 @@ async function runBossSpawningCycle(client = null) {
     const bossesToSpawn = Math.min(BOSS_CONFIG.MAX_GLOBAL_BOSSES - currentCount, BOSS_CONFIG.MAX_BOSSES_PER_CYCLE);
     
     if (bossesToSpawn <= 0) {
-      logger.info('[boss_spawner] Dynamic boss limit reached, no bosses to spawn');
+      logger.info('[Boss Spawner] Dynamic boss limit reached, no bosses to spawn');
       return;
     }
     
     // Spawn bosses with adaptive chance-based system
     let spawnedCount = 0;
-    logger.info(`[boss_spawner] Attempting to spawn up to ${bossesToSpawn} boss(es) with ${(adaptiveSpawnChance * 100).toFixed(1)}% chance each`);
+    logger.info(`[Boss Spawner] Attempting to spawn up to ${bossesToSpawn} boss(es) with ${(adaptiveSpawnChance * 100).toFixed(1)}% chance each`);
     
     for (let i = 0; i < bossesToSpawn; i++) {
       if (Math.random() < adaptiveSpawnChance) {
@@ -642,19 +641,19 @@ async function runBossSpawningCycle(client = null) {
         
         if (boss) {
           spawnedCount++;
-          logger.info(`[boss_spawner] Spawned boss ${spawnedCount}: ${boss.name} in ${boss.serverName || boss.guildId}`);
+          logger.info(`[Boss Spawner] Spawned boss ${spawnedCount}: ${boss.name} in ${boss.serverName || boss.guildId}`);
         }
       }
     }
     
     if (spawnedCount > 0) {
-      logger.info(`[boss_spawner] Spawned ${spawnedCount} new boss(es) this cycle (${spawnedCount}/${bossesToSpawn} potential slots filled)`);
+      logger.info(`[Boss Spawner] Spawned ${spawnedCount} new boss(es) this cycle (${spawnedCount}/${bossesToSpawn} potential slots filled)`);
     } else {
-      logger.info('[boss_spawner] No bosses spawned this cycle due to chance/availability');
+      logger.info('[Boss Spawner] No bosses spawned this cycle due to chance/availability');
     }
     
   } catch (error) {
-    logger.error('[boss_spawner] Error in boss spawning cycle:', error.message);
+    logger.error('[Boss Spawner] Error in boss spawning cycle:', error.message);
   }
 }
 
@@ -680,11 +679,11 @@ function recordBossDefeat() {
       VALUES (?, ?, ?)
     `).run('lastBossDefeat', now.toString(), now);
     
-    logger.info(`[boss_spawner] Recorded boss defeat at ${new Date(now).toLocaleTimeString()}, 10-minute spawn cooldown activated`);
+    logger.info(`[Boss Spawner] Recorded boss defeat at ${new Date(now).toLocaleTimeString()}, 10-minute spawn cooldown activated`);
     
     return true;
   } catch (error) {
-    logger.error('[boss_spawner] Error recording boss defeat:', error.message);
+    logger.error('[Boss Spawner] Error recording boss defeat:', error.message);
     return false;
   }
 }
@@ -720,21 +719,21 @@ async function cleanupBossFighterRoles(client, guildId, userIds) {
           if (activeParticipations.count === 0) {
             await member.roles.remove(role);
             removedCount++;
-            logger.info(`[boss_spawner] Removed boss fighter role from user ${userId} in guild ${guildId} (no active fights)`);
+            logger.info(`[Boss Spawner] Removed boss fighter role from user ${userId} in guild ${guildId} (no active fights)`);
           } else {
-            logger.info(`[boss_spawner] Kept boss fighter role for user ${userId} in guild ${guildId} (${activeParticipations.count} active fights)`);
+            logger.info(`[Boss Spawner] Kept boss fighter role for user ${userId} in guild ${guildId} (${activeParticipations.count} active fights)`);
           }
         }
       } catch (error) {
-        logger.warn(`[boss_spawner] Failed to remove role from user ${userId}:`, error.message);
+        logger.warn(`[Boss Spawner] Failed to remove role from user ${userId}:`, error.message);
       }
     }
     
     if (removedCount > 0) {
-      logger.info(`[boss_spawner] Removed boss fighter roles from ${removedCount} users in guild ${guildId}`);
+      logger.info(`[Boss Spawner] Removed boss fighter roles from ${removedCount} users in guild ${guildId}`);
     }
   } catch (error) {
-    logger.error('[boss_spawner] Error cleaning up boss fighter roles:', error.message);
+    logger.error('[Boss Spawner] Error cleaning up boss fighter roles:', error.message);
   }
 }
 
@@ -797,15 +796,15 @@ async function cleanupOrphanedBossFighterRoles(client) {
           totalCleaned += orphanedUsers.length;
         }
       } catch (error) {
-        logger.warn(`[boss_spawner] Failed to cleanup roles in guild ${serverData.guildId}:`, error.message);
+        logger.warn(`[Boss Spawner] Failed to cleanup roles in guild ${serverData.guildId}:`, error.message);
       }
     }
     
     if (totalCleaned > 0) {
-      logger.info(`[boss_spawner] Cleaned up ${totalCleaned} orphaned boss fighter roles across all servers`);
+      logger.info(`[Boss Spawner] Cleaned up ${totalCleaned} orphaned boss fighter roles across all servers`);
     }
   } catch (error) {
-    logger.error('[boss_spawner] Error during orphaned role cleanup:', error.message);
+    logger.error('[Boss Spawner] Error during orphaned role cleanup:', error.message);
   }
 }
 
