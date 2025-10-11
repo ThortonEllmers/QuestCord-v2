@@ -18,9 +18,10 @@ const logger = require('./logger');
 let discordClient = null;
 
 // Notification channels
+// All notifications are sent to the main monitoring channel
 const CHANNELS = {
-  MONITOR: '1405273988615245885',    // Bot monitoring channel
-  SECURITY: '1404555278594342993'     // Security alerts channel
+  MONITOR: '1404555278594342993',    // Main notification channel (bot monitoring, security, etc.)
+  SECURITY: '1404555278594342993'    // Security alerts channel (same as monitor)
 };
 
 /**
