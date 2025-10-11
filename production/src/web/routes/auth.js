@@ -72,7 +72,6 @@ router.get('/auth/discord', (req, res) => {
   logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
   logger.aqua('🔑 State: %s', state.substring(0, 16) + '...');
   logger.aqua('⏰ Time: %s', new Date().toISOString());
-  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   res.redirect(authUrl);
 });
@@ -90,7 +89,6 @@ router.get('/auth/discord/callback', async (req, res) => {
     logger.warn('💻 IP: %s', req.ip || req.connection.remoteAddress);
     logger.warn('🔑 State: %s', state ? state.substring(0, 16) + '...' : 'missing');
     logger.warn('⏰ Time: %s', new Date().toISOString());
-    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     return res.status(400).send('Invalid state');
   }
   
@@ -141,7 +139,6 @@ router.get('/auth/discord/callback', async (req, res) => {
     logger.aqua('🎭 Global Name: %s', user.global_name || 'None');
     logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
     logger.aqua('⏰ Time: %s', new Date().toISOString());
-    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Store in session
     req.session.user = {
@@ -161,7 +158,6 @@ router.get('/auth/discord/callback', async (req, res) => {
     logger.error('⚠️  Error: %s', error.message);
     logger.error('📍 Stack: %s', error.stack);
     logger.error('⏰ Time: %s', new Date().toISOString());
-    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     res.status(500).send('Authentication failed');
   }
 });
@@ -285,7 +281,6 @@ router.post('/auth/logout', (req, res) => {
   logger.aqua('👤 User: %s (@%s)', username, userId);
   logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
   logger.aqua('⏰ Time: %s', new Date().toISOString());
-  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   req.session.destroy();
   res.json({ success: true });
@@ -300,7 +295,6 @@ router.get('/auth/logout', (req, res) => {
   logger.aqua('👤 User: %s (@%s)', username, userId);
   logger.aqua('💻 IP: %s', req.ip || req.connection.remoteAddress);
   logger.aqua('⏰ Time: %s', new Date().toISOString());
-  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   req.session.destroy();
   res.redirect('/');
