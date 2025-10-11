@@ -337,11 +337,11 @@ function createWebServer() {
     } 
     // If none of the expected export patterns match, log a warning
     else {
-      logger.warn('[routes] Unsupported export shape; no routes mounted');
+      logger.warn('[Routes] Unsupported export shape; no routes mounted');
     }
   } catch (e) {
     // Log any errors that occur during route mounting for debugging
-    logger.error('[routes] mount failed %s', e && e.stack || e);
+    logger.error('[Routes] mount failed %s', e && e.stack || e);
   }
 
   // Health check endpoint for monitoring services and load balancers
