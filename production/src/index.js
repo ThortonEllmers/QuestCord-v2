@@ -486,6 +486,142 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
       }
       
+      // Handle security ban/unban buttons
+      if (interaction.customId.startsWith('security_ban_') || interaction.customId.startsWith('security_unban_')) {
+        const { isStaffOrDev } = require('./utils/roles');
+        const { db, generateBanId } = require('./utils/store_sqlite');
+        const { normalizeIP } = require('./utils/ip_bans');
+        const { EmbedBuilder } = require('discord.js');
+
+        // Check if user is staff/dev
+        if (!(await isStaffOrDev(interaction.client, interaction.user.id))) {
+          return interaction.reply({
+            content: '❌ Only Staff and Developers can use these buttons.',
+            ephemeral: true
+          });
+        }
+
+        const isBan = interaction.customId.startsWith('security_ban_');
+        const ip = normalizeIP(interaction.customId.replace(isBan ? 'security_ban_' : 'security_unban_', ''));
+
+        if (isBan) {
+          // Ban the IP
+          const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
+
+          if (existingBan) {
+            return interaction.reply({
+              content: `❌ IP address **${ip}** is already banned.`,
+              ephemeral: true
+            });
+          }
+
+          const banId = generateBanId();
+          const expiresAt = null; // Permanent ban
+
+          // Get the original message that triggered this button click to extract context
+          const originalMessage = interaction.message;
+          let reason = 'Suspicious activity - Security violation';
+
+          // Try to extract attack details from the original message embed
+          if (originalMessage && originalMessage.embeds && originalMessage.embeds.length > 0) {
+            const embed = originalMessage.embeds[0];
+
+            // Check if this is from a security alert
+            if (embed.title && embed.title.includes('Security Alert')) {
+              // Extract the targeted endpoints field to get attack types
+              const targetedField = embed.fields.find(f => f.name && f.name.includes('Targeted Endpoints'));
+
+              if (targetedField && targetedField.value) {
+                // Extract attack reasons from the endpoints list
+                const attackTypes = [];
+                const lines = targetedField.value.split('\n');
+
+                for (const line of lines) {
+                  // Match patterns like "• `/admin` (3x) - *Admin path probing*"
+                  const reasonMatch = line.match(/\*([^*]+)\*/);
+                  if (reasonMatch) {
+                    const attackType = reasonMatch[1];
+                    if (!attackTypes.includes(attackType)) {
+                      attackTypes.push(attackType);
+                    }
+                  }
+                }
+
+                // Build reason from attack types
+                if (attackTypes.length > 0) {
+                  if (attackTypes.length === 1) {
+                    reason = attackTypes[0];
+                  } else if (attackTypes.length === 2) {
+                    reason = `${attackTypes[0]} and ${attackTypes[1]}`;
+                  } else {
+                    reason = `${attackTypes[0]}, ${attackTypes[1]}, and ${attackTypes.length - 2} other attacks`;
+                  }
+                } else {
+                  reason = 'Multiple security violations';
+                }
+              } else {
+                reason = 'Security alert - Suspicious activity detected';
+              }
+            } else if (embed.title && embed.title.includes('Automatic IP Ban')) {
+              reason = 'Rate limit violation - Automated scanning detected';
+            }
+          }
+
+          db.prepare(`
+            INSERT INTO ip_bans(banId, ip, reason, bannedBy, bannedAt, expiresAt)
+            VALUES(?,?,?,?,?,?)
+          `).run(banId, ip, reason, interaction.user.id, Date.now(), expiresAt);
+
+          logger.info('security_ban: %s permanently banned IP %s for: %s (Ban ID: %s)', interaction.user.id, ip, reason, banId);
+
+          const embed = new EmbedBuilder()
+            .setTitle('🔨 IP Address Banned')
+            .setDescription(`**${ip}** has been banned from accessing the bot and website`)
+            .setColor(0xFF0000)
+            .addFields(
+              { name: '🌐 IP Address', value: `\`${ip}\``, inline: true },
+              { name: '⏰ Duration', value: '**Permanent**', inline: true },
+              { name: '🆔 Ban ID', value: `\`${banId}\``, inline: true },
+              { name: '📝 Reason', value: reason, inline: false },
+              { name: '👤 Banned By', value: `${interaction.user.username}`, inline: true },
+              { name: '⏰ Expires', value: 'Never', inline: true }
+            )
+            .setFooter({ text: 'QuestCord Security System', iconURL: interaction.client.user.displayAvatarURL() })
+            .setTimestamp();
+
+          await interaction.reply({ embeds: [embed] });
+        } else {
+          // Unban the IP
+          const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(ip);
+
+          if (!existingBan) {
+            return interaction.reply({
+              content: `❌ IP address **${ip}** is not currently banned.`,
+              ephemeral: true
+            });
+          }
+
+          db.prepare('DELETE FROM ip_bans WHERE ip=?').run(ip);
+          logger.info('security_unban: %s unbanned IP %s (Previously: %s)', interaction.user.id, ip, existingBan.reason);
+
+          const embed = new EmbedBuilder()
+            .setTitle('✅ IP Address Unbanned')
+            .setDescription(`**${ip}** has been unbanned and can now access the bot and website`)
+            .setColor(0x00FF00)
+            .addFields(
+              { name: '🌐 IP Address', value: `\`${ip}\``, inline: true },
+              { name: '📝 Previous Reason', value: existingBan.reason, inline: false },
+              { name: '👤 Unbanned By', value: `${interaction.user.username}`, inline: true },
+              { name: '⏰ Unbanned At', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
+            )
+            .setFooter({ text: 'QuestCord Security System', iconURL: interaction.client.user.displayAvatarURL() })
+            .setTimestamp();
+
+          await interaction.reply({ embeds: [embed] });
+        }
+        return;
+      }
+
       // Handle quick sell buttons
       if (interaction.customId.startsWith('quick_sell_')) {
         const itemId = interaction.customId.replace('quick_sell_', '');
