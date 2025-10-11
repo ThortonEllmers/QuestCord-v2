@@ -1,133 +1,381 @@
 /**
  * LOGGING SYSTEM MODULE
  *
- * This module provides a comprehensive logging system for QuestCord with:
- * - Standard console logging with formatted timestamps and levels
- * - Multiple log levels (info, warn, error, debug)
- * - Color-coded console output for better readability
+ * This module provides a comprehensive color-coded logging system for QuestCord with:
+ * - Beautiful ANSI color coding for different log levels and categories
+ * - Formatted timestamps and structured output
+ * - Multiple log levels (info, warn, error, debug, success)
+ * - Category-based coloring (bot, web, database, security, etc.)
  * - Cross-module compatibility with both CommonJS and ES modules
  *
  * The logging system helps track bot operations, errors, and important events
- * in the console. All Discord notifications are handled by bot_notifications.js.
+ * in the console with visual clarity through color coding.
  */
 
 // Import Node.js util module for advanced string formatting
 const util = require('util');
 
-// ANSI color codes for terminal output
+// ============================================================================
+// ANSI COLOR CODES FOR TERMINAL OUTPUT
+// ============================================================================
 const colors = {
+  // Basic colors
   reset: '\x1b[0m',
-  cyan: '\x1b[36m',
-  aqua: '\x1b[96m',  // Bright cyan/aqua
-  yellow: '\x1b[33m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+
+  // Text colors
+  black: '\x1b[30m',
   red: '\x1b[31m',
-  gray: '\x1b[90m'
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  gray: '\x1b[90m',
+
+  // Bright/bold colors
+  brightRed: '\x1b[91m',
+  brightGreen: '\x1b[92m',
+  brightYellow: '\x1b[93m',
+  brightBlue: '\x1b[94m',
+  brightMagenta: '\x1b[95m',
+  brightCyan: '\x1b[96m',
+  brightWhite: '\x1b[97m',
+
+  // Background colors
+  bgBlack: '\x1b[40m',
+  bgRed: '\x1b[41m',
+  bgGreen: '\x1b[42m',
+  bgYellow: '\x1b[43m',
+  bgBlue: '\x1b[44m',
+  bgMagenta: '\x1b[45m',
+  bgCyan: '\x1b[46m',
+  bgWhite: '\x1b[47m'
 };
 
+// ============================================================================
+// LOG LEVEL COLOR SCHEMES
+// ============================================================================
+const levelColors = {
+  INFO: colors.brightCyan,
+  WARN: colors.brightYellow,
+  ERROR: colors.brightRed,
+  DEBUG: colors.gray,
+  SUCCESS: colors.brightGreen
+};
+
+// ============================================================================
+// CATEGORY-BASED COLOR CODING
+// ============================================================================
+// Automatically detect and color-code log messages based on content
+const categoryPatterns = [
+  // Bot-related logs - Purple/Magenta
+  { pattern: /\[bot\]/i, color: colors.brightMagenta },
+  { pattern: /discord/i, color: colors.brightMagenta },
+  { pattern: /logged in as/i, color: colors.brightMagenta },
+  { pattern: /ClientReady/i, color: colors.brightMagenta },
+
+  // Web server logs - Cyan
+  { pattern: /\[web\]/i, color: colors.brightCyan },
+  { pattern: /WEB SERVER/i, color: colors.brightCyan },
+  { pattern: /express/i, color: colors.cyan },
+  { pattern: /🌐/i, color: colors.brightCyan },
+
+  // Database logs - Blue
+  { pattern: /\[db\]/i, color: colors.brightBlue },
+  { pattern: /\[Database\]/i, color: colors.brightBlue },
+  { pattern: /sqlite/i, color: colors.blue },
+  { pattern: /table/i, color: colors.blue },
+
+  // Security logs - Red/Orange
+  { pattern: /\[Security\]/i, color: colors.brightRed },
+  { pattern: /security/i, color: colors.red },
+  { pattern: /banned/i, color: colors.red },
+  { pattern: /🚫|🔒|🛡️/i, color: colors.brightRed },
+
+  // Route/API logs - Green
+  { pattern: /\[routes\]/i, color: colors.brightGreen },
+  { pattern: /mounted/i, color: colors.green },
+  { pattern: /\[api\]/i, color: colors.green },
+
+  // Config logs - Yellow
+  { pattern: /\[Config\]/i, color: colors.brightYellow },
+  { pattern: /configuration/i, color: colors.yellow },
+
+  // Success indicators - Bright Green
+  { pattern: /✅/i, color: colors.brightGreen },
+  { pattern: /success/i, color: colors.brightGreen },
+  { pattern: /completed/i, color: colors.green },
+
+  // Boss/Game systems - Magenta
+  { pattern: /\[boss_spawner\]/i, color: colors.magenta },
+  { pattern: /\[POI\]/i, color: colors.magenta },
+  { pattern: /boss_status/i, color: colors.magenta },
+
+  // Notifications - Bright Cyan
+  { pattern: /\[BotNotifications\]/i, color: colors.brightCyan },
+  { pattern: /notification/i, color: colors.cyan },
+
+  // Timestamps - Gray (for separators and timestamps)
+  { pattern: /━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━/i, color: colors.gray },
+
+  // Deploy/Commands - Bright Green
+  { pattern: /\[deploy\]/i, color: colors.brightGreen },
+  { pattern: /deployed/i, color: colors.green },
+  { pattern: /commands/i, color: colors.green },
+  { pattern: /Putting (guild|GLOBAL) commands/i, color: colors.green },
+  { pattern: /Done\./i, color: colors.brightGreen },
+
+  // System processes - Cyan
+  { pattern: /\[regen\]/i, color: colors.cyan },
+  { pattern: /\[weekly-reset\]/i, color: colors.cyan },
+  { pattern: /Batch regeneration/i, color: colors.cyan },
+  { pattern: /reset system/i, color: colors.cyan },
+
+  // Warnings and alerts - Yellow/Orange
+  { pattern: /Warning:/i, color: colors.brightYellow },
+  { pattern: /MemoryStore/i, color: colors.yellow },
+  { pattern: /not designed for/i, color: colors.yellow },
+
+  // Startup messages - Bright Green
+  { pattern: /Starting/i, color: colors.brightGreen },
+  { pattern: /started/i, color: colors.green },
+  { pattern: /initialized/i, color: colors.green },
+  { pattern: /ready/i, color: colors.brightGreen },
+
+  // Shutdown messages - Bright Red
+  { pattern: /shutdown/i, color: colors.brightRed },
+  { pattern: /Received SIG/i, color: colors.red },
+  { pattern: /Graceful shutdown/i, color: colors.red },
+  { pattern: /closed/i, color: colors.red },
+
+  // Water check - Cyan
+  { pattern: /water check/i, color: colors.cyan },
+
+  // IP addresses and ports - Gray
+  { pattern: /IP:\s*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/i, color: colors.gray },
+  { pattern: /Port:\s*\d+/i, color: colors.brightCyan },
+
+  // HTTP Methods - Bright Cyan
+  { pattern: /\b(GET|POST|PUT|DELETE|PATCH|OPTIONS)\s+\//i, color: colors.brightCyan },
+
+  // Time durations - Gray
+  { pattern: /\(\d+ms\)/i, color: colors.gray },
+  { pattern: /\d+d\s+\d+h\s+\d+m/i, color: colors.gray },
+
+  // Arrows and indicators - Bright Cyan
+  { pattern: /^→/i, color: colors.brightCyan },
+
+  // HTTP Status codes (must be near the end for priority)
+  { pattern: /✅.*\b2\d{2}\b/i, color: colors.brightGreen },  // Success with checkmark
+  { pattern: /\b2\d{2}\b/, color: colors.brightGreen },        // 2xx - Success
+  { pattern: /\b3\d{2}\b/, color: colors.brightCyan },         // 3xx - Redirect
+  { pattern: /\b4\d{2}\b/, color: colors.brightYellow },       // 4xx - Client Error
+  { pattern: /\b5\d{2}\b/, color: colors.brightRed }           // 5xx - Server Error
+];
+
 /**
- * LOG MESSAGE FORMATTER
- * 
- * Formats log messages with consistent structure including level, timestamp, and content.
- * Uses Node.js util.format for printf-style string formatting with placeholders.
- * 
- * @param {string} level - Log level string (INFO, WARN, ERROR, DEBUG)
- * @param {Arguments} args - Arguments object from logging function call
- * @returns {string} Formatted log message with timestamp
+ * SMART COLOR DETECTION
+ * Automatically applies appropriate colors based on log content
+ *
+ * @param {string} message - The log message to colorize
+ * @param {string} baseColor - The base color for the log level
+ * @returns {string} Colorized message
  */
-function fmt(level, args) {
-  // Generate ISO timestamp for consistent time formatting
-  const ts = new Date().toISOString();
-  // Format arguments using util.format (supports %s, %d, %j placeholders)
-  const line = util.format.apply(null, args);
-  // Return formatted log line with level and timestamp
-  return `[${level}] ${ts} ${line}`;
+function applySmartColors(message, baseColor) {
+  // Find matching category pattern (check all patterns, prioritize first match)
+  for (const { pattern, color } of categoryPatterns) {
+    if (pattern.test(message)) {
+      return color + message + colors.reset;
+    }
+  }
+
+  // If no specific category matched, use bright white for visibility
+  // This ensures ALL messages are colored and easy to read
+  return colors.brightWhite + message + colors.reset;
 }
 
+/**
+ * LOG MESSAGE FORMATTER WITH COLOR CODING
+ *
+ * Formats log messages with color-coded levels, timestamps, and content.
+ * Uses Node.js util.format for printf-style string formatting with placeholders.
+ *
+ * @param {string} level - Log level string (INFO, WARN, ERROR, DEBUG, SUCCESS)
+ * @param {Arguments} args - Arguments object from logging function call
+ * @param {boolean} forceColor - Force specific color instead of smart detection
+ * @returns {string} Formatted and colorized log message
+ */
+function fmt(level, args, forceColor = null) {
+  // Generate ISO timestamp for consistent time formatting
+  const ts = new Date().toISOString();
+
+  // Format arguments using util.format (supports %s, %d, %j placeholders)
+  const message = util.format.apply(null, args);
+
+  // Get level color
+  const levelColor = levelColors[level] || colors.white;
+
+  // Color the level tag
+  const coloredLevel = levelColor + `[${level}]` + colors.reset;
+
+  // Color the timestamp in gray
+  const coloredTimestamp = colors.gray + ts + colors.reset;
+
+  // Apply smart coloring to the message content
+  let coloredMessage;
+  if (forceColor) {
+    coloredMessage = forceColor + message + colors.reset;
+  } else {
+    coloredMessage = applySmartColors(message, colors.white);
+  }
+
+  // Return formatted log line with colored components
+  return `${coloredLevel} ${coloredTimestamp} ${coloredMessage}`;
+}
+
+// Separator line for visual grouping
+const SEPARATOR = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
 
 /**
  * LOGGER OBJECT WITH MULTIPLE LOG LEVELS
  *
- * Provides standard logging functions with console output.
- * Discord notifications are handled separately by bot_notifications.js.
+ * Provides color-coded logging functions for different severity levels.
+ * Each log level has its own color scheme for easy visual identification.
+ * ALL messages are wrapped with separator lines for consistent visual grouping.
  */
 const loggerObj = {
   /**
-   * INFO LEVEL LOGGING
+   * INFO LEVEL LOGGING - Cyan
    *
    * For general information, status updates, and normal operation events.
-   * Outputs to console.
+   * Messages are automatically color-coded based on content.
+   * All messages wrapped with separator lines.
    */
   info: function() {
-    // Format message with INFO level
+    const message = util.format.apply(null, arguments);
+
+    // Skip separators if message IS a separator to avoid duplication
+    if (message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')) {
+      const line = fmt('INFO ', arguments);
+      console.log(line);
+      return;
+    }
+
+    // Print top separator
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    console.log(separatorLine);
+
+    // Print the actual message
     const line = fmt('INFO ', arguments);
-    // Output to console using appropriate method
     console.log(line);
+
+    // Print bottom separator
+    console.log(separatorLine);
   },
 
   /**
-   * AQUA LEVEL LOGGING
+   * AQUA/HIGHLIGHT LEVEL LOGGING - Bright Cyan
    *
    * For important startup events and system status that should stand out visually.
-   * Uses bright cyan/aqua color to differentiate from regular info logs.
-   * Examples: server startup, configuration loaded, major system events.
+   * Uses bright cyan color to differentiate from regular info logs.
+   * Examples: server startup, major system events.
+   * Always wrapped with separator lines for maximum visibility.
    */
   aqua: function() {
-    // Format message with INFO level (same structure as info)
-    const line = fmt('INFO ', arguments);
-    // Output to console with aqua/cyan color highlighting
-    console.log(colors.aqua + line + colors.reset);
+    // Always add separators for aqua (highlighted) messages
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    console.log(separatorLine);
+
+    const line = fmt('INFO ', arguments, colors.brightCyan);
+    console.log(line);
+
+    console.log(separatorLine);
   },
 
   /**
-   * WARN LEVEL LOGGING
+   * SUCCESS LEVEL LOGGING - Bright Green
+   *
+   * For successful operations and positive confirmations.
+   * Uses bright green to indicate successful completion.
+   * All messages wrapped with separator lines.
+   */
+  success: function() {
+    const separatorLine = fmt('INFO ', [SEPARATOR], colors.gray);
+    console.log(separatorLine);
+
+    const line = fmt('INFO ', arguments, colors.brightGreen);
+    console.log(line);
+
+    console.log(separatorLine);
+  },
+
+  /**
+   * WARN LEVEL LOGGING - Yellow
    *
    * For warning conditions that don't prevent operation but should be noted.
    * Examples: fallback usage, recoverable errors, deprecated features.
+   * All messages wrapped with separator lines.
    */
   warn: function() {
-    // Format message with WARN level
+    const separatorLine = fmt('WARN ', [SEPARATOR], colors.gray);
+    console.warn(separatorLine);
+
     const line = fmt('WARN ', arguments);
-    // Output to console using warning method (may use different color)
     console.warn(line);
+
+    console.warn(separatorLine);
   },
 
   /**
-   * ERROR LEVEL LOGGING
+   * ERROR LEVEL LOGGING - Red
    *
-   * For error conditions that require attention but don't crash the application.
+   * For error conditions that require attention.
+   * Uses bright red color to make errors immediately visible.
+   * All messages wrapped with separator lines.
    */
   error: function() {
-    // Format message with ERROR level
+    const separatorLine = fmt('ERROR', [SEPARATOR], colors.gray);
+    console.error(separatorLine);
+
     const line = fmt('ERROR', arguments);
-    // Output to console using error method (typically red color)
     console.error(line);
+
+    console.error(separatorLine);
   },
 
   /**
-   * DEBUG LEVEL LOGGING
+   * DEBUG LEVEL LOGGING - Gray
    *
    * For detailed debugging information during development.
    * Only outputs to console when DEBUG environment variable is set.
+   * All messages wrapped with separator lines.
    */
   debug: function() {
-    // Format message with DEBUG level
-    const line = fmt('DEBUG', arguments);
-    // Only output if DEBUG environment variable is enabled
-    if (process.env.DEBUG) console.debug(line);
+    if (process.env.DEBUG) {
+      const separatorLine = fmt('DEBUG', [SEPARATOR], colors.gray);
+      console.debug(separatorLine);
+
+      const line = fmt('DEBUG', arguments);
+      console.debug(line);
+
+      console.debug(separatorLine);
+    }
   }
 };
 
 /**
  * MODULE EXPORTS - CROSS-COMPATIBILITY SETUP
- * 
+ *
  * Exports the logger in multiple formats to ensure compatibility with both
  * CommonJS (require) and ES modules (import) usage patterns.
- * This allows the logger to be used flexibly across the codebase.
- * 
+ *
  * Usage examples:
  *   const logger = require('./logger'); logger.info('message');
  *   import logger from './logger'; logger.info('message');
- *   const { info } = require('./logger'); info('message');
+ *   const { info, success } = require('./logger'); info('message');
  */
 
 // Main export - the complete logger object
@@ -137,8 +385,12 @@ module.exports = loggerObj;
 module.exports.default = loggerObj;
 
 // Individual function exports for destructuring imports
-module.exports.info = loggerObj.info;   // Information logging
-module.exports.aqua = loggerObj.aqua;   // Aqua/cyan highlighted logging
-module.exports.warn = loggerObj.warn;   // Warning logging
-module.exports.error = loggerObj.error; // Error logging
-module.exports.debug = loggerObj.debug; // Debug logging
+module.exports.info = loggerObj.info;       // Information logging (cyan)
+module.exports.aqua = loggerObj.aqua;       // Highlighted logging (bright cyan)
+module.exports.success = loggerObj.success; // Success logging (bright green)
+module.exports.warn = loggerObj.warn;       // Warning logging (yellow)
+module.exports.error = loggerObj.error;     // Error logging (red)
+module.exports.debug = loggerObj.debug;     // Debug logging (gray)
+
+// Export colors for external use if needed
+module.exports.colors = colors;
