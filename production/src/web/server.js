@@ -35,6 +35,8 @@ const { isIPBanned, getClientIP, cleanupExpiredIPBans } = require('../utils/ip_b
 const { isUserAgentBanned, getBanReason } = require('../utils/user_agent_bans');
 // Import security monitoring middleware for detecting attack attempts
 const { securityMonitor } = require('./security-monitor');
+// Import web server notification functions for Discord notifications
+const { logWebServerStartup, logWebServerShutdown } = require('../utils/bot_notifications');
 // Define constant for session cookie expiration (24 hours in milliseconds)
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -492,7 +494,7 @@ function createWebServer() {
   const port = config.web?.port || process.env.PORT || 80;
 
   // Start the HTTP server and bind it to the determined port
-  const server = app.listen(port, () => {
+  const server = app.listen(port, async () => {
     // Get the current environment (defaults to production for security)
     const env = process.env.NODE_ENV || 'production';
     const publicUrl = config.web?.publicBaseUrl || `http://localhost:${port}`;
@@ -505,6 +507,62 @@ function createWebServer() {
     logger.aqua('🔗 Public URL: %s', publicUrl);
     logger.aqua('⏰ Started at: %s', new Date().toISOString());
     logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // Send Discord notification about web server startup
+    try {
+      await logWebServerStartup(port, publicUrl);
+    } catch (error) {
+      logger.error('[Web] Failed to send web server startup notification: %s', error.message);
+    }
+  });
+
+  // Handle graceful shutdown on process termination signals
+  // These handlers ensure proper cleanup and notification when the server stops
+  const handleShutdown = async (signal) => {
+    logger.warn('[Web] Received %s - shutting down web server gracefully...', signal);
+
+    try {
+      // Send Discord notification about web server shutdown
+      await logWebServerShutdown(`Process signal: ${signal}`);
+    } catch (error) {
+      logger.error('[Web] Failed to send web server shutdown notification: %s', error.message);
+    }
+
+    // Close the server and stop accepting new connections
+    server.close(() => {
+      logger.warn('[Web] Web server closed - all connections terminated');
+      // Don't exit process here - let the main bot process handle exit
+    });
+
+    // Force close after 10 seconds if graceful shutdown fails
+    setTimeout(() => {
+      logger.error('[Web] Forcefully shutting down web server after timeout');
+      process.exit(1);
+    }, 10000);
+  };
+
+  // Register shutdown handlers for common termination signals
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+
+  // Handle uncaught exceptions in web server
+  process.on('uncaughtException', async (error) => {
+    logger.error('[Web] Uncaught Exception: %s', error.stack || error);
+    try {
+      await logWebServerShutdown(`Uncaught Exception: ${error.message}`);
+    } catch (notifError) {
+      logger.error('[Web] Failed to send shutdown notification: %s', notifError.message);
+    }
+  });
+
+  // Handle unhandled promise rejections in web server
+  process.on('unhandledRejection', async (reason, promise) => {
+    logger.error('[Web] Unhandled Rejection at: %s, reason: %s', promise, reason);
+    try {
+      await logWebServerShutdown(`Unhandled Rejection: ${reason}`);
+    } catch (notifError) {
+      logger.error('[Web] Failed to send shutdown notification: %s', notifError.message);
+    }
   });
 
   // Return both the Express app and HTTP server instances for external use
