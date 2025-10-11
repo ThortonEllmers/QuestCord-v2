@@ -10,11 +10,9 @@
  * - API endpoint enumeration
  * - Rate limit violations (automatic IP ban)
  *
- * Sends Discord webhook notifications when threats are detected.
+ * Sends Discord bot notifications when threats are detected.
  */
 
-const https = require('https');
-const http = require('http');
 const { db, generateBanId } = require('../utils/store_sqlite');
 const { normalizeIP } = require('../utils/ip_bans');
 const logger = require('../utils/logger');
@@ -240,91 +238,70 @@ Expires: ${new Date(data.expiresAt).toISOString()}
 }
 
 /**
- * Send Discord webhook notification
+ * Send Discord security alert via bot (replaces webhook)
  */
-async function sendSecurityAlert(data) {
-  const webhookUrl = process.env.SECURITY_WEBHOOK_URL;
+async function sendSecurityAlert(data, discordClient) {
+  try {
+    if (!discordClient) {
+      console.warn('[Security] Discord client not available for security alert');
+      return;
+    }
 
-  if (!webhookUrl) {
-    console.warn('[Security] No SECURITY_WEBHOOK_URL configured');
-    return;
-  }
+    const { EmbedBuilder } = require('discord.js');
+    const SECURITY_CHANNEL_ID = '1404555278594342993';
 
-  // Parse webhook URL
-  const url = new URL(webhookUrl);
-  const isHttps = url.protocol === 'https:';
+    const channel = await discordClient.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
+    if (!channel || !channel.isTextBased()) {
+      console.warn('[Security] Could not find security channel for alert');
+      return;
+    }
 
-  // Determine severity
-  const severity = getSeverity(data.totalAttempts);
+    // Determine severity
+    const severity = getSeverity(data.totalAttempts);
 
-  // Create embed for Discord
-  const embed = {
-    title: `${severity.emoji} Security Alert - ${severity.level} Severity`,
-    description: `Suspicious activity detected from **${data.ip}**`,
-    color: severity.color,
-    fields: [
-      {
-        name: '📊 Attack Statistics',
-        value: `\`\`\`
+    // Create embed for Discord
+    const embed = new EmbedBuilder()
+      .setTitle(`${severity.emoji} Security Alert - ${severity.level} Severity`)
+      .setColor(severity.color)
+      .setDescription(`Suspicious activity detected from **${data.ip}**`)
+      .addFields(
+        {
+          name: '📊 Attack Statistics',
+          value: `\`\`\`
 Total Attempts: ${data.totalAttempts}
 Unique Endpoints: ${data.uniqueEndpoints}
 Time Window: ${Math.round((Date.now() - data.firstSeen) / 1000)}s
 \`\`\``,
-        inline: false
-      },
-      {
-        name: '🎯 Targeted Endpoints',
-        value: data.endpoints.slice(0, 10).map(e =>
-          `• \`${e.path}\` (${e.count}x) - *${e.reason}*`
-        ).join('\n') + (data.endpoints.length > 10 ? `\n... and ${data.endpoints.length - 10} more` : ''),
-        inline: false
-      },
-      {
-        name: '🌐 Source Information',
-        value: `\`\`\`
+          inline: false
+        },
+        {
+          name: '🎯 Targeted Endpoints',
+          value: data.endpoints.slice(0, 10).map(e =>
+            `• \`${e.path}\` (${e.count}x) - *${e.reason}*`
+          ).join('\n') + (data.endpoints.length > 10 ? `\n... and ${data.endpoints.length - 10} more` : ''),
+          inline: false
+        },
+        {
+          name: '🌐 Source Information',
+          value: `\`\`\`
 IP Address: ${data.ip}
 User-Agent: ${data.userAgent || 'Unknown'}
 \`\`\``,
-        inline: false
-      }
-    ],
-    footer: {
-      text: 'QuestCord Security System'
-    },
-    timestamp: new Date().toISOString()
-  };
+          inline: false
+        }
+      )
+      .setFooter({ text: 'QuestCord Security System', iconURL: discordClient.user.displayAvatarURL() })
+      .setTimestamp();
 
-  const payload = JSON.stringify({
-    content: '<@378501056008683530>',
-    username: 'QuestCord Security',
-    avatar_url: 'https://questcord.fun/images/questcord-icon.png',
-    embeds: [embed]
-  });
-
-  const options = {
-    hostname: url.hostname,
-    path: url.pathname + url.search,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const protocol = isHttps ? https : http;
-    const req = protocol.request(options, (res) => {
-      if (res.statusCode === 204 || res.statusCode === 200) {
-        resolve();
-      } else {
-        reject(new Error(`Webhook returned status ${res.statusCode}`));
-      }
+    await channel.send({
+      content: '<@378501056008683530>',
+      embeds: [embed]
     });
 
-    req.on('error', reject);
-    req.write(payload);
-    req.end();
-  });
+    console.log('[Security] Security alert sent to Discord via bot');
+  } catch (error) {
+    console.error('[Security] Failed to send Discord security alert:', error.message);
+  }
 }
 
 /**
@@ -527,8 +504,8 @@ function securityMonitor(req, res, next) {
 
     if (shouldSendAlert) {
       // Send alert asynchronously (don't block the request)
-      sendSecurityAlert(tracking).catch(error => {
-        console.error('[Security] Failed to send webhook alert:', error.message);
+      sendSecurityAlert(tracking, discordClient).catch(error => {
+        console.error('[Security] Failed to send bot alert:', error.message);
       });
 
       const severity = getSeverity(tracking.totalAttempts);
