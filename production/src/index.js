@@ -35,19 +35,19 @@ for (const f of cmdFiles) {
 // Start the webserver immediately so the website works even if Discord bot fails
 let webServerResult;
 try {
-  logger.info('[web] Starting web server independent of Discord bot...');
+  logger.info('[Web] Starting web server independent of Discord bot...');
   webServerResult = createWebServer();
   if (webServerResult && webServerResult.app) {
     // Discord client will be attached later when bot connects
     webServerResult.app.locals.discordClient = null;
-    logger.info('[web] ✅ Web server started successfully');
+    logger.info('[Web] ✅ Web server started successfully');
   } else {
-    logger.error('[web] ❌ Failed to create web server - no result returned');
+    logger.error('[Web] ❌ Failed to create web server - no result returned');
   }
 } catch (error) {
-  logger.error('[web] ❌ CRITICAL ERROR starting web server:');
-  logger.error('[web] Error: %s', error.message);
-  logger.error('[web] Stack: %s', error.stack);
+  logger.error('[Web] ❌ CRITICAL ERROR starting web server:');
+  logger.error('[Web] Error: %s', error.message);
+  logger.error('[Web] Stack: %s', error.stack);
   logger.error('Web server startup failed:', error);
 }
 // ============================================================================
@@ -154,9 +154,9 @@ function updateBossStatus() {
       type: activityType // WATCHING activity type shows as "Watching {status}"
     });
     
-    logger.info('boss_status: Updated bot status - Watching %s', status); // Log status update
+    logger.info('[Boss Status] Updated bot status - Watching %s', status); // Log status update
   } catch (error) {
-    logger.error('boss_status: Failed to update bot status - %s', error.message); // Log errors
+    logger.error('[Boss Status] Failed to update bot status - %s', error.message); // Log errors
   }
 }
 
@@ -170,28 +170,28 @@ module.exports = { updateBossStatus }; // Make updateBossStatus available to oth
 // Handles all system initialization including commands, databases, and background services
 
 client.once(Events.ClientReady, async () => {
-  logger.info(`[bot] Logged in as ${client.user.tag}`);
+  logger.info(`[Bot] Logged in as ${client.user.tag}`);
 
   // Initialize bot notification system with Discord client
   initializeBotNotifications(client);
-  logger.info('[bot] Notification system initialized');
+  logger.info('[Bot] Notification system initialized');
 
   // Log bot startup notification via bot
   try {
     await logBotStartup(); // Send startup notification via Discord bot
-    logger.info('[bot] Startup logged to Discord');
+    logger.info('[Bot] Startup logged to Discord');
   } catch (error) {
-    logger.warn('[bot] Failed to log startup:', error.message); // Non-critical error
+    logger.warn('[Bot] Failed to log startup:', error.message); // Non-critical error
   }
   
   // Auto-deploy slash commands on startup
   // This registers all bot commands with Discord so users can see and use them
   try {
-    logger.info('[deploy] Deploying slash commands...');
+    logger.info('[Deploy] Deploying slash commands...');
     require('../scripts/deploy-commands'); // Run deployment script
-    logger.info('[deploy] Slash commands deployed successfully');
+    logger.info('[Deploy] Slash commands deployed successfully');
   } catch (error) {
-    logger.error('[deploy] Failed to deploy slash commands:', error.message); // Log deployment failure
+    logger.error('[Deploy] Failed to deploy slash commands:', error.message); // Log deployment failure
     await logError(error, 'Slash command deployment failed'); // Send error to webhook
   }
   
@@ -205,25 +205,25 @@ client.once(Events.ClientReady, async () => {
   const { applyRegenToAll } = require('./utils/regen'); // Import regeneration functions
   applyRegenToAll(); // Run once on startup to process any pending travels
   setInterval(applyRegenToAll, 60000); // Run every 60 seconds continuously
-  logger.info('[regen] Batch regeneration system started - travel completion and stats recording active');
+  logger.info('[Regen] Batch regeneration system started - travel completion and stats recording active');
   
 
   // Initialize weekly reset system
   // Resets leaderboards and statistics every Monday at 12:00 AM
   const { initializeWeeklyReset } = require('./utils/weekly_reset'); // Import weekly reset functions
   initializeWeeklyReset(); // Setup weekly reset scheduler
-  logger.info('[weekly-reset] Weekly reset system initialized - data resets every Monday at midnight');
+  logger.info('[Weekly Reset] Weekly reset system initialized - data resets every Monday at midnight');
   
   // Initialize POI (Points of Interest) system with famous landmarks
   // Loads famous world landmarks that players can travel to and visit
   const { initializePOIs } = require('./utils/pois'); // Import POI functions
   initializePOIs(); // Load landmarks into database
-  logger.info('[poi] Points of Interest system initialized - famous landmarks ready for exploration');
+  logger.info('[POI] Points of Interest system initialized - famous landmarks ready for exploration');
   
   // Bulk import all existing users from all servers to spawn server
   // This ensures all users across all servers are displayed in the spawn server
   if (process.env.SPAWN_GUILD_ID) {
-    logger.info('[user_import] Starting bulk user import from all servers...');
+    logger.info('[User Import] Starting bulk user import from all servers...');
     setTimeout(async () => {
       try {
         const { ensurePlayerWithVehicles } = require('./utils/players');
@@ -244,13 +244,13 @@ client.once(Events.ClientReady, async () => {
               importCount++;
             }
           } catch (e) {
-            logger.warn(`[user_import] Failed to import users from guild ${guild.name}:`, e.message);
+            logger.warn(`[User Import] Failed to import users from guild ${guild.name}:`, e.message);
           }
         }
         
-        logger.info(`[user_import] Bulk import completed - imported ${importCount} new users to spawn server`);
+        logger.info(`[User Import] Bulk import completed - imported ${importCount} new users to spawn server`);
       } catch (error) {
-        logger.error('[user_import] Bulk import failed:', error.message);
+        logger.error('[User Import] Bulk import failed:', error.message);
       }
     }, 10000); // Wait 10 seconds for bot to be fully ready
   }
@@ -260,21 +260,21 @@ client.once(Events.ClientReady, async () => {
   initializeBossSpawner(); // Setup boss spawning system
   
   // Startup cleanup: Clean up any expired bosses and orphaned roles from previous session
-  logger.info('[boss_spawner] Running startup cleanup...');
+  logger.info('[Boss Spawner] Running startup cleanup...');
   
   // Add a small delay to ensure bot is fully ready and guilds are cached
   setTimeout(async () => {
     try {
       const expiredCount = await cleanupExpiredBosses(client); // Clean up expired bosses and database records
       await cleanupOrphanedBossFighterRoles(client); // Clean up orphaned Discord roles
-      logger.info(`[boss_spawner] Startup cleanup completed - cleaned up ${expiredCount} expired bosses and orphaned roles`);
+      logger.info(`[Boss Spawner] Startup cleanup completed - cleaned up ${expiredCount} expired bosses and orphaned roles`);
     } catch (error) {
-      logger.warn('[boss_spawner] Startup cleanup failed:', error.message);
+      logger.warn('[Boss Spawner] Startup cleanup failed:', error.message);
     }
   }, 5000); // Wait 5 seconds for bot to be fully ready
   
   // Initial spawn cycle will be run async without blocking startup
-  runBossSpawningCycle(client).catch(err => logger.warn('[boss_spawner] Initial spawn cycle failed:', err.message)); // Run initial spawn cycle
+  runBossSpawningCycle(client).catch(err => logger.warn('[Boss Spawner] Initial spawn cycle failed:', err.message)); // Run initial spawn cycle
   
   // Set up randomized spawning intervals
   function scheduleNextBossSpawn() {
@@ -283,16 +283,16 @@ client.once(Events.ClientReady, async () => {
     // Log appropriate message based on interval type
     if (nextInterval <= 60000) {
       // Short interval = checking for spawn conditions
-      logger.info(`[boss_spawner] Boss spawn system active - checking spawn conditions every ${Math.round(nextInterval/1000)} seconds`);
+      logger.info(`[Boss Spawner] Boss spawn system active - checking spawn conditions every ${Math.round(nextInterval/1000)} seconds`);
     } else {
       // Long interval = time until scheduled spawn
       const minutesFromNow = Math.round(nextInterval / (1000 * 60));
       const hoursFromNow = (minutesFromNow / 60).toFixed(1);
 
       if (minutesFromNow < 60) {
-        logger.info(`[boss_spawner] Next boss spawn scheduled in ${minutesFromNow} minutes`);
+        logger.info(`[Boss Spawner] Next boss spawn scheduled in ${minutesFromNow} minutes`);
       } else {
-        logger.info(`[boss_spawner] Next boss spawn scheduled in ${hoursFromNow} hours (${minutesFromNow} minutes)`);
+        logger.info(`[Boss Spawner] Next boss spawn scheduled in ${hoursFromNow} hours (${minutesFromNow} minutes)`);
       }
     }
 
@@ -300,14 +300,14 @@ client.once(Events.ClientReady, async () => {
       try {
         await runBossSpawningCycle(client);
       } catch (error) {
-        logger.warn('[boss_spawner] Scheduled spawn cycle failed:', error.message);
+        logger.warn('[Boss Spawner] Scheduled spawn cycle failed:', error.message);
       }
       scheduleNextBossSpawn(); // Schedule the next one
     }, nextInterval);
   }
   
   scheduleNextBossSpawn(); // Start the randomized scheduling
-  logger.info('[boss_spawner] Automatic boss spawning system initialized - 1 hour intervals with chance-based spawning (all servers eligible)');
+  logger.info('[Boss Spawner] Automatic boss spawning system initialized - 1 hour intervals with chance-based spawning (all servers eligible)');
   
   for (const [id, guild] of client.guilds.cache) {
     const iconUrl = guild.iconURL({ extension: 'png', size: 64 });
@@ -333,7 +333,7 @@ client.once(Events.ClientReady, async () => {
   // Attach Discord client to already-running web server for real-time stats
   if (webServerResult && webServerResult.app) {
     webServerResult.app.locals.discordClient = client;
-    logger.info('[web] Discord client attached to web server');
+    logger.info('[Web] Discord client attached to web server');
   }
 
   // Start periodic uptime status recording
@@ -355,7 +355,7 @@ client.once(Events.ClientReady, async () => {
       ensureGuildBiome(id);
     }
   } catch (e) {
-    logger.warn('[biome] ready hook error:', e.message);
+    logger.warn('[Biome] ready hook error:', e.message);
   }
 });
 
@@ -411,7 +411,6 @@ client.on(Events.GuildDelete, (guild) => {
   logger.aqua('🆔 Guild ID: %s', guild.id);
   logger.aqua('📦 Server archived (data preserved)');
   logger.aqua('⏰ Time: %s', new Date().toISOString());
-  logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
 // Handle new members joining ANY server - add them to spawn server display
@@ -439,7 +438,6 @@ client.on(Events.GuildMemberAdd, async (member) => {
     logger.aqua('🏰 Joined Server: %s', member.guild.name);
     logger.aqua('✅ Registered at spawn server');
     logger.aqua('⏰ Time: %s', new Date().toISOString());
-    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
   } catch (error) {
     logger.error('Failed to handle new member join: %s', error.message);
@@ -834,7 +832,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       logger.warn('📋 Attempted Command: /%s', interaction.commandName);
       logger.warn('🏰 Server: %s', interaction.guild ? interaction.guild.name : 'DM');
       logger.warn('⏰ Time: %s', new Date().toISOString());
-      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       return interaction.reply({ content: 'Slow down a bit.', ephemeral: true });
     }
     const cmd = client.commands.get(interaction.commandName);
@@ -876,7 +873,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     logger.aqua('👤 User: %s (@%s)', username, userId);
     logger.aqua('🏰 Server: %s (%s)', guildName, interaction.guildId || 'N/A');
     logger.aqua('⏰ Time: %s', new Date().toISOString());
-    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     await cmd.execute(interaction);
 
@@ -905,7 +901,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     logger.error('⚠️  Error: %s', e?.message || 'Unknown error');
     logger.error('📍 Stack: %s', e?.stack || 'No stack trace');
     logger.error('⏰ Time: %s', new Date().toISOString());
-    logger.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Record failed command usage for statistics
     try {
@@ -920,7 +915,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     try {
       await logCommandError(interaction.commandName, interaction.user.id, interaction.guildId, e);
     } catch (webhookError) {
-      logger.warn('[webhook] Failed to log command error:', webhookError.message);
+      logger.warn('[Webhook] Failed to log command error:', webhookError.message);
     }
 
     if (interaction.isRepliable()) {
@@ -988,9 +983,9 @@ function ensureGuildBiome(guildId) {
       const pick = arr[Math.floor(Math.random() * arr.length)];
       db.prepare('UPDATE servers SET biome=?, tokens=COALESCE(tokens, 1) WHERE guildId=?')
         .run(String(pick).toLowerCase(), guildId);
-      logger.info('[biome] Assigned random biome to guild', guildId, '→', pick);
+      logger.info('[Biome] Assigned random biome to guild', guildId, '→', pick);
     }
-  } catch (e) { logger.warn('[biome] ensureGuildBiome error:', e.message); }
+  } catch (e) { logger.warn('[Biome] ensureGuildBiome error:', e.message); }
 }
 
 
