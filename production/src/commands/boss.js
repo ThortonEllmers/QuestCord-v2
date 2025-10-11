@@ -672,7 +672,6 @@ module.exports = {
       logger.aqua('🗡️  Weapon: %s', weapon ? weapon.name : 'Bare fists');
       logger.aqua('❤️  Boss HP: %d/%d (%d%%)', current, boss.maxHp, Math.round((current/boss.maxHp)*100));
       logger.aqua('⏰ Time: %s', new Date().toISOString());
-      logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       if (current <= 0) {
         db.prepare('UPDATE bosses SET active=0 WHERE id=?').run(boss.id);
@@ -725,7 +724,6 @@ module.exports = {
         logger.aqua('⚔️  Final Blow: %s', interaction.user.username);
         logger.aqua('⏱️  Duration: %dmin', Math.floor((Date.now() - boss.startedAt) / 60000));
         logger.aqua('⏰ Time: %s', new Date().toISOString());
-        logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Also run global orphaned role cleanup to catch any other stale roles
         try {
