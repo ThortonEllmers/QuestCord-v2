@@ -110,11 +110,14 @@ const categoryPatterns = [
   { pattern: /completed/i, color: colors.green },
 
   // Boss/Game systems - Magenta
+  { pattern: /\[Boss Spawner\]/i, color: colors.magenta },
   { pattern: /\[boss_spawner\]/i, color: colors.magenta },
   { pattern: /\[POI\]/i, color: colors.magenta },
+  { pattern: /\[Boss Status\]/i, color: colors.magenta },
   { pattern: /boss_status/i, color: colors.magenta },
 
   // Notifications - Bright Cyan
+  { pattern: /\[Bot Notifications\]/i, color: colors.brightCyan },
   { pattern: /\[BotNotifications\]/i, color: colors.brightCyan },
   { pattern: /notification/i, color: colors.cyan },
 
