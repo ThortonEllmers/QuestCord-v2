@@ -14,6 +14,8 @@
 const fs = require('fs');
 // Import path utilities for cross-platform file path handling
 const path = require('path');
+// Import logger for configuration loading messages
+const logger = require('./logger');
 
 /**
  * ENVIRONMENT-SPECIFIC .env FILE LOADING
@@ -32,11 +34,11 @@ const envPath = path.join(process.cwd(), `.env.${nodeEnv}`);
 if (fs.existsSync(envPath)) {
   // Load the environment-specific .env file (e.g., .env.development)
   require('dotenv').config({ path: envPath });
-  console.log(`[Config] Loaded environment file: .env.${nodeEnv}`);
+  logger.info(`[Config] Loaded environment file: .env.${nodeEnv}`);
 } else {
   // Fall back to default .env file if environment-specific one doesn't exist
   require('dotenv').config();
-  console.log('[Config] Loaded default .env file');
+  logger.info('[Config] Loaded default .env file');
 }
 
 /**
@@ -107,10 +109,10 @@ const envConfigPath = path.join(root, `config.${nodeEnv}.json`);
 if (fs.existsSync(envConfigPath)) {
   // Use environment-specific config file
   configPath = envConfigPath;
-  console.log(`[Config] Loading environment-specific config: ${envConfigPath}`);
+  logger.info(`[Config] Loading environment-specific config: ${envConfigPath}`);
 } else {
   // Fall back to default config file
-  console.log(`[Config] Loading default config: ${configPath}`);
+  logger.info(`[Config] Loading default config: ${configPath}`);
 }
 
 // Load the chosen JSON configuration file safely
