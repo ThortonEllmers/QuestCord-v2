@@ -48,7 +48,7 @@ try {
   logger.error('[web] ❌ CRITICAL ERROR starting web server:');
   logger.error('[web] Error: %s', error.message);
   logger.error('[web] Stack: %s', error.stack);
-  console.error('Web server startup failed:', error);
+  logger.error('Web server startup failed:', error);
 }
 // ============================================================================
 
@@ -107,7 +107,7 @@ async function autoPlaceIfNeeded(guildId) {
       db.prepare('UPDATE servers SET lat=?, lon=?, biome=? WHERE guildId=?').run(pos.lat, pos.lon, biome, guildId);
       logger.info(`Auto-placed guild ${guildId} at ${pos.lat}, ${pos.lon} (${biome})`);
     } catch (error) {
-      console.warn(`Failed to auto-place guild ${guildId} with collision detection, using fallback:`, error.message);
+      logger.warn(`Failed to auto-place guild ${guildId} with collision detection, using fallback:`, error.message);
       
       // Fallback to original spiral placement if advanced placement fails
       const count = db.prepare('SELECT COUNT(*) as n FROM servers').get().n; // Get server count
@@ -181,7 +181,7 @@ client.once(Events.ClientReady, async () => {
     await logBotStartup(); // Send startup notification via Discord bot
     logger.info('[bot] Startup logged to Discord');
   } catch (error) {
-    console.warn('[bot] Failed to log startup:', error.message); // Non-critical error
+    logger.warn('[bot] Failed to log startup:', error.message); // Non-critical error
   }
   
   // Auto-deploy slash commands on startup
@@ -191,7 +191,7 @@ client.once(Events.ClientReady, async () => {
     require('../scripts/deploy-commands'); // Run deployment script
     logger.info('[deploy] Slash commands deployed successfully');
   } catch (error) {
-    console.error('[deploy] Failed to deploy slash commands:', error.message); // Log deployment failure
+    logger.error('[deploy] Failed to deploy slash commands:', error.message); // Log deployment failure
     await logError(error, 'Slash command deployment failed'); // Send error to webhook
   }
   
@@ -244,13 +244,13 @@ client.once(Events.ClientReady, async () => {
               importCount++;
             }
           } catch (e) {
-            console.warn(`[user_import] Failed to import users from guild ${guild.name}:`, e.message);
+            logger.warn(`[user_import] Failed to import users from guild ${guild.name}:`, e.message);
           }
         }
         
         logger.info(`[user_import] Bulk import completed - imported ${importCount} new users to spawn server`);
       } catch (error) {
-        console.error('[user_import] Bulk import failed:', error.message);
+        logger.error('[user_import] Bulk import failed:', error.message);
       }
     }, 10000); // Wait 10 seconds for bot to be fully ready
   }
@@ -269,12 +269,12 @@ client.once(Events.ClientReady, async () => {
       await cleanupOrphanedBossFighterRoles(client); // Clean up orphaned Discord roles
       logger.info(`[boss_spawner] Startup cleanup completed - cleaned up ${expiredCount} expired bosses and orphaned roles`);
     } catch (error) {
-      console.warn('[boss_spawner] Startup cleanup failed:', error.message);
+      logger.warn('[boss_spawner] Startup cleanup failed:', error.message);
     }
   }, 5000); // Wait 5 seconds for bot to be fully ready
   
   // Initial spawn cycle will be run async without blocking startup
-  runBossSpawningCycle(client).catch(err => console.warn('[boss_spawner] Initial spawn cycle failed:', err.message)); // Run initial spawn cycle
+  runBossSpawningCycle(client).catch(err => logger.warn('[boss_spawner] Initial spawn cycle failed:', err.message)); // Run initial spawn cycle
   
   // Set up randomized spawning intervals
   function scheduleNextBossSpawn() {
@@ -300,7 +300,7 @@ client.once(Events.ClientReady, async () => {
       try {
         await runBossSpawningCycle(client);
       } catch (error) {
-        console.warn('[boss_spawner] Scheduled spawn cycle failed:', error.message);
+        logger.warn('[boss_spawner] Scheduled spawn cycle failed:', error.message);
       }
       scheduleNextBossSpawn(); // Schedule the next one
     }, nextInterval);
@@ -320,14 +320,14 @@ client.once(Events.ClientReady, async () => {
     }
     await autoPlaceIfNeeded(id);
   }
-  createAutoPlacementIfMissing().catch(console.error);
+  createAutoPlacementIfMissing().catch(logger.error);
   
   // Check for servers in water and fix them automatically
   try {
     logger.info('Starting water check...');
     await checkAndFixWaterServers(db);
   } catch (error) {
-    console.error('Water check failed:', error.message);
+    logger.error('Water check failed:', error.message);
   }
   
   // Attach Discord client to already-running web server for real-time stats
@@ -345,7 +345,7 @@ client.once(Events.ClientReady, async () => {
         realtimeStats.recordUptimeStatus('online', 0);
       }
     } catch (error) {
-      console.warn('Failed to record periodic uptime status:', error.message);
+      logger.warn('Failed to record periodic uptime status:', error.message);
     }
   }, 5 * 60 * 1000); // Record every 5 minutes
 
@@ -355,7 +355,7 @@ client.once(Events.ClientReady, async () => {
       ensureGuildBiome(id);
     }
   } catch (e) {
-    console.warn('[biome] ready hook error:', e.message);
+    logger.warn('[biome] ready hook error:', e.message);
   }
 });
 
@@ -478,7 +478,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         try {
           await marketCommand.execute(fakeInteraction);
         } catch (error) {
-          console.error('Button interaction error:', error);
+          logger.error('Button interaction error:', error);
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({ content: 'Error processing purchase.', ephemeral: true });
           }
@@ -679,7 +679,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           await interaction.reply({ embeds: [listingEmbed] });
           
         } catch (error) {
-          console.error('Modal submission error:', error);
+          logger.error('Modal submission error:', error);
           if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({ content: '❌ Error listing item for sale. Please try again.', ephemeral: true });
           }
@@ -753,7 +753,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       logCommand(interaction, interaction.commandName, interaction.guildId);
     } catch (statsError) {
       // Don't let stats tracking errors affect command execution
-      console.warn('Failed to record command usage:', statsError.message);
+      logger.warn('Failed to record command usage:', statsError.message);
     }
   } catch (e) {
     // Log detailed error information
@@ -777,14 +777,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
       // Still log failed commands for activity tracking
       logCommand(interaction, interaction.commandName, interaction.guildId);
     } catch (statsError) {
-      console.warn('Failed to record failed command usage:', statsError.message);
+      logger.warn('Failed to record failed command usage:', statsError.message);
     }
 
     // Log command error to webhook
     try {
       await logCommandError(interaction.commandName, interaction.user.id, interaction.guildId, e);
     } catch (webhookError) {
-      console.warn('[webhook] Failed to log command error:', webhookError.message);
+      logger.warn('[webhook] Failed to log command error:', webhookError.message);
     }
 
     if (interaction.isRepliable()) {
@@ -798,22 +798,22 @@ client.login(process.env.DISCORD_TOKEN);
 
 // Handle uncaught exceptions and log them
 process.on('uncaughtException', async (error) => {
-  console.error('Uncaught Exception:', error);
+  logger.error('Uncaught Exception:', error);
   try {
     await logError(error, 'Uncaught Exception');
   } catch (webhookError) {
-    console.warn('Failed to log uncaught exception:', webhookError.message);
+    logger.warn('Failed to log uncaught exception:', webhookError.message);
   }
   process.exit(1);
 });
 
 // Handle unhandled promise rejections and log them
 process.on('unhandledRejection', async (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   try {
     await logError(new Error(`Unhandled Rejection: ${reason}`), 'Unhandled Promise Rejection');
   } catch (webhookError) {
-    console.warn('Failed to log unhandled rejection:', webhookError.message);
+    logger.warn('Failed to log unhandled rejection:', webhookError.message);
   }
 });
 
@@ -824,7 +824,7 @@ process.on('SIGINT', async () => {
     await logBotShutdown('Manual shutdown (SIGINT)');
     logger.info('Shutdown logged to Discord');
   } catch (webhookError) {
-    console.warn('Failed to log shutdown:', webhookError.message);
+    logger.warn('Failed to log shutdown:', webhookError.message);
   }
   process.exit(0);
 });
@@ -835,7 +835,7 @@ process.on('SIGTERM', async () => {
     await logBotShutdown('System shutdown (SIGTERM)');
     logger.info('Shutdown logged to Discord');
   } catch (webhookError) {
-    console.warn('Failed to log shutdown:', webhookError.message);
+    logger.warn('Failed to log shutdown:', webhookError.message);
   }
   process.exit(0);
 });
@@ -854,7 +854,7 @@ function ensureGuildBiome(guildId) {
         .run(String(pick).toLowerCase(), guildId);
       logger.info('[biome] Assigned random biome to guild', guildId, '→', pick);
     }
-  } catch (e) { console.warn('[biome] ensureGuildBiome error:', e.message); }
+  } catch (e) { logger.warn('[biome] ensureGuildBiome error:', e.message); }
 }
 
 
