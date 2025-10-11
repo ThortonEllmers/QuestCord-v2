@@ -158,7 +158,6 @@ async function autobanIP(ip, requestCount, timeWindow, discordClient) {
     logger.warn('📊 Violation: %d unique endpoints in %d seconds', requestCount, timeWindow);
     logger.warn('⏰ Duration: Permanent');
     logger.warn('🆔 Ban ID: %s', banId);
-    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Send Discord notification via bot
     await sendAutobanAlert({
@@ -271,7 +270,6 @@ async function sendSecurityAlert(data, discordClient) {
       logger.warn('🔨 CRITICAL SECURITY ALERT - AUTOMATIC BAN TRIGGERED');
       logger.warn('🌐 IP: %s', data.ip);
       logger.warn('📊 Attempts: %d', data.totalAttempts);
-      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       await autobanIP(data.ip, data.uniqueEndpoints, Math.round((Date.now() - data.firstSeen) / 1000), discordClient);
     }
@@ -430,7 +428,7 @@ function securityMonitor(req, res, next) {
 
   // Debug logging: Show current request count every 5th request
   if (rateData && rateData.requests && rateData.requests.length % 5 === 0 && rateData.requests.length > 0) {
-    logger.warn('[RateLimit] IP %s: %d requests in last 60s (endpoints: %d unique)',
+    logger.warn('[Rate Limit] IP %s: %d requests in last 60s (endpoints: %d unique)',
       ip, rateData.requests.length, rateData.endpoints.length);
   }
 
@@ -452,7 +450,6 @@ function securityMonitor(req, res, next) {
     logger.warn('📊 Requests: %d in %d seconds', rateData.requests.length, timeWindow);
     logger.warn('🎯 Unique Endpoints: %d', rateData.endpoints.length);
     logger.warn('📝 Top Endpoints: %s', topEndpoints);
-    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Mark as banned to prevent multiple ban attempts
     rateData.banned = true;
@@ -557,7 +554,6 @@ function securityMonitor(req, res, next) {
       logger.warn('📊 Attempts: %d', tracking.totalAttempts);
       logger.warn('🎯 Unique Endpoints: %d', tracking.uniqueEndpoints);
       logger.warn('📝 Latest: %s (%s)', req.path, suspiciousCheck.reason);
-      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     // Log suspicious request
