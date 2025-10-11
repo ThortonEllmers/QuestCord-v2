@@ -19,6 +19,8 @@
 const { db } = require('./store_sqlite');
 // Import travel history recording functionality
 const { recordTravel } = require('./travel_history');
+// Import logger for consistent color-coded logging
+const logger = require('./logger');
 
 /**
  * CONFIGURATION LOADING AND CONSTANTS
@@ -332,7 +334,7 @@ function applyRegenForUser(userId) {
       }
     }
   } catch (e) {
-    console.error('Regen error for user:', userId, e);
+    logger.error('Regen error for user:', userId, e);
   }
 }
 
@@ -351,9 +353,9 @@ function applyRegenToAll() {
 
       if (completedTravels.length === 0) return;
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log(`🚶 TRAVEL COMPLETIONS: ${completedTravels.length} player(s) arrived`);
-      console.log('⏰ Time: %s', new Date().toISOString());
+      logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.info(`🚶 TRAVEL COMPLETIONS: ${completedTravels.length} player(s) arrived`);
+      logger.info('⏰ Time: %s', new Date().toISOString());
 
       // Record travel history for completed travels
       for (const travel of completedTravels) {
@@ -365,7 +367,7 @@ function applyRegenToAll() {
         const destination = travel.locationGuildId.startsWith('landmark_')
           ? `Landmark: ${travel.locationGuildId}`
           : `Server: ${travel.locationGuildId}`;
-        console.log(`   👤 User ${travel.userId} → ${destination} (${travelMinutes} min)`);
+        logger.info(`   👤 User ${travel.userId} → ${destination} (${travelMinutes} min)`);
 
         // Handle landmark arrivals
         if (travel.locationGuildId && travel.locationGuildId.startsWith('landmark_')) {
@@ -383,15 +385,15 @@ function applyRegenToAll() {
                 db.prepare('INSERT INTO poi_visits (userId, poiId, visitedAt, isFirstVisit) VALUES (?, ?, ?, 1)').run(
                   travel.userId, landmarkId, now
                 );
-                console.log(`      🎉 First visit to ${poi.name}!`);
+                logger.info(`      🎉 First visit to ${poi.name}!`);
               }
             }
           } catch (error) {
-            console.error('Error processing landmark arrival:', error);
+            logger.error('Error processing landmark arrival:', error);
           }
         }
       }
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
       // Clear completed travels atomically
       db.prepare(`
@@ -505,7 +507,7 @@ function applyRegenToAll() {
     
     tx(rows);
   } catch (e) {
-    console.error('Batch regen error:', e);
+    logger.error('Batch regen error:', e);
   }
 }
 
