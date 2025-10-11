@@ -341,11 +341,11 @@
 
     <div class="stats-summary">
       <div class="stat-card">
-        <div class="stat-number">3</div>
+        <div class="stat-number">4</div>
         <div class="stat-label">Total Versions</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number">45+</div>
+        <div class="stat-number">50+</div>
         <div class="stat-label">Features Added</div>
       </div>
       <div class="stat-card">
@@ -353,13 +353,58 @@
         <div class="stat-label">Bugs Fixed</div>
       </div>
       <div class="stat-card">
-        <div class="stat-number">15+</div>
+        <div class="stat-number">20+</div>
         <div class="stat-label">Improvements</div>
       </div>
     </div>
 
-    <!-- Version 2.1.3 -->
+    <!-- Version 2.2.1 -->
     <div class="version-section current">
+      <div class="version-header">
+        <div>
+          <div class="version-number">Version 2.2.1</div>
+          <div class="version-date">October 11, 2025</div>
+        </div>
+        <div class="version-badges">
+          <span class="version-badge current">Current</span>
+        </div>
+      </div>
+
+      <div class="update-category new">NEW SECURITY FEATURES</div>
+      <ul class="feature-list">
+        <li><strong>User Agent Banning System</strong> - Automatically blocks malicious bots and scanners (masscan, zgrab, sqlmap, etc.)</li>
+        <li><strong>Real-time Bot Blocking</strong> - Network scanners like ivre-masscan and libredtail-http are instantly banned</li>
+        <li><strong>Security Notifications</strong> - Discord alerts when banned user agents are detected</li>
+        <li><strong>Comprehensive Scanner Protection</strong> - Blocks vulnerability scanners (Nikto, Acunetix, Nessus, ZAP)</li>
+      </ul>
+
+      <div class="update-category improvement">MAJOR ARCHITECTURE IMPROVEMENTS</div>
+      <ul class="feature-list improvements">
+        <li><strong>Webhook System Removed</strong> - All notifications now sent directly through Discord bot (no exposed webhook URLs)</li>
+        <li><strong>Direct Bot Posting</strong> - New bot_notifications.js system handles all Discord messages</li>
+        <li><strong>Enhanced Security</strong> - No webhook tokens in code, better control over messages</li>
+        <li><strong>Automatic Retry Logic</strong> - Exponential backoff with rate limit handling for failed messages</li>
+        <li><strong>Centralized Notifications</strong> - Single module manages all bot startup, error, and admin notifications</li>
+      </ul>
+
+      <div class="update-category fix">SECURITY FIXES</div>
+      <ul class="feature-list fixes">
+        <li><strong>Smart User Agent Detection</strong> - Only bans known malicious patterns, not unknown/legitimate user agents</li>
+        <li><strong>Ban Page Integration</strong> - Banned user agents are redirected to informative ban page with details</li>
+        <li><strong>IP and User Agent Logging</strong> - Comprehensive logging of all blocked access attempts</li>
+      </ul>
+
+      <div class="technical-note">
+        <p><strong>🔧 Technical Note:</strong> Version 2.2.1 introduces a comprehensive user agent banning system and replaces the entire webhook notification architecture with direct bot posting. This eliminates webhook URL exposure, provides better message control, and adds automatic blocking of network scanners and vulnerability testing tools. The new system includes retry logic, rate limit handling, and centralized notification management.</p>
+      </div>
+
+      <div class="technical-note">
+        <p><strong>🛡️ Security Impact:</strong> This update significantly improves security by blocking automated scanning tools before they can probe the website. The removal of webhooks eliminates a potential attack vector and provides more granular control over Discord notifications.</p>
+      </div>
+    </div>
+
+    <!-- Version 2.1.3 -->
+    <div class="version-section">
       <div class="version-header">
         <div>
           <div class="version-number">Version 2.1.3</div>
