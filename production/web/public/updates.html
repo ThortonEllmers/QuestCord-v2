@@ -546,46 +546,43 @@
     </div>
 
     <div class="version-header scroll-animate">
-      <div class="version-number">Version 2.2.0</div>
-      <div class="release-date">Released: October 10, 2025</div>
+      <div class="version-number">Version 2.2.1</div>
+      <div class="release-date">Released: October 11, 2025</div>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category fix">CRITICAL BUG FIXES</div>
-      <h3>🐛 Production Stability & Database Fixes</h3>
-      <ul class="feature-list fixes">
-        <li><strong>Database Schema Fixed</strong> - Resolved missing closing brace in config.json causing JSON parse errors</li>
-        <li><strong>Travel History Errors Resolved</strong> - Fixed "NOT NULL constraint failed" by making columns nullable</li>
-        <li><strong>Weather Events Table Added</strong> - Created missing weather_events and weather_encounters tables</li>
-        <li><strong>Discord Client ID Fixed</strong> - Updated deploy-commands.js to support both DISCORD_CLIENT_ID and CLIENT_ID</li>
-        <li><strong>Port Configuration Fixed</strong> - Changed web server default port to 80 for production</li>
-        <li><strong>Live Activity Display Fixed</strong> - Players now show actual Discord usernames instead of "Unknown User"</li>
-        <li><strong>System Settings Table Created</strong> - Fixed "no such table: system_settings" errors</li>
-      </ul>
-    </div>
-
-    <div class="update-section scroll-animate">
-      <div class="update-category new">SECURITY & STABILITY</div>
-      <h3>🔒 Enhanced Security & Error Handling</h3>
+      <div class="update-category new">NEW SECURITY FEATURES</div>
+      <h3>🛡️ User Agent Banning & Bot Protection</h3>
       <ul class="feature-list">
-        <li><strong>Input Sanitization</strong> - Comprehensive review and improvement of all user input validation</li>
-        <li><strong>SQL Injection Prevention</strong> - Enhanced parameterized queries across all database operations</li>
-        <li><strong>Error Handling</strong> - Improved error handling in boss spawning and travel systems</li>
-        <li><strong>Configuration Validation</strong> - Added startup validation for required configuration values</li>
-        <li><strong>Environment Documentation</strong> - Created comprehensive .env.example file for secure deployment</li>
+        <li><strong>User Agent Banning System</strong> - Automatically blocks malicious bots and scanners (masscan, zgrab, sqlmap, etc.)</li>
+        <li><strong>Network Scanner Protection</strong> - Real-time blocking of ivre-masscan, libredtail-http, and other scanning tools</li>
+        <li><strong>Security Notifications</strong> - Discord alerts when banned user agents are detected with full details</li>
+        <li><strong>Vulnerability Scanner Defense</strong> - Comprehensive protection against Nikto, Acunetix, Nessus, and OWASP ZAP</li>
+        <li><strong>Smart Detection</strong> - Only bans known malicious patterns, not unknown/legitimate user agents</li>
       </ul>
     </div>
 
     <div class="update-section scroll-animate">
-      <div class="update-category improvement">PERFORMANCE & QUALITY</div>
-      <h3>⚡ System Optimization</h3>
+      <div class="update-category improvement">MAJOR ARCHITECTURE IMPROVEMENTS</div>
+      <h3>🔧 Webhook Removal & Direct Bot Posting</h3>
       <ul class="feature-list improvements">
-        <li><strong>Database Indexing</strong> - Added strategic indexes for faster database operations</li>
-        <li><strong>Response Time Optimization</strong> - Implemented intelligent caching for frequently accessed data</li>
-        <li><strong>Rate Limiting</strong> - Added command rate limiting to prevent spam</li>
-        <li><strong>Enhanced Metrics</strong> - Improved system monitoring and performance tracking</li>
-        <li><strong>Better Error Messages</strong> - More helpful and user-friendly error messages across all commands</li>
-        <li><strong>Mobile Web Responsiveness</strong> - Improved mobile experience for all web interface pages</li>
+        <li><strong>Webhook System Removed</strong> - All notifications now sent directly through Discord bot (no exposed webhook URLs)</li>
+        <li><strong>Direct Bot Posting</strong> - New bot_notifications.js system handles all Discord messages</li>
+        <li><strong>Enhanced Security</strong> - No webhook tokens in code, better control over messages</li>
+        <li><strong>Automatic Retry Logic</strong> - Exponential backoff with rate limit handling for failed messages</li>
+        <li><strong>Centralized Notifications</strong> - Single module manages all bot startup, error, and admin notifications</li>
+        <li><strong>Better Error Handling</strong> - Graceful fallbacks when Discord client is not available</li>
+      </ul>
+    </div>
+
+    <div class="update-section scroll-animate">
+      <div class="update-category fix">SECURITY ENHANCEMENTS</div>
+      <h3>🔒 Protection & Monitoring</h3>
+      <ul class="feature-list fixes">
+        <li><strong>Ban Page Integration</strong> - Banned user agents are redirected to informative ban page with details</li>
+        <li><strong>IP and User Agent Logging</strong> - Comprehensive logging of all blocked access attempts</li>
+        <li><strong>Real-time Alerts</strong> - Instant Discord notifications for security events</li>
+        <li><strong>Attack Surface Reduction</strong> - Removal of webhook URLs eliminates potential attack vector</li>
       </ul>
     </div>
 
@@ -644,7 +641,7 @@
     </div>
 
     <div class="technical-note scroll-animate">
-      <p><strong>🔧 Technical Note:</strong> Version 2.2.0 represents a major stability and security release focused on production readiness. This update includes comprehensive security hardening, performance optimizations, and critical database fixes based on production deployment feedback. All core systems have been thoroughly tested and validated for reliability.</p>
+      <p><strong>🔧 Technical Note:</strong> Version 2.2.1 introduces a comprehensive user agent banning system and replaces the entire webhook notification architecture with direct bot posting. This eliminates webhook URL exposure, provides better message control, and adds automatic blocking of network scanners and vulnerability testing tools. The new system includes retry logic, rate limit handling, and centralized notification management for improved reliability and security.</p>
     </div>
 
     <div style="text-align: center; margin-top: 40px;">
