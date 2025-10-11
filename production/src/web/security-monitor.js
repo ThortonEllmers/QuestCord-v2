@@ -111,14 +111,15 @@ function isSuspiciousPath(path) {
 
 /**
  * Determine severity level based on attempt count
+ * CRITICAL = Automatic permanent ban
  */
 function getSeverity(totalAttempts) {
-  if (totalAttempts >= 5) {
-    return { level: 'HIGH', emoji: '🔴', color: 0xFF0000 }; // Red
-  } else if (totalAttempts >= 3) {
-    return { level: 'MEDIUM', emoji: '🟠', color: 0xFF6B00 }; // Orange
+  if (totalAttempts >= 3) {
+    return { level: 'CRITICAL', emoji: '🔴', color: 0xFF0000 }; // Red for CRITICAL - AUTO BAN
+  } else if (totalAttempts >= 2) {
+    return { level: 'HIGH', emoji: '🟠', color: 0xFF6B00 }; // Orange for HIGH
   } else {
-    return { level: 'LOW', emoji: '🟡', color: 0xFFFF00 }; // Yellow
+    return { level: 'MEDIUM', emoji: '🟡', color: 0xFFFF00 }; // Yellow for MEDIUM
   }
 }
 
@@ -134,15 +135,15 @@ async function autobanIP(ip, requestCount, timeWindow, discordClient) {
     const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(normalizedIP);
 
     if (existingBan) {
-      console.log('[Security] IP %s already banned, skipping autoban', normalizedIP);
+      logger.warn('[Security] IP %s already banned, skipping autoban', normalizedIP);
       return false;
     }
 
     // Generate ban ID
     const banId = generateBanId();
 
-    // Ban for 24 hours (1440 minutes)
-    const expiresAt = Date.now() + (24 * 60 * 60 * 1000);
+    // Permanent ban
+    const expiresAt = null;
     const reason = `Automatic ban: Rate limit violation (${requestCount} unique endpoints in ${timeWindow}s)`;
 
     // Insert ban into database
@@ -151,13 +152,13 @@ async function autobanIP(ip, requestCount, timeWindow, discordClient) {
       VALUES(?,?,?,?,?,?)
     `).run(banId, normalizedIP, reason, 'SYSTEM_AUTO_BAN', Date.now(), expiresAt);
 
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.warn('🔨 AUTOMATIC IP BAN APPLIED');
-    console.warn('🌐 IP: %s', normalizedIP);
-    console.warn('📊 Violation: %d unique endpoints in %d seconds', requestCount, timeWindow);
-    console.warn('⏰ Duration: 24 hours');
-    console.warn('🆔 Ban ID: %s', banId);
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('🔨 AUTOMATIC IP BAN APPLIED');
+    logger.warn('🌐 IP: %s', normalizedIP);
+    logger.warn('📊 Violation: %d unique endpoints in %d seconds', requestCount, timeWindow);
+    logger.warn('⏰ Duration: Permanent');
+    logger.warn('🆔 Ban ID: %s', banId);
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Send Discord notification via bot
     await sendAutobanAlert({
@@ -170,7 +171,7 @@ async function autobanIP(ip, requestCount, timeWindow, discordClient) {
 
     return true;
   } catch (error) {
-    console.error('[Security] Failed to autoban IP %s:', ip, error.message);
+    logger.error('[Security] Failed to autoban IP %s:', ip, error.message);
     return false;
   }
 }
@@ -181,16 +182,16 @@ async function autobanIP(ip, requestCount, timeWindow, discordClient) {
 async function sendAutobanAlert(data, discordClient) {
   try {
     if (!discordClient) {
-      console.warn('[Security] Discord client not available for autoban alert');
+      logger.warn('[Security] Discord client not available for autoban alert');
       return;
     }
 
-    const { EmbedBuilder } = require('discord.js');
+    const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
     const SECURITY_CHANNEL_ID = '1404555278594342993';
 
     const channel = await discordClient.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
     if (!channel || !channel.isTextBased()) {
-      console.warn('[Security] Could not find security channel for autoban alert');
+      logger.warn('[Security] Could not find security channel for autoban alert');
       return;
     }
 
@@ -204,7 +205,7 @@ async function sendAutobanAlert(data, discordClient) {
           value: `\`\`\`
 Unique Endpoints: ${data.requestCount} in ${data.timeWindow}s
 Threshold: 10+ unique endpoints per 60s
-Ban Duration: 24 hours
+Ban Duration: Permanent
 \`\`\``,
           inline: false
         },
@@ -213,7 +214,7 @@ Ban Duration: 24 hours
           value: `\`\`\`
 IP Address: ${data.ip}
 Ban ID: ${data.banId}
-Expires: ${new Date(data.expiresAt).toISOString()}
+Expires: Never (Permanent)
 \`\`\``,
           inline: false
         },
@@ -226,14 +227,32 @@ Expires: ${new Date(data.expiresAt).toISOString()}
       .setFooter({ text: 'QuestCord Auto-Ban System', iconURL: discordClient.user.displayAvatarURL() })
       .setTimestamp();
 
+    // Create unban button (ban button disabled since already banned)
+    const unbanButton = new ButtonBuilder()
+      .setCustomId(`security_unban_${data.ip}`)
+      .setLabel('Unban IP')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('✅');
+
+    const banButton = new ButtonBuilder()
+      .setCustomId(`security_ban_${data.ip}`)
+      .setLabel('Ban IP')
+      .setStyle(ButtonStyle.Danger)
+      .setEmoji('🔨')
+      .setDisabled(true); // Disabled because already banned
+
+    const actionRow = new ActionRowBuilder()
+      .addComponents(banButton, unbanButton);
+
     await channel.send({
       content: '<@378501056008683530>',
-      embeds: [embed]
+      embeds: [embed],
+      components: [actionRow]
     });
 
-    console.log('[Security] Autoban notification sent to Discord');
+    logger.info('[Security] Autoban notification sent to Discord');
   } catch (error) {
-    console.error('[Security] Failed to send autoban Discord notification:', error.message);
+    logger.error('[Security] Failed to send autoban Discord notification:', error.message);
   }
 }
 
@@ -243,27 +262,42 @@ Expires: ${new Date(data.expiresAt).toISOString()}
 async function sendSecurityAlert(data, discordClient) {
   try {
     if (!discordClient) {
-      console.warn('[Security] Discord client not available for security alert');
+      logger.warn('[Security] Discord client not available for security alert');
       return;
     }
 
-    const { EmbedBuilder } = require('discord.js');
+    const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
     const SECURITY_CHANNEL_ID = '1404555278594342993';
 
     const channel = await discordClient.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
     if (!channel || !channel.isTextBased()) {
-      console.warn('[Security] Could not find security channel for alert');
+      logger.warn('[Security] Could not find security channel for alert');
       return;
     }
 
     // Determine severity
     const severity = getSeverity(data.totalAttempts);
 
+    // Check if IP is already banned
+    const existingBan = db.prepare('SELECT * FROM ip_bans WHERE ip=?').get(normalizeIP(data.ip));
+    const alreadyBanned = !!existingBan;
+
+    // Automatically ban IP if CRITICAL severity and not already banned
+    if (severity.level === 'CRITICAL' && !alreadyBanned) {
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('🔨 CRITICAL SECURITY ALERT - AUTOMATIC BAN TRIGGERED');
+      logger.warn('🌐 IP: %s', data.ip);
+      logger.warn('📊 Attempts: %d', data.totalAttempts);
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      await autobanIP(data.ip, data.uniqueEndpoints, Math.round((Date.now() - data.firstSeen) / 1000), discordClient);
+    }
+
     // Create embed for Discord
     const embed = new EmbedBuilder()
       .setTitle(`${severity.emoji} Security Alert - ${severity.level} Severity`)
       .setColor(severity.color)
-      .setDescription(`Suspicious activity detected from **${data.ip}**`)
+      .setDescription(`Suspicious activity detected from **${data.ip}**${alreadyBanned ? '\n⚠️ **This IP is already banned**' : ''}${severity.level === 'CRITICAL' && !alreadyBanned ? '\n🔨 **AUTOMATIC BAN APPLIED**' : ''}`)
       .addFields(
         {
           name: '📊 Attack Statistics',
@@ -271,6 +305,7 @@ async function sendSecurityAlert(data, discordClient) {
 Total Attempts: ${data.totalAttempts}
 Unique Endpoints: ${data.uniqueEndpoints}
 Time Window: ${Math.round((Date.now() - data.firstSeen) / 1000)}s
+Severity: ${severity.level}
 \`\`\``,
           inline: false
         },
@@ -286,6 +321,7 @@ Time Window: ${Math.round((Date.now() - data.firstSeen) / 1000)}s
           value: `\`\`\`
 IP Address: ${data.ip}
 User-Agent: ${data.userAgent || 'Unknown'}
+Status: ${alreadyBanned ? 'Already Banned' : 'Not Banned'}
 \`\`\``,
           inline: false
         }
@@ -293,14 +329,33 @@ User-Agent: ${data.userAgent || 'Unknown'}
       .setFooter({ text: 'QuestCord Security System', iconURL: discordClient.user.displayAvatarURL() })
       .setTimestamp();
 
+    // Create ban/unban buttons
+    const banButton = new ButtonBuilder()
+      .setCustomId(`security_ban_${data.ip}`)
+      .setLabel('Ban IP')
+      .setStyle(ButtonStyle.Danger)
+      .setEmoji('🔨')
+      .setDisabled(alreadyBanned);
+
+    const unbanButton = new ButtonBuilder()
+      .setCustomId(`security_unban_${data.ip}`)
+      .setLabel('Unban IP')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('✅')
+      .setDisabled(!alreadyBanned);
+
+    const actionRow = new ActionRowBuilder()
+      .addComponents(banButton, unbanButton);
+
     await channel.send({
       content: '<@378501056008683530>',
-      embeds: [embed]
+      embeds: [embed],
+      components: [actionRow]
     });
 
-    console.log('[Security] Security alert sent to Discord via bot');
+    logger.info('[Security] Security alert sent to Discord via bot');
   } catch (error) {
-    console.error('[Security] Failed to send Discord security alert:', error.message);
+    logger.error('[Security] Failed to send Discord security alert:', error.message);
   }
 }
 
@@ -405,20 +460,20 @@ function securityMonitor(req, res, next) {
       `${e.method} ${e.path} (${e.count}x)`
     ).join(', ');
 
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.warn('🔨 AUTOMATIC BAN TRIGGERED');
-    console.warn('🌐 IP: %s', ip);
-    console.warn('📊 Requests: %d in %d seconds', rateData.requests.length, timeWindow);
-    console.warn('🎯 Unique Endpoints: %d', rateData.endpoints.length);
-    console.warn('📝 Top Endpoints: %s', topEndpoints);
-    console.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('🔨 AUTOMATIC BAN TRIGGERED');
+    logger.warn('🌐 IP: %s', ip);
+    logger.warn('📊 Requests: %d in %d seconds', rateData.requests.length, timeWindow);
+    logger.warn('🎯 Unique Endpoints: %d', rateData.endpoints.length);
+    logger.warn('📝 Top Endpoints: %s', topEndpoints);
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Mark as banned to prevent multiple ban attempts
     rateData.banned = true;
 
     // Trigger automatic ban (async, don't block request)
     autobanIP(ip, rateData.endpoints.length, timeWindow, discordClient).catch(error => {
-      console.error('[Security] Failed to autoban IP:', error.message);
+      logger.error('[Security] Failed to autoban IP:', error.message);
     });
   }
 
@@ -494,10 +549,11 @@ function securityMonitor(req, res, next) {
 
     // Determine when to send alerts based on attempt count
     const shouldSendAlert =
-      (tracking.totalAttempts === 1) ||  // First attempt (LOW)
-      (tracking.totalAttempts === 3) ||  // Third attempt (MEDIUM)
-      (tracking.totalAttempts === 5) ||  // Fifth attempt (HIGH)
-      (tracking.totalAttempts === 10) || // Every 5 after threshold
+      (tracking.totalAttempts === 1) ||  // First attempt (MEDIUM)
+      (tracking.totalAttempts === 2) ||  // Second attempt (HIGH)
+      (tracking.totalAttempts === 3) ||  // Third attempt (CRITICAL - AUTO BAN)
+      (tracking.totalAttempts === 5) ||  // Every few after ban
+      (tracking.totalAttempts === 10) ||
       (tracking.totalAttempts === 15) ||
       (tracking.totalAttempts === 20) ||
       (tracking.totalAttempts % 10 === 0 && tracking.totalAttempts > 20); // Every 10 after 20
@@ -505,7 +561,7 @@ function securityMonitor(req, res, next) {
     if (shouldSendAlert) {
       // Send alert asynchronously (don't block the request)
       sendSecurityAlert(tracking, discordClient).catch(error => {
-        console.error('[Security] Failed to send bot alert:', error.message);
+        logger.error('[Security] Failed to send bot alert:', error.message);
       });
 
       const severity = getSeverity(tracking.totalAttempts);
