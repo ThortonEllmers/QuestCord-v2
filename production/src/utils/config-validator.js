@@ -269,9 +269,9 @@ function validateStartupConfiguration(config) {
     }
 
     if (warnings.length > 0) {
-      logger.warn('\n[Config Validator] ⚠️  Application will start despite warnings, but please review them.\n');
+      logger.warn('\n[Config Validator] ⚠️  Application will start despite warnings, but please review them.');
     } else {
-      logger.info('[Config Validator] ✅ All configuration checks passed!\n');
+      logger.info('[Config Validator] ✅ All configuration checks passed!');
     }
 
     return true;
