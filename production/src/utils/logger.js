@@ -245,6 +245,9 @@ function fmt(level, args, forceColor = null, skipTimestamp = false) {
 // Separator line for visual grouping
 const SEPARATOR = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
 
+// Track if we're currently in a grouped event block (between separators)
+let inGroupedBlock = false;
+
 /**
  * LOGGER OBJECT WITH MULTIPLE LOG LEVELS
  *
@@ -260,7 +263,11 @@ const loggerObj = {
    * Messages are automatically color-coded based on content.
    */
   info: function() {
-    const line = fmt('INFO ', arguments);
+    const message = util.format.apply(null, arguments);
+    // Check if this is part of a grouped event (separator line or messages right after separator)
+    const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // Always skip timestamp
+    const line = fmt('INFO ', arguments, null, true);
     console.log(line);
   },
 
@@ -272,7 +279,16 @@ const loggerObj = {
    * Examples: server startup, major system events.
    */
   aqua: function() {
-    const line = fmt('INFO ', arguments, colors.brightCyan);
+    const message = util.format.apply(null, arguments);
+    const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // Separator starts a grouped block
+    if (isSeparator) {
+      inGroupedBlock = !inGroupedBlock; // Toggle: separator ends current block or starts new one
+    }
+
+    // Always skip timestamp
+    const line = fmt('INFO ', arguments, colors.brightCyan, true);
     console.log(line);
   },
 
@@ -283,7 +299,11 @@ const loggerObj = {
    * Uses bright green to indicate successful completion.
    */
   success: function() {
-    const line = fmt('INFO ', arguments, colors.brightGreen);
+    const message = util.format.apply(null, arguments);
+    // Skip timestamp for separator lines
+    const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // Always skip timestamp
+    const line = fmt('INFO ', arguments, colors.brightGreen, true);
     console.log(line);
   },
 
@@ -294,7 +314,16 @@ const loggerObj = {
    * Examples: fallback usage, recoverable errors, deprecated features.
    */
   warn: function() {
-    const line = fmt('WARN ', arguments);
+    const message = util.format.apply(null, arguments);
+    const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // Separator starts a grouped block
+    if (isSeparator) {
+      inGroupedBlock = !inGroupedBlock;
+    }
+
+    // Always skip timestamp
+    const line = fmt('WARN ', arguments, null, true);
     console.warn(line);
   },
 
@@ -305,7 +334,16 @@ const loggerObj = {
    * Uses bright red color to make errors immediately visible.
    */
   error: function() {
-    const line = fmt('ERROR', arguments);
+    const message = util.format.apply(null, arguments);
+    const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    // Separator starts a grouped block
+    if (isSeparator) {
+      inGroupedBlock = !inGroupedBlock;
+    }
+
+    // Always skip timestamp
+    const line = fmt('ERROR', arguments, null, true);
     console.error(line);
   },
 
@@ -317,7 +355,11 @@ const loggerObj = {
    */
   debug: function() {
     if (process.env.DEBUG) {
-      const line = fmt('DEBUG', arguments);
+      const message = util.format.apply(null, arguments);
+      // Skip timestamp for separator lines
+      const isSeparator = message.includes('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      // Always skip timestamp
+      const line = fmt('DEBUG', arguments, null, true);
       console.debug(line);
     }
   }
