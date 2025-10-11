@@ -80,7 +80,7 @@ function isIPBanned(ip) {
 
     return ban;
   } catch (error) {
-    logger.error('[ip_bans] Error checking IP ban:', error);
+    logger.error('[IP Bans] Error checking IP ban:', error);
     return null;
   }
 }
@@ -126,12 +126,12 @@ function cleanupExpiredIPBans() {
     `).run(Date.now());
 
     if (result.changes > 0) {
-      logger.info(`[ip_bans] Cleaned up ${result.changes} expired IP bans`);
+      logger.info(`[IP Bans] Cleaned up ${result.changes} expired IP bans`);
     }
 
     return result.changes;
   } catch (error) {
-    logger.error('[ip_bans] Error cleaning up expired bans:', error);
+    logger.error('[IP Bans] Error cleaning up expired bans:', error);
     return 0;
   }
 }
