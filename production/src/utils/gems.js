@@ -36,10 +36,10 @@ function awardGems(userId, amount, type, description) {
       VALUES (?, ?, ?, ?, ?)
     `).run(userId, amount, type, description, Date.now());
     
-    logger.info(`[gems] Awarded ${amount} gems to ${userId} for ${type}: ${description}`);
+    logger.info(`[Gems] Awarded ${amount} gems to ${userId} for ${type}: ${description}`);
     return true;
   } catch (error) {
-    logger.error('[gems] Error awarding gems:', error.message);
+    logger.error('[Gems] Error awarding gems:', error.message);
     return false;
   }
 }
@@ -63,10 +63,10 @@ function spendGems(userId, amount, type, description) {
       VALUES (?, ?, ?, ?, ?)
     `).run(userId, -amount, type, description, Date.now());
     
-    logger.info(`[gems] Deducted ${amount} gems from ${userId} for ${type}: ${description}`);
+    logger.info(`[Gems] Deducted ${amount} gems from ${userId} for ${type}: ${description}`);
     return true;
   } catch (error) {
-    logger.error('[gems] Error spending gems:', error.message);
+    logger.error('[Gems] Error spending gems:', error.message);
     return false;
   }
 }
@@ -79,7 +79,7 @@ function getGemBalance(userId) {
     const player = db.prepare('SELECT gems FROM players WHERE userId = ?').get(userId);
     return player?.gems || 0;
   } catch (error) {
-    logger.error('[gems] Error getting gem balance:', error.message);
+    logger.error('[Gems] Error getting gem balance:', error.message);
     return 0;
   }
 }
@@ -98,10 +98,10 @@ function removeGems(userId, amount, type, description) {
       VALUES (?, ?, ?, ?, ?)
     `).run(userId, -amount, type, description, Date.now());
     
-    logger.info(`[gems] Admin removed ${amount} gems from ${userId} for ${type}: ${description}`);
+    logger.info(`[Gems] Admin removed ${amount} gems from ${userId} for ${type}: ${description}`);
     return true;
   } catch (error) {
-    logger.error('[gems] Error removing gems:', error.message);
+    logger.error('[Gems] Error removing gems:', error.message);
     return false;
   }
 }
@@ -118,7 +118,7 @@ function logGemsTransaction(userId, amount, type, metadata = {}) {
     `).run(userId, amount, type, description, Date.now());
     return true;
   } catch (error) {
-    logger.error('[gems] Error logging transaction:', error.message);
+    logger.error('[Gems] Error logging transaction:', error.message);
     return false;
   }
 }
@@ -169,7 +169,7 @@ function handleDailyLogin(userId) {
       const challenges = require('./challenges');
       challenges.updateChallengeProgress(userId, 'login', 1);
     } catch (e) {
-      logger.warn('[gems] Failed to update challenge progress for login:', e.message);
+      logger.warn('[Gems] Failed to update challenge progress for login:', e.message);
     }
     
     return {
@@ -180,7 +180,7 @@ function handleDailyLogin(userId) {
       bonusGems
     };
   } catch (error) {
-    logger.error('[gems] Error handling daily login:', error.message);
+    logger.error('[Gems] Error handling daily login:', error.message);
     return { error: true };
   }
 }
@@ -197,7 +197,7 @@ function awardBossParticipationGems(userId, damageDealt, totalBossHealth) {
     
     return awardGems(userId, gems, 'boss_participation', `Dealt ${damageDealt} damage to boss`);
   } catch (error) {
-    logger.error('[gems] Error awarding boss participation gems:', error.message);
+    logger.error('[Gems] Error awarding boss participation gems:', error.message);
     return false;
   }
 }
@@ -213,7 +213,7 @@ function awardTradingGems(userId, amountTraded) {
     }
     return true;
   } catch (error) {
-    logger.error('[gems] Error awarding trading gems:', error.message);
+    logger.error('[Gems] Error awarding trading gems:', error.message);
     return false;
   }
 }
@@ -238,7 +238,7 @@ function getGemHistory(userId, limit = 10) {
       LIMIT ?
     `).all(userId, limit);
   } catch (error) {
-    logger.error('[gems] Error getting gem history:', error.message);
+    logger.error('[Gems] Error getting gem history:', error.message);
     return [];
   }
 }
