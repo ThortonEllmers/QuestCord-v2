@@ -15,8 +15,25 @@
 
 // Import Express framework for creating the web server
 const express = require('express');
+
+// Suppress the MemoryStore warning from express-session before importing it
+// We're aware of this limitation and it's acceptable for our single-process PM2 deployment
+const originalConsoleWarn = console.warn;
+console.warn = function(...args) {
+  const message = args.join(' ');
+  if (message.includes('MemoryStore') || message.includes('connect.session()')) {
+    // Suppress MemoryStore warnings - we're using PM2 single process deployment
+    return;
+  }
+  // Pass through other warnings
+  originalConsoleWarn.apply(console, args);
+};
+
 // Import session middleware for managing user sessions across requests
 const session = require('express-session');
+
+// Restore console.warn after session import
+console.warn = originalConsoleWarn;
 // Import path utilities for file system operations
 const path = require('path');
 // Import custom logger utility for consistent logging across the application
@@ -236,10 +253,10 @@ function createWebServer() {
   // Configure cookie domain from environment variable (useful for subdomain sharing)
   // Undefined allows cookies to work on any domain (good for development)
   const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
-  
+
   // Read cookie security setting from environment variable
   const secureEnv = process.env.COOKIE_SECURE;
-  
+
   // Parse the COOKIE_SECURE environment variable to boolean
   // Only set secure cookies if explicitly enabled via environment variable
   const cookieSecure = (typeof secureEnv === 'string')
@@ -293,7 +310,8 @@ function createWebServer() {
       const duration = Date.now() - startTime;
       const statusEmoji = res.statusCode < 400 ? '✅' : (res.statusCode < 500 ? '⚠️' : '❌');
 
-      // Log all requests (logger automatically adds separator lines)
+      // Log all requests with separator at start of group
+      logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       logger.aqua('🌐 %s %s', req.method, req.path);
       logger.aqua('%s %d (%dms) | IP: %s', statusEmoji, res.statusCode, duration, req.ip || req.connection.remoteAddress);
       if (req.session && req.session.user) {
@@ -444,7 +462,8 @@ function createWebServer() {
     const env = process.env.NODE_ENV || 'production';
     const publicUrl = config.web?.publicBaseUrl || `http://localhost:${port}`;
 
-    // Log server startup information for monitoring and debugging (logger automatically adds separator lines)
+    // Log server startup information for monitoring and debugging
+    logger.aqua('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     logger.aqua('🌐 WEB SERVER STARTED');
     logger.aqua('📡 Port: %d', port);
     logger.aqua('🌍 Environment: %s', env);
