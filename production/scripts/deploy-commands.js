@@ -3,6 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const fs = require('fs');
 const { REST, Routes } = require('discord.js');
+const logger = require('../src/utils/logger');
 
 const commands = [];
 // Go up one directory from scripts/ to production/, then into src/commands
@@ -20,9 +21,9 @@ const appId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
   try {
     // Fast per-guild registration - Always deploy to QuestCord server first
     const questcordGuildId = '1404523107544469545';
-    console.log(`→ Putting guild commands for QuestCord server (${questcordGuildId}) ...`);
+    logger.info(`→ Putting guild commands for QuestCord server (${questcordGuildId}) ...`);
     await rest.put(Routes.applicationGuildCommands(appId, questcordGuildId), { body: commands });
-    console.log(`✅ Commands deployed to QuestCord server!`);
+    logger.success(`✅ Commands deployed to QuestCord server!`);
 
     // Also deploy to other guilds if specified
     const guildIds = new Set([
@@ -35,15 +36,15 @@ const appId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
     guildIds.delete(questcordGuildId);
 
     for (const gid of guildIds){
-      console.log(`→ Putting guild commands for ${gid} ...`);
+      logger.info(`→ Putting guild commands for ${gid} ...`);
       await rest.put(Routes.applicationGuildCommands(appId, gid), { body: commands });
     }
 
-    console.log('→ Putting GLOBAL commands (can take up to 1 hour to propagate)...');
+    logger.info('→ Putting GLOBAL commands (can take up to 1 hour to propagate)...');
     await rest.put(Routes.applicationCommands(appId), { body: commands });
-    console.log('Done.');
+    logger.success('Done.');
   } catch (e){
-    console.error(e);
+    logger.error(e);
     process.exitCode = 1;
   }
 })();
