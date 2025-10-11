@@ -44,18 +44,18 @@ function isWeeklyResetTime() {
  */
 async function performWeeklyReset() {
     try {
-        logger.info('[weekly-reset] Starting weekly reset process...');
+        logger.info('[Weekly Reset] Starting weekly reset process...');
 
         const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
         const resetTimestamp = Date.now();
 
         // Reset leaderboard data (keep only current week)
-        logger.info('[weekly-reset] Cleaning old travel history...');
+        logger.info('[Weekly Reset] Cleaning old travel history...');
         const travelResult = db.prepare('DELETE FROM travel_history WHERE timestamp < ?').run(oneWeekAgo);
-        logger.info(`[weekly-reset] Removed ${travelResult.changes} old travel records`);
+        logger.info(`[Weekly Reset] Removed ${travelResult.changes} old travel records`);
 
         // Reset any weekly statistics
-        logger.info('[weekly-reset] Resetting weekly player statistics...');
+        logger.info('[Weekly Reset] Resetting weekly player statistics...');
 
         // Create a weekly reset log entry
         try {
@@ -92,11 +92,11 @@ async function performWeeklyReset() {
             );
         }
 
-        logger.info('[weekly-reset] Weekly reset completed successfully');
+        logger.info('[Weekly Reset] Weekly reset completed successfully');
         return true;
 
     } catch (error) {
-        logger.error('[weekly-reset] Error during weekly reset:', error);
+        logger.error('[Weekly Reset] Error during weekly reset:', error);
         return false;
     }
 }
@@ -132,14 +132,14 @@ function getTimeUntilNextReset() {
  * This should be called when the bot starts
  */
 function initializeWeeklyReset() {
-    logger.info('[weekly-reset] Initializing weekly reset scheduler...');
+    logger.info('[Weekly Reset] Initializing weekly reset scheduler...');
 
     // Check if we need to perform an immediate reset (if we missed it while offline)
     const lastReset = getLastResetTime();
     const currentWeekStart = getWeekStart().getTime();
 
     if (!lastReset || lastReset < currentWeekStart) {
-        logger.info('[weekly-reset] Performing missed weekly reset...');
+        logger.info('[Weekly Reset] Performing missed weekly reset...');
         performWeeklyReset();
     }
 
@@ -168,7 +168,7 @@ function scheduleNextReset() {
     const timeUntilReset = getTimeUntilNextReset();
     const nextResetDate = new Date(Date.now() + timeUntilReset);
 
-    logger.info(`[weekly-reset] Next reset scheduled for: ${nextResetDate.toISOString()}`);
+    logger.info(`[Weekly Reset] Next reset scheduled for: ${nextResetDate.toISOString()}`);
 
     setTimeout(() => {
         performWeeklyReset();
