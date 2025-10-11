@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const logger = require('./logger');
 
 /**
  * Configuration validation rules
@@ -155,7 +156,7 @@ function validateConfigValue(config, key, rule) {
  * Validate the entire configuration object
  */
 function validateConfiguration(config) {
-  console.log('[Config Validator] Starting configuration validation...');
+  logger.info('[Config Validator] Starting configuration validation...');
 
   const errors = [];
   const warnings = [];
@@ -209,43 +210,43 @@ function validateConfiguration(config) {
  */
 function displayValidationResults(errors, warnings) {
   if (errors.length === 0 && warnings.length === 0) {
-    console.log('[Config Validator] ✅ Configuration validation passed!');
+    logger.info('[Config Validator] ✅ Configuration validation passed!');
     return true;
   }
 
   // Display errors
   if (errors.length > 0) {
-    console.log('\n[Config Validator] ❌ Configuration Errors Found:');
-    console.log('=====================================');
+    logger.error('\n[Config Validator] ❌ Configuration Errors Found:');
+    logger.error('=====================================');
 
     errors.forEach((error, index) => {
-      console.log(`\n${index + 1}. ${error.message}`);
+      logger.error(`\n${index + 1}. ${error.message}`);
       if (error.description) {
-        console.log(`   Description: ${error.description}`);
+        logger.error(`   Description: ${error.description}`);
       }
       if (error.source) {
-        console.log(`   Source: ${error.source}`);
+        logger.error(`   Source: ${error.source}`);
       }
       if (error.value !== undefined) {
-        console.log(`   Current Value: ${error.value}`);
+        logger.error(`   Current Value: ${error.value}`);
       }
     });
 
-    console.log('\n📖 Please refer to .env.example for proper configuration setup.');
+    logger.error('\n📖 Please refer to .env.example for proper configuration setup.');
   }
 
   // Display warnings
   if (warnings.length > 0) {
-    console.log('\n[Config Validator] ⚠️  Configuration Warnings:');
-    console.log('=====================================');
+    logger.warn('\n[Config Validator] ⚠️  Configuration Warnings:');
+    logger.warn('=====================================');
 
     warnings.forEach((warning, index) => {
-      console.log(`\n${index + 1}. ${warning.message}`);
+      logger.warn(`\n${index + 1}. ${warning.message}`);
       if (warning.description) {
-        console.log(`   Note: ${warning.description}`);
+        logger.warn(`   Note: ${warning.description}`);
       }
       if (warning.value !== undefined) {
-        console.log(`   Current Value: ${warning.value}`);
+        logger.warn(`   Current Value: ${warning.value}`);
       }
     });
   }
@@ -262,20 +263,20 @@ function validateStartupConfiguration(config) {
     const isValid = displayValidationResults(errors, warnings);
 
     if (!isValid) {
-      console.log('\n[Config Validator] 🛑 Cannot start application with configuration errors.');
-      console.log('Please fix the above issues and restart the application.\n');
+      logger.error('\n[Config Validator] 🛑 Cannot start application with configuration errors.');
+      logger.error('Please fix the above issues and restart the application.\n');
       process.exit(1);
     }
 
     if (warnings.length > 0) {
-      console.log('\n[Config Validator] ⚠️  Application will start despite warnings, but please review them.\n');
+      logger.warn('\n[Config Validator] ⚠️  Application will start despite warnings, but please review them.\n');
     } else {
-      console.log('[Config Validator] ✅ All configuration checks passed!\n');
+      logger.info('[Config Validator] ✅ All configuration checks passed!\n');
     }
 
     return true;
   } catch (error) {
-    console.error('[Config Validator] Error during validation:', error.message);
+    logger.error('[Config Validator] Error during validation:', error.message);
     return false;
   }
 }
