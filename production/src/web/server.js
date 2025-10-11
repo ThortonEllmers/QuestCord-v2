@@ -422,55 +422,8 @@ function createWebServer() {
       logger.error('📍 Path: %s', req.path);
       logger.error('🕐 Time: %s', new Date().toISOString());
 
-      // Send Discord notification via bot for suspicious 404s
-      try {
-        const client = req.app.locals.discordClient;
-        if (client) {
-          const { EmbedBuilder } = require('discord.js');
-          const SECURITY_CHANNEL_ID = '1404555278594342993';
-
-          const channel = await client.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
-          if (channel && channel.isTextBased()) {
-            // Calculate threat severity
-            let severity = 'MEDIUM';
-            let severityColor = 0xfaa61a; // Yellow/Orange for MEDIUM
-            let severityEmoji = '🟡';
-
-            const criticalPatterns = ['/admin', '/.env', '/config', 'passwd', 'cmd', 'shell', 'backdoor'];
-            const highPatterns = ['../', '..\\', '%2e%2e', 'union', 'select'];
-
-            if (criticalPatterns.some(p => lowerPath.includes(p))) {
-              severity = 'CRITICAL';
-              severityColor = 0xed4245; // Red for CRITICAL
-              severityEmoji = '🔴';
-            } else if (highPatterns.some(p => lowerPath.includes(p))) {
-              severity = 'HIGH';
-              severityColor = 0xff6b00; // Orange for HIGH
-              severityEmoji = '🟠';
-            }
-
-            const embed = new EmbedBuilder()
-              .setTitle(`${severityEmoji} Suspicious 404 - Security Alert`)
-              .setColor(severityColor)
-              .setDescription('**Potential attack or reconnaissance attempt detected**')
-              .addFields(
-                { name: '🌐 IP Address', value: `\`${clientIP}\``, inline: true },
-                { name: '⚠️ Threat Level', value: `**${severity}**`, inline: true },
-                { name: '📍 Attempted Path', value: `\`\`\`${req.path}\`\`\``, inline: false },
-                { name: '🔧 HTTP Method', value: req.method, inline: true },
-                { name: '🌍 User Agent', value: req.get('user-agent') ? `\`${req.get('user-agent').substring(0, 100)}\`` : 'Unknown', inline: false },
-                { name: '🕐 Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false }
-              )
-              .setFooter({ text: 'QuestCord Security Monitor', iconURL: client.user.displayAvatarURL() })
-              .setTimestamp();
-
-            await channel.send({ embeds: [embed] });
-            logger.warn('[Security] Suspicious 404 notification sent to Discord');
-          }
-        }
-      } catch (error) {
-        logger.error('[Security] Failed to send Discord notification for suspicious 404: %s', error.message);
-      }
+      // Suspicious 404s are now handled by the main security-monitor.js system
+      // This prevents duplicate Discord alerts while keeping the logging
     }
 
     // Redirect to 404 page with details
