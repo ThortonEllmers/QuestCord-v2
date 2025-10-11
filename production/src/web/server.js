@@ -31,6 +31,8 @@ const { checkAndFixWaterServers } = require('../utils/geo');
 const { securityHeaders } = require('./security');
 // Import IP ban utilities for blocking banned IP addresses
 const { isIPBanned, getClientIP, cleanupExpiredIPBans } = require('../utils/ip_bans');
+// Import user agent ban utilities for blocking banned user agents
+const { isUserAgentBanned, getBanReason } = require('../utils/user_agent_bans');
 // Import security monitoring middleware for detecting attack attempts
 const { securityMonitor } = require('./security-monitor');
 // Define constant for session cookie expiration (24 hours in milliseconds)
@@ -64,6 +66,76 @@ function createWebServer() {
   // Security monitoring - Detect and alert on suspicious activity patterns
   // Monitors for brute force attempts, path traversal, SQL injection, etc.
   app.use(securityMonitor);
+
+  // User Agent Ban Middleware - Block banned user agents (bots, scanners, etc.)
+  // This middleware blocks requests from known malicious user agents
+  app.use((req, res, next) => {
+    // Skip user agent check for the banned page itself to avoid redirect loop
+    if (req.path === '/banned.html' || req.path === '/banned') {
+      return next();
+    }
+
+    // Get user agent from request headers
+    const userAgent = req.get('user-agent') || '';
+
+    // Check if user agent is banned
+    if (isUserAgentBanned(userAgent)) {
+      const clientIP = getClientIP(req);
+      const reason = getBanReason(userAgent);
+
+      // Log the blocked access attempt
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('🚫 BANNED USER AGENT BLOCKED');
+      logger.warn('🌐 IP: %s', clientIP);
+      logger.warn('🤖 User-Agent: %s', userAgent);
+      logger.warn('📝 Reason: %s', reason);
+      logger.warn('⏰ Time: %s', new Date().toISOString());
+      logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      // Send Discord notification via bot
+      try {
+        const client = req.app.locals.discordClient;
+        if (client) {
+          const { EmbedBuilder } = require('discord.js');
+          const SECURITY_CHANNEL_ID = '1404555278594342993';
+
+          const channel = client.channels.fetch(SECURITY_CHANNEL_ID).catch(() => null);
+          if (channel) {
+            channel.then(ch => {
+              if (ch && ch.isTextBased()) {
+                const embed = new EmbedBuilder()
+                  .setTitle('🤖 Banned User Agent Blocked')
+                  .setColor(0xFF6B00) // Orange
+                  .setDescription('**Automatic block of banned user agent**')
+                  .addFields(
+                    { name: '🌐 IP Address', value: `\`${clientIP}\``, inline: true },
+                    { name: '🤖 User Agent', value: `\`\`\`${userAgent.substring(0, 200)}\`\`\``, inline: false },
+                    { name: '📝 Reason', value: reason, inline: true },
+                    { name: '🕐 Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                  )
+                  .setFooter({ text: 'QuestCord Security Monitor', iconURL: client.user.displayAvatarURL() })
+                  .setTimestamp();
+
+                ch.send({ embeds: [embed] }).catch(err =>
+                  logger.error('[Security] Failed to send user agent ban notification: %s', err.message)
+                );
+              }
+            });
+          }
+        }
+      } catch (error) {
+        // Don't block the request if Discord notification fails
+        logger.error('[Security] Failed to send Discord notification for banned user agent: %s', error.message);
+      }
+
+      // Redirect to ban page with details
+      const banPageUrl = `/banned.html?ip=${encodeURIComponent(clientIP)}&reason=${encodeURIComponent(reason)}&bannedAt=${Date.now()}&bannedBy=SYSTEM_AUTO_BAN&userAgent=true`;
+      return res.redirect(banPageUrl);
+    }
+
+    // User agent is not banned, continue to next middleware
+    next();
+  });
 
   // IP Ban Middleware - Block banned IP addresses from accessing the website
   // This must come early in the middleware chain to prevent banned IPs from consuming resources
@@ -399,7 +471,7 @@ function createWebServer() {
               .setTimestamp();
 
             await channel.send({ embeds: [embed] });
-            logger.error('[Security] Suspicious 404 notification sent to Discord');
+            logger.warn('[Security] Suspicious 404 notification sent to Discord');
           }
         }
       } catch (error) {
