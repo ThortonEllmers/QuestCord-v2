@@ -393,6 +393,100 @@ async function logAdminAction(action, adminUserId, adminUsername, targetId, targ
 }
 
 /**
+ * Log web server startup notification
+ * @param {number} port - Port the web server is listening on
+ * @param {string} publicUrl - Public URL of the web server
+ */
+async function logWebServerStartup(port, publicUrl) {
+  try {
+    if (!discordClient) {
+      console.warn('[BotNotifications] Cannot send web server startup notification - client not ready');
+      return;
+    }
+
+    const { EmbedBuilder } = require('discord.js');
+    const environment = process.env.NODE_ENV || 'production';
+
+    const embed = new EmbedBuilder()
+      .setTitle('🌐 Web Server Started')
+      .setDescription('Web server has successfully started and is accepting connections!')
+      .setColor(0x00D26A) // Green
+      .addFields(
+        {
+          name: '📡 Port',
+          value: `\`${port}\``,
+          inline: true
+        },
+        {
+          name: '🔗 Public URL',
+          value: publicUrl,
+          inline: true
+        },
+        {
+          name: '🌍 Environment',
+          value: environment.toUpperCase(),
+          inline: true
+        },
+        {
+          name: '⏰ Started At',
+          value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+          inline: false
+        }
+      )
+      .setFooter({
+        text: 'QuestCord System Monitor',
+        iconURL: discordClient.user.displayAvatarURL()
+      })
+      .setTimestamp();
+
+    await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
+    console.log('[BotNotifications] Web server startup notification sent');
+  } catch (error) {
+    console.error('[BotNotifications] Failed to send web server startup notification:', error.message);
+  }
+}
+
+/**
+ * Log web server shutdown notification
+ * @param {string} reason - Shutdown reason
+ */
+async function logWebServerShutdown(reason = 'Unknown') {
+  try {
+    if (!discordClient) {
+      return;
+    }
+
+    const { EmbedBuilder } = require('discord.js');
+
+    const embed = new EmbedBuilder()
+      .setTitle('🔴 Web Server Shutting Down')
+      .setDescription(`Web server is shutting down: ${reason}`)
+      .setColor(0xFF6B6B) // Red-orange
+      .addFields(
+        {
+          name: '📅 Shutdown Time',
+          value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+          inline: true
+        },
+        {
+          name: '📝 Reason',
+          value: reason,
+          inline: true
+        }
+      )
+      .setFooter({
+        text: 'QuestCord System Monitor',
+        iconURL: discordClient.user.displayAvatarURL()
+      })
+      .setTimestamp();
+
+    await sendChannelMessage(CHANNELS.MONITOR, { embeds: [embed] });
+  } catch (error) {
+    console.error('[BotNotifications] Failed to send web server shutdown notification:', error.message);
+  }
+}
+
+/**
  * Get the Discord client (for external use)
  * @returns {Client|null} Discord client instance
  */
@@ -403,6 +497,8 @@ function getDiscordClient() {
 module.exports = {
   initializeBotNotifications,
   logBotStartup,
+  logWebServerStartup,
+  logWebServerShutdown,
   logError,
   logBotShutdown,
   logCommandError,
