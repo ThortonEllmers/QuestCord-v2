@@ -1,26 +1,18 @@
 /**
- * LOGGING SYSTEM AND WEBHOOK INTEGRATION MODULE
- * 
+ * LOGGING SYSTEM MODULE
+ *
  * This module provides a comprehensive logging system for QuestCord with:
  * - Standard console logging with formatted timestamps and levels
- * - Optional Discord webhook integration for remote monitoring
- * - Multiple log levels (info, warn, error, debug) 
- * - Configurable webhook notifications for production monitoring
+ * - Multiple log levels (info, warn, error, debug)
+ * - Color-coded console output for better readability
  * - Cross-module compatibility with both CommonJS and ES modules
- * 
+ *
  * The logging system helps track bot operations, errors, and important events
- * both locally in console and remotely via Discord webhooks.
+ * in the console. All Discord notifications are handled by bot_notifications.js.
  */
 
 // Import Node.js util module for advanced string formatting
 const util = require('util');
-// Import safe fetch helper for webhook HTTP requests
-const fetchSafe = require('./fetchSafe');
-
-// Discord webhook URL for remote logging (empty if not configured)
-const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
-// Flag to completely disable webhook logging (useful for development)
-const DISABLE_WEBHOOK = process.env.DISABLE_WEBHOOK === 'true';
 
 // ANSI color codes for terminal output
 const colors = {
@@ -51,56 +43,25 @@ function fmt(level, args) {
   return `[${level}] ${ts} ${line}`;
 }
 
-/**
- * DISCORD WEBHOOK SENDER
- * 
- * Sends log messages to Discord webhook for remote monitoring.
- * Handles errors gracefully and truncates long messages to fit Discord limits.
- * Uses best-effort delivery - failures don't interrupt application flow.
- * 
- * @param {string} level - Log level for Discord formatting
- * @param {Arguments} args - Arguments to format and send
- */
-async function sendWebhook(level, args) {
-  try {
-    // Skip webhook if URL not configured or webhooks disabled
-    if (!WEBHOOK_URL || DISABLE_WEBHOOK) return;
-    
-    // Format message and truncate to Discord's character limit
-    const content = '`' + level + '` ' + util.format.apply(null, args).slice(0, 1900);
-    
-    // Send HTTP POST request to Discord webhook
-    await fetchSafe(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
-    });
-  } catch (e) {
-    // Webhook failures are non-critical - continue silently
-    // This prevents webhook issues from cascading into application errors
-  }
-}
 
 /**
  * LOGGER OBJECT WITH MULTIPLE LOG LEVELS
  *
- * Provides standard logging functions with both console output and webhook integration.
- * Each level has different behavior and use cases in the application.
+ * Provides standard logging functions with console output.
+ * Discord notifications are handled separately by bot_notifications.js.
  */
 const loggerObj = {
   /**
    * INFO LEVEL LOGGING
    *
    * For general information, status updates, and normal operation events.
-   * Outputs to console and sends to webhook for monitoring.
+   * Outputs to console.
    */
   info: function() {
     // Format message with INFO level
     const line = fmt('INFO ', arguments);
     // Output to console using appropriate method
     console.log(line);
-    // Send to Discord webhook for remote monitoring
-    sendWebhook('INFO', arguments);
   },
 
   /**
@@ -115,8 +76,6 @@ const loggerObj = {
     const line = fmt('INFO ', arguments);
     // Output to console with aqua/cyan color highlighting
     console.log(colors.aqua + line + colors.reset);
-    // Send to Discord webhook as INFO level
-    sendWebhook('INFO', arguments);
   },
 
   /**
@@ -130,23 +89,18 @@ const loggerObj = {
     const line = fmt('WARN ', arguments);
     // Output to console using warning method (may use different color)
     console.warn(line);
-    // Send to Discord webhook for alerting
-    sendWebhook('WARN', arguments);
   },
 
   /**
    * ERROR LEVEL LOGGING
    *
    * For error conditions that require attention but don't crash the application.
-   * Always sent to webhook for immediate notification.
    */
   error: function() {
     // Format message with ERROR level
     const line = fmt('ERROR', arguments);
     // Output to console using error method (typically red color)
     console.error(line);
-    // Send to Discord webhook for immediate alerting
-    sendWebhook('ERROR', arguments);
   },
 
   /**
@@ -154,14 +108,12 @@ const loggerObj = {
    *
    * For detailed debugging information during development.
    * Only outputs to console when DEBUG environment variable is set.
-   * Never sent to webhook to avoid spam.
    */
   debug: function() {
     // Format message with DEBUG level
     const line = fmt('DEBUG', arguments);
     // Only output if DEBUG environment variable is enabled
     if (process.env.DEBUG) console.debug(line);
-    // Debug messages are never sent to webhook
   }
 };
 
